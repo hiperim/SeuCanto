@@ -214,6 +214,56 @@
             </div>
         </div>
 
+        <!-- Product Detail Page -->
+        <div id="productDetailPage" class="page">
+            <div class="container">
+                <button class="btn btn--outline mb-16" onclick="window.app.showPage('home')">← Voltar</button>
+                
+                <div class="product-detail-container">
+                    <div class="product-images">
+                        <div class="main-image">
+                            <img id="productMainImage" src="" alt="" class="main-product-image">
+                        </div>
+                        <div class="additional-images" id="additionalImages">
+                            <!-- Additional images will be populated by JS -->
+                        </div>
+                    </div>
+                    
+                    <div class="product-details">
+                        <h1 id="productDetailName" class="product-detail-name"></h1>
+                        
+                        <div class="product-detail-prices">
+                            <span id="productDetailOriginalPrice" class="original-price-detail"></span>
+                            <span id="productDetailSalePrice" class="sale-price-detail"></span>
+                        </div>
+                        
+                        <div class="product-description">
+                            <h3>Descrição</h3>
+                            <p id="productDetailDescription"></p>
+                        </div>
+                        
+                        <div class="product-specs">
+                            <h3>Especificações</h3>
+                            <div class="specs-grid">
+                                <div class="spec-item">
+                                    <span class="spec-label">Dimensões:</span>
+                                    <span id="productDetailDimensions"></span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Peso:</span>
+                                    <span id="productDetailWeight"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="product-detail-actions">
+                            <button class="btn btn--buy-now btn--lg" id="buyNowDetailBtn">Comprar</button>
+                            <button class="btn btn--add-cart btn--lg" id="addCartDetailBtn">Adicionar ao Carrinho</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Footer -->

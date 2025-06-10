@@ -354,12 +354,86 @@ class AppState {
 
     loadProducts() {
         this.products = [
-            {"id": 1, "name": "Bolsa nº 01", "originalPrice": 249.90, "salePrice": 189.90, "image": "https://cdn-icons-png.flaticon.com/512/1042/1042536.png", "dimensions": {"width": 30, "height": 15, "depth": 6}, "weight": 2},
-            {"id": 2, "name": "Bolsa nº 02", "originalPrice": 309.90, "salePrice": 289.90, "image": "https://cdn-icons-png.flaticon.com/512/8322/8322731.png", "dimensions": {"width": 35, "height": 24, "depth": 5}, "weight": 2},
-            {"id": 3, "name": "Bolsa nº 03", "originalPrice": 199.90, "salePrice": 169.90, "image": "https://cdn-icons-png.flaticon.com/512/2345/2345130.png", "dimensions": {"width": 123.6, "height": 71.4, "depth": 8.9}, "weight": 2},
-            {"id": 4, "name": "Bolsa nº 04", "originalPrice": 189.90, "salePrice": 159.90, "image": "https://www.manuel-dreesmann.com/cdn/shop/files/The-Rivet-Bag-Big-Leather-Dark-Brown-Color-Vegetable-Tanned-Full-Grain-Handcrafted-Spain-Full-Brass-Rivets-Design-Minimalistic-Modern-Handbag-Clutch-Atelier-Madre-Manuel-Dreesmann-Bar.jpg?v=1733758550&width=3000", "dimensions": {"width": 18.5, "height": 20.2, "depth": 8.5}, "weight": 0.25},
-            {"id": 5, "name": "Bolsa nº 05", "originalPrice": 289.90, "salePrice": 269.90, "image": "https://cdn-icons-png.flaticon.com/512/9011/9011529.png", "dimensions": {"width": 4.4, "height": 4.4, "depth": 1.2}, "weight": 2},
-            {"id": 6, "name": "Bolsa nº 06", "originalPrice": 349.90, "salePrice": 309.90, "image": "https://img.freepik.com/free-photo/bag-hanging-from-furniture-item-indoors_23-2151073506.jpg?semt=ais_hybrid&w=740", "dimensions": {"width": 13.2, "height": 9.8, "depth": 6.9}, "weight": 2},
+            {
+                "id": 1, 
+                "name": "Bolsa nº 01", 
+                "originalPrice": 249.90, 
+                "salePrice": 189.90, 
+                "image": "https://m.media-amazon.com/images/I/51b6Vv0gFXL._AC_SY1000_.jpg", 
+                "additionalImages": [
+                    "https://cdn-icons-png.flaticon.com/512/1042/1042536.png",
+                    "https://cdn-icons-png.flaticon.com/512/8322/8322731.png"
+                ],
+                "description": "Elegante bolsa de alta qualidade, perfeita para o dia a dia. Feita com materiais duráveis e design moderno que combina com qualquer ocasião. Material principal: couro ecológico",
+                "dimensions": {"width": 30, "height": 15, "depth": 6}, 
+                "weight": 2
+            },
+            {
+                "id": 2, 
+                "name": "Bolsa nº 02", 
+                "originalPrice": 309.90, 
+                "salePrice": 289.90, 
+                "image": "https://images.tcdn.com.br/img/img_prod/965739/bolsa_de_croche_flor_189_variacao_55_1_265d48d1e7521b4e032531686bd96dcc.jpg", 
+                "additionalImages": [
+                    "https://cdn-icons-png.flaticon.com/512/8322/8322731.png",
+                    "https://cdn-icons-png.flaticon.com/512/2345/2345130.png"
+                ],
+                "description": "Bolsa artesanal. Pequena por fora, mas espaçosa por dentro. Ideal para momentos especiais! Material principal: algodão",
+                "dimensions": {"width": 35, "height": 24, "depth": 5}, 
+                "weight": 0.27
+            },
+            {
+                "id": 3, 
+                "name": "Bolsa nº 03", 
+                "originalPrice": 199.90, 
+                "salePrice": 169.90, 
+                "image": "https://dzg5mdpaq0k37.cloudfront.net/Custom/Content/Products/17/21/17211_bolsa-feminina-transversal-estilosa-pit-bull-jeans-88805_l15_638826648777502355.webp", 
+                "additionalImages": [
+                    "https://cdn-icons-png.flaticon.com/512/2345/2345130.png"
+                ],
+                "description": "Bolsa compacta e versátil, perfeita para quem busca praticidade sem abrir mão do estilo. Material principal: couro ecológico",
+                "dimensions": {"width": 123.6, "height": 71.4, "depth": 8.9}, 
+                "weight": 0.3
+            },
+            {
+                "id": 4, 
+                "name": "Bolsa nº 04", 
+                "originalPrice": 189.90, 
+                "salePrice": 159.90, 
+                "image": "https://www.manuel-dreesmann.com/cdn/shop/files/The-Rivet-Bag-Big-Leather-Dark-Brown-Color-Vegetable-Tanned-Full-Grain-Handcrafted-Spain-Full-Brass-Rivets-Design-Minimalistic-Modern-Handbag-Clutch-Atelier-Madre-Manuel-Dreesmann-Bar.jpg?v=1733758550&width=3000", 
+                "additionalImages": [
+                    "https://img.lojasrenner.com.br/item/928666563/original/8.jpg"
+                ],
+                "description": "Bolsa artesanal em couro com design minimalista e acabamento em rebites de latão. Material principal: couro legítimo",
+                "dimensions": {"width": 18.5, "height": 20.2, "depth": 8.5}, 
+                "weight": 0.25
+            },
+            {
+                "id": 5, 
+                "name": "Bolsa nº 05", 
+                "originalPrice": 289.90, 
+                "salePrice": 269.90, 
+                "image": "https://cdn-icons-png.flaticon.com/512/9011/9011529.png", 
+                "additionalImages": [
+                    "https://img.freepik.com/vetores-premium/moedas-do-saco-de-dinheiro_78370-217.jpg"
+                ],
+                "description": "A bag preferida do Henrique. Para todas as ocasiões. Material principal: din-din",
+                "dimensions": {"width": 25, "height": 28, "depth": 15}, 
+                "weight": 10
+            },
+            {
+                "id": 6, 
+                "name": "Bolsa nº 06", 
+                "originalPrice": 349.90, 
+                "salePrice": 309.90, 
+                "image": "https://img.freepik.com/free-photo/bag-hanging-from-furniture-item-indoors_23-2151073506.jpg?semt=ais_hybrid&w=740", 
+                "additionalImages": [
+                    "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS0lNKz7hRyLKujyZtPyrtAzALDLjYOrgTMKKYwonDDfwU7-wDY"
+                ],
+                "description": "Bolsa premium com acabamento refinado e detalhes exclusivos para quem aprecia qualidade superior. Material principal: couro ecológico",
+                "dimensions": {"width": 13.2, "height": 9.8, "depth": 6.9}, 
+                "weight": 0.4
+            }
         ];
         this.renderProducts();
     }
@@ -467,9 +541,9 @@ class AppState {
         
         grid.innerHTML = this.products.map(product => `
             <div class="product-card">
-                <img src="${product.image}" alt="${product.name}" class="product-image">
+                <img src="${product.image}" alt="${product.name}" class="product-image" onclick="window.app.showProductDetail(${product.id})" style="cursor: pointer;">
                 <div class="product-info">
-                    <h3 class="product-name">${product.name}</h3>
+                    <h3 class="product-name" onclick="window.app.showProductDetail(${product.id})" style="cursor: pointer;">${product.name}</h3>
                     <div class="product-prices">
                         <span class="original-price">R$ ${product.originalPrice.toFixed(2).replace('.', ',')}</span>
                         <span class="sale-price">R$ ${product.salePrice.toFixed(2).replace('.', ',')}</span>
@@ -481,6 +555,67 @@ class AppState {
                 </div>
             </div>
         `).join('');
+    }
+
+    showProductDetail(productId) {
+        const product = this.products.find(p => p.id === productId);
+        if (!product) return;
+        
+        // Update product detail page elements
+        const mainImage = document.getElementById('productMainImage');
+        const productName = document.getElementById('productDetailName');
+        const originalPrice = document.getElementById('productDetailOriginalPrice');
+        const salePrice = document.getElementById('productDetailSalePrice');
+        const description = document.getElementById('productDetailDescription');
+        const dimensions = document.getElementById('productDetailDimensions');
+        const weight = document.getElementById('productDetailWeight');
+        const additionalImages = document.getElementById('additionalImages');
+        const buyBtn = document.getElementById('buyNowDetailBtn');
+        const addCartBtn = document.getElementById('addCartDetailBtn');
+        
+        if (mainImage) mainImage.src = product.image;
+        if (productName) productName.textContent = product.name;
+        if (originalPrice) originalPrice.textContent = `R$ ${product.originalPrice.toFixed(2).replace('.', ',')}`;
+        if (salePrice) salePrice.textContent = `R$ ${product.salePrice.toFixed(2).replace('.', ',')}`;
+        if (description) description.textContent = product.description || 'Descrição não disponível.';
+        if (dimensions) dimensions.textContent = `${product.dimensions.width} x ${product.dimensions.height} x ${product.dimensions.depth} cm`;
+        if (weight) weight.textContent = `${product.weight} kg`;
+        
+        // Handle additional images
+        if (additionalImages) {
+            if (product.additionalImages && product.additionalImages.length > 0) {
+                additionalImages.innerHTML = product.additionalImages.map((imgSrc, index) => `
+                    <div class="additional-image ${index === 0 ? 'active' : ''}" onclick="window.app.changeMainImage('${imgSrc}', this)">
+                        <img src="${imgSrc}" alt="${product.name} - Imagem ${index + 1}">
+                    </div>
+                `).join('');
+            } else {
+                additionalImages.innerHTML = '<p style="color: #999; font-size: 14px;">Nenhuma imagem adicional disponível.</p>';
+            }
+        }
+        
+        // Set up action buttons
+        if (buyBtn) {
+            buyBtn.onclick = () => this.buyNow(productId);
+        }
+        if (addCartBtn) {
+            addCartBtn.onclick = () => this.addToCart(productId);
+        }
+        
+        this.showPage('productDetail');
+    }
+
+    changeMainImage(newSrc, clickedElement) {
+        const mainImage = document.getElementById('productMainImage');
+        if (mainImage) {
+            mainImage.src = newSrc;
+        }
+        
+        // Update active state
+        document.querySelectorAll('.additional-image').forEach(img => img.classList.remove('active'));
+        if (clickedElement) {
+            clickedElement.classList.add('active');
+        }
     }
 
     addToCart(productId) {

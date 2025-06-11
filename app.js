@@ -366,10 +366,10 @@ class AppState {
                 "originalPrice": 249.90, 
                 "salePrice": 189.90, 
                 "images": [
-                    "https://m.media-amazon.com/images/I/51b6Vv0gFXL._AC_SY1000_.jpg",
-                    "https://cdn-icons-png.flaticon.com/512/1042/1042536.png",
-                    "https://cdn-icons-png.flaticon.com/512/8322/8322731.png",
-                    ""
+                    {"url": "https://m.media-amazon.com/images/I/51b6Vv0gFXL._AC_SY1000_.jpg", "alt": "Bolsa nº 01 - imagem principal"},
+                    {"url": "https://cdn-icons-png.flaticon.com/512/1042/1042536.png", "alt": "Ícone de bolsa"},
+                    {"url": "https://cdn-icons-png.flaticon.com/512/8322/8322731.png", "alt": "Ícone de acessório"},
+                    {"url": "", "alt": ""}
                 ],
                 "description": "Elegante bolsa de alta qualidade, perfeita para o dia a dia. Feita com materiais duráveis e design moderno que combina com qualquer ocasião. Material principal: couro ecológico",
                 "dimensions": {"width": 30, "height": 15, "depth": 6}, 
@@ -381,10 +381,10 @@ class AppState {
                 "originalPrice": 309.90, 
                 "salePrice": 289.90, 
                 "images": [
-                    "https://images.tcdn.com.br/img/img_prod/965739/bolsa_de_croche_flor_189_variacao_55_1_265d48d1e7521b4e032531686bd96dcc.jpg", 
-                    "https://cdn-icons-png.flaticon.com/512/8322/8322731.png",
-                    "https://cdn-icons-png.flaticon.com/512/2345/2345130.png",
-                    ""
+                    {"url": "https://images.tcdn.com.br/img/img_prod/965739/bolsa_de_croche_flor_189_variacao_55_1_265d48d1e7521b4e032531686bd96dcc.jpg", "alt": "Bolsa artesanal com crochê e flor"}, 
+                    {"url": "https://cdn-icons-png.flaticon.com/512/8322/8322731.png", "alt": "Ícone de acessório"},
+                    {"url": "https://cdn-icons-png.flaticon.com/512/2345/2345130.png", "alt": "Ícone de bolsa pequena"},
+                    {"url": "", "alt": ""}
                 ],
                 "description": "Bolsa artesanal. Pequena por fora, mas espaçosa por dentro. Ideal para momentos especiais! Material principal: algodão",
                 "dimensions": {"width": 35, "height": 24, "depth": 5}, 
@@ -396,9 +396,9 @@ class AppState {
                 "originalPrice": 199.90, 
                 "salePrice": 169.90, 
                 "images": [
-                    "https://dzg5mdpaq0k37.cloudfront.net/Custom/Content/Products/17/21/17211_bolsa-feminina-transversal-estilosa-pit-bull-jeans-88805_l15_638826648777502355.webp", 
-                    "https://cdn-icons-png.flaticon.com/512/2345/2345130.png",
-                    ""
+                    {"url": "https://dzg5mdpaq0k37.cloudfront.net/Custom/Content/Products/17/21/17211_bolsa-feminina-transversal-estilosa-pit-bull-jeans-88805_l15_638826648777502355.webp", "alt": "Bolsa compacta e versátil de couro ecológico"}, 
+                    {"url": "https://cdn-icons-png.flaticon.com/512/2345/2345130.png", "alt": "Ícone de bolsa pequena"},
+                    {"url": "", "alt": ""}
                 ],
                 "description": "Bolsa compacta e versátil, perfeita para quem busca praticidade sem abrir mão do estilo. Material principal: couro ecológico",
                 "dimensions": {"width": 123.6, "height": 71.4, "depth": 8.9}, 
@@ -410,9 +410,9 @@ class AppState {
                 "originalPrice": 189.90, 
                 "salePrice": 159.90, 
                 "images": [
-                    "https://www.manuel-dreesmann.com/cdn/shop/files/The-Rivet-Bag-Big-Leather-Dark-Brown-Color-Vegetable-Tanned-Full-Grain-Handcrafted-Spain-Full-Brass-Rivets-Design-Minimalistic-Modern-Handbag-Clutch-Atelier-Madre-Manuel-Dreesmann-Bar.jpg?v=1733758550&width=3000", 
-                    "https://img.lojasrenner.com.br/item/928666563/original/8.jpg",
-                    ""
+                    {"url": "https://www.manuel-dreesmann.com/cdn/shop/files/The-Rivet-Bag-Big-Leather-Dark-Brown-Color-Vegetable-Tanned-Full-Grain-Handcrafted-Spain-Full-Brass-Rivets-Design-Minimalistic-Modern-Handbag-Clutch-Atelier-Madre-Manuel-Dreesmann-Bar.jpg?v=1733758550&width=3000", "alt": "Bolsa artesanal em couro com rebites de latão"}, 
+                    {"url": "https://img.lojasrenner.com.br/item/928666563/original/8.jpg", "alt": "Bolsa artesanal em couro legítimo"},
+                    {"url": "", "alt": ""}
                 ],
                 "description": "Bolsa artesanal em couro com design minimalista e acabamento em rebites de latão. Material principal: couro legítimo",
                 "dimensions": {"width": 18.5, "height": 20.2, "depth": 8.5}, 
@@ -424,9 +424,9 @@ class AppState {
                 "originalPrice": 289.90, 
                 "salePrice": 269.90, 
                 "images": [
-                    "https://cdn-icons-png.flaticon.com/512/9011/9011529.png", 
-                    "https://img.freepik.com/vetores-premium/moedas-do-saco-de-dinheiro_78370-217.jpg",
-                    ""                
+                    {"url": "https://cdn-icons-png.flaticon.com/512/9011/9011529.png", "alt": "Ícone de saco de dinheiro"}, 
+                    {"url": "https://img.freepik.com/vetores-premium/moedas-do-saco-de-dinheiro_78370-217.jpg", "alt": "Imagem de moedas de dinheiro"},
+                    {"url": "", "alt": ""}                
                 ],
                 "description": "A bag preferida do Henrique. Para todas as ocasiões. Material principal: din-din",
                 "dimensions": {"width": 25, "height": 28, "depth": 15}, 
@@ -438,8 +438,8 @@ class AppState {
                 "originalPrice": 0, 
                 "salePrice": 0, 
                 "images": [
-                    "https://www.uel.br/eventos/sipim/pages/arquivos/Imagens%202020/breve.png", 
-                    ""
+                    {"url": "https://www.uel.br/eventos/sipim/pages/arquivos/Imagens%202020/breve.png", "alt": "Imagem de novidade em breve"}, 
+                    {"url": "", "alt": ""}
                 ],
                 "description": "Novidade em breve, aguarde!",
                 "dimensions": {"width": 0, "height": 0, "depth": 0}, 

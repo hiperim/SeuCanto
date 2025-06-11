@@ -369,7 +369,6 @@ class AppState {
                     {"url": "https://m.media-amazon.com/images/I/51b6Vv0gFXL._AC_SY1000_.jpg", "alt": "Bolsa nº 01 - imagem principal"},
                     {"url": "https://cdn-icons-png.flaticon.com/512/1042/1042536.png", "alt": "Ícone de bolsa"},
                     {"url": "https://cdn-icons-png.flaticon.com/512/8322/8322731.png", "alt": "Ícone de acessório"},
-                    {"url": "", "alt": ""}
                 ],
                 "description": "Elegante bolsa de alta qualidade, perfeita para o dia a dia. Feita com materiais duráveis e design moderno que combina com qualquer ocasião. Material principal: couro ecológico",
                 "dimensions": {"width": 30, "height": 15, "depth": 6}, 
@@ -384,7 +383,6 @@ class AppState {
                     {"url": "https://images.tcdn.com.br/img/img_prod/965739/bolsa_de_croche_flor_189_variacao_55_1_265d48d1e7521b4e032531686bd96dcc.jpg", "alt": "Bolsa artesanal com crochê e flor"}, 
                     {"url": "https://cdn-icons-png.flaticon.com/512/8322/8322731.png", "alt": "Ícone de acessório"},
                     {"url": "https://cdn-icons-png.flaticon.com/512/2345/2345130.png", "alt": "Ícone de bolsa pequena"},
-                    {"url": "", "alt": ""}
                 ],
                 "description": "Bolsa artesanal. Pequena por fora, mas espaçosa por dentro. Ideal para momentos especiais! Material principal: algodão",
                 "dimensions": {"width": 35, "height": 24, "depth": 5}, 
@@ -398,7 +396,6 @@ class AppState {
                 "images": [
                     {"url": "https://dzg5mdpaq0k37.cloudfront.net/Custom/Content/Products/17/21/17211_bolsa-feminina-transversal-estilosa-pit-bull-jeans-88805_l15_638826648777502355.webp", "alt": "Bolsa compacta e versátil de couro ecológico"}, 
                     {"url": "https://cdn-icons-png.flaticon.com/512/2345/2345130.png", "alt": "Ícone de bolsa pequena"},
-                    {"url": "", "alt": ""}
                 ],
                 "description": "Bolsa compacta e versátil, perfeita para quem busca praticidade sem abrir mão do estilo. Material principal: couro ecológico",
                 "dimensions": {"width": 123.6, "height": 71.4, "depth": 8.9}, 
@@ -412,7 +409,6 @@ class AppState {
                 "images": [
                     {"url": "https://www.manuel-dreesmann.com/cdn/shop/files/The-Rivet-Bag-Big-Leather-Dark-Brown-Color-Vegetable-Tanned-Full-Grain-Handcrafted-Spain-Full-Brass-Rivets-Design-Minimalistic-Modern-Handbag-Clutch-Atelier-Madre-Manuel-Dreesmann-Bar.jpg?v=1733758550&width=3000", "alt": "Bolsa artesanal em couro com rebites de latão"}, 
                     {"url": "https://img.lojasrenner.com.br/item/928666563/original/8.jpg", "alt": "Bolsa artesanal em couro legítimo"},
-                    {"url": "", "alt": ""}
                 ],
                 "description": "Bolsa artesanal em couro com design minimalista e acabamento em rebites de latão. Material principal: couro legítimo",
                 "dimensions": {"width": 18.5, "height": 20.2, "depth": 8.5}, 
@@ -425,8 +421,7 @@ class AppState {
                 "salePrice": 269.90, 
                 "images": [
                     {"url": "https://cdn-icons-png.flaticon.com/512/9011/9011529.png", "alt": "Ícone de saco de dinheiro"}, 
-                    {"url": "https://img.freepik.com/vetores-premium/moedas-do-saco-de-dinheiro_78370-217.jpg", "alt": "Imagem de moedas de dinheiro"},
-                    {"url": "", "alt": ""}                
+                    {"url": "https://img.freepik.com/vetores-premium/moedas-do-saco-de-dinheiro_78370-217.jpg", "alt": "Imagem de moedas de dinheiro"},              
                 ],
                 "description": "A bag preferida do Henrique. Para todas as ocasiões. Material principal: din-din",
                 "dimensions": {"width": 25, "height": 28, "depth": 15}, 
@@ -435,11 +430,10 @@ class AppState {
             {
                 "id": 6, 
                 "name": "NOVIDADE EM BREVE", 
-                "originalPrice": 0, 
+                "originalPrice": 0.90, 
                 "salePrice": 0, 
                 "images": [
                     {"url": "https://www.uel.br/eventos/sipim/pages/arquivos/Imagens%202020/breve.png", "alt": "Imagem de novidade em breve"}, 
-                    {"url": "", "alt": ""}
                 ],
                 "description": "Novidade em breve, aguarde!",
                 "dimensions": {"width": 0, "height": 0, "depth": 0}, 
@@ -450,6 +444,7 @@ class AppState {
     }
 
     setupEventListeners() {
+
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
             loginForm.addEventListener('submit', this.handleLogin.bind(this));
@@ -502,10 +497,36 @@ class AppState {
         }
 
         document.addEventListener('click', this.handleModalClose);
-
         if (window.location.pathname.includes('/admin') || window.location.hash === '#admin') {
             this.showAdminLogin();
         }
+
+        // Add product detail page button listeners
+        document.addEventListener('click', (e) => {
+            // Handle buy now buttons
+            if (e.target.matches('.btn--buy-now') || e.target.matches('#buyNowDetailBtn')) {
+                const productId = this.getCurrentProductId();
+                if (productId) {
+                    e.preventDefault();
+                    this.buyNow(productId);
+                }
+            }
+            
+            // Handle add to cart buttons
+            if (e.target.matches('.btn--add-cart') || e.target.matches('#addCartDetailBtn')) {
+                const productId = this.getCurrentProductId();
+                if (productId) {
+                    e.preventDefault();
+                    this.addToCart(productId);
+                }
+            }
+        });
+    }
+
+    // Helper method to get current product ID
+    getCurrentProductId() {
+        // You can store this when showProductDetail is called
+        return this.currentProductId || null;
     }
 
     loadCartFromStorage() {
@@ -548,38 +569,90 @@ class AppState {
         }
     }
 
-    renderProducts() {
-        const grid = document.getElementById('productsGrid');
-        if (!grid) {
-            console.error("The element with ID 'productsGrid' was not found.");
-            return;
-        }
+renderProducts() {
+    const grid = document.getElementById('productsGrid');
+    if (!grid) {
+        console.error("The element with ID 'productsGrid' was not found.");
+        return;
+    }
+    
+    // Use all products without filtering
+    const allProducts = this.products;
+    
+    grid.innerHTML = allProducts.map(product => {
+        // Get the first valid image with proper error handling
+        const mainImage = this.getFirstValidImage(product.images);
         
-        grid.innerHTML = this.products.map(product => `
-            <div class="product-card">
-                <img src="${product.images[0]}" alt="${product.name}" class="product-image" onclick="window.app.showProductDetail(${product.id})" style="cursor: pointer;">
+        return `
+            <article class="product-card" 
+                     role="article" 
+                     aria-labelledby="product-${product.id}">
+                <div class="product-image-container">
+                    <img src="${mainImage.url}" 
+                         alt="${mainImage.alt}" 
+                         class="product-image" 
+                         onclick="window.app.showProductDetail(${product.id})" 
+                         style="cursor: pointer;"
+                         loading="lazy"
+                         onerror="this.style.display='none';">
+                </div>
                 <div class="product-info">
-                    <h3 class="product-name" onclick="window.app.showProductDetail(${product.id})" style="cursor: pointer;">${product.name}</h3>
-                    <div class="product-prices">
-                        <span class="original-price">R$ ${product.originalPrice.toFixed(2).replace('.', ',')}</span>
-                        <span class="sale-price">R$ ${product.salePrice.toFixed(2).replace('.', ',')}</span>
+                    <h3 id="product-${product.id}" class="product-name" 
+                        onclick="window.app.showProductDetail(${product.id})" 
+                        style="cursor: pointer;">${product.name}</h3>
+                    
+                    <div class="product-prices" aria-label="Preços do produto">
+                        ${product.originalPrice > product.salePrice ? 
+                            `<span class="original-price" aria-label="Preço original">R$ ${product.originalPrice.toFixed(2).replace('.', ',')}</span>` : 
+                            ''
+                        }
+                        <span class="sale-price" aria-label="Preço promocional">R$ ${product.salePrice.toFixed(2).replace('.', ',')}</span>
                     </div>
+                    
                     <div class="product-actions">
-                        <button class="btn btn--buy-now" onclick="window.app.buyNow(${product.id})">Comprar</button>
-                        <button class="btn btn--add-cart" onclick="window.app.addToCart(${product.id})">Adicionar ao carrinho</button>
+                        <button class="btn btn--buy-now" 
+                                onclick="window.app.buyNow(${product.id})"
+                                aria-label="Comprar ${product.name}">Comprar</button>
+                        <button class="btn btn--add-cart" 
+                                onclick="window.app.addToCart(${product.id})"
+                                aria-label="Adicionar ${product.name} ao carrinho">Adicionar ao carrinho</button>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            </article>
+        `;
+    }).join('');
+}
+
+// Helper method to get the first valid image
+getFirstValidImage(images) {
+    const validImages = images.filter(img => 
+        img && img.url && img.url.trim().length > 0 && img.url !== 'undefined'
+    );
+    
+    if (validImages.length > 0) {
+        return validImages[0];
     }
+    
+    // Enhanced fallback with better placeholder
+    return {
+        url: 'https://via.placeholder.com/250x250/f8f9fa/6c757d?text=Sem+Imagem',
+        alt: 'Imagem não disponível'
+    };
+}
 
     showProductDetail(productId) {
+        // Store current product ID for button functionality
+        this.currentProductId = productId;
         
+        // Find the product by ID
         const product = this.products.find(p => p.id === productId);
         if (!product) return;
         
+        // Get first valid image
+        const mainImage = this.getFirstValidImage(product.images);
+
         // Update product detail page elements
-        const mainImage = document.getElementById('productMainImage');
+        const mainImageEl = document.getElementById('productMainImage');
         const productName = document.getElementById('productDetailName');
         const originalPrice = document.getElementById('productDetailOriginalPrice');
         const salePrice = document.getElementById('productDetailSalePrice');
@@ -587,10 +660,11 @@ class AppState {
         const dimensions = document.getElementById('productDetailDimensions');
         const weight = document.getElementById('productDetailWeight');
         const additionalImages = document.getElementById('additionalImages');
-        const buyBtn = document.getElementById('buyNowDetailBtn');
-        const addCartBtn = document.getElementById('addCartDetailBtn');
         
-        if (mainImage) mainImage.src = product.images[0];
+        if (mainImageEl) {
+            mainImageEl.src = mainImage.url;
+            mainImageEl.alt = mainImage.alt;
+        }
         if (productName) productName.textContent = product.name;
         if (originalPrice) originalPrice.textContent = `R$ ${product.originalPrice.toFixed(2).replace('.', ',')}`;
         if (salePrice) salePrice.textContent = `R$ ${product.salePrice.toFixed(2).replace('.', ',')}`;
@@ -598,16 +672,20 @@ class AppState {
         if (dimensions) dimensions.textContent = `${product.dimensions.width} x ${product.dimensions.height} x ${product.dimensions.depth} cm`;
         if (weight) weight.textContent = `${product.weight} kg`;
         
-        // Handle additional images
+        // Handle additional images with proper filtering
         if (additionalImages) {
-            const validImages = product.images.slice(1).filter(img => img.trim() !== '');
+            const validAdditionalImages = product.images.slice(1).filter(img => 
+                img.url && img.url.trim().length > 0
+            );
             
-            if (validImages.length > 0) {
-                additionalImages.innerHTML = validImages.map((imgSrc, index) => `
+            if (validAdditionalImages.length > 0) {
+                additionalImages.innerHTML = validAdditionalImages.map((image, index) => `
                     <div class="additional-image ${index === 0 ? 'active' : ''}" 
-                        onclick="window.app.changeMainImage('${imgSrc}', this)">
-                        <img src="${imgSrc}" 
-                            alt="${product.name} - Imagem ${index + 2}">
+                        onclick="window.app.changeMainImage('${image.url}', '${image.alt}', this)">
+                        <img src="${image.url}" 
+                            alt="${image.alt}"
+                            loading="lazy"
+                            onerror="this.parentElement.style.display='none'">
                     </div>
                 `).join('');
             } else {
@@ -615,15 +693,92 @@ class AppState {
             }
         }
         
-        // Set up action buttons
-        if (buyBtn) {
-            buyBtn.onclick = () => this.buyNow(productId);
-        }
-        if (addCartBtn) {
-            addCartBtn.onclick = () => this.addToCart(productId);
-        }
+        // **FIX: Set up button functionality properly**
+        this.setupProductDetailButtons(productId);
         
         this.showPage('productDetail');
+    }
+
+    setupProductDetailButtons(productId) {
+        // Try multiple possible button ID patterns
+        const buyBtnSelectors = [
+            '#buyNowDetailBtn', 
+            '#productDetailBuyBtn', 
+            '#buyNowBtn',
+            '.btn--buy-now',
+            '[data-action="buy-now"]'
+        ];
+        
+        const addCartBtnSelectors = [
+            '#addCartDetailBtn', 
+            '#productDetailAddCartBtn', 
+            '#addCartBtn',
+            '.btn--add-cart',
+            '[data-action="add-cart"]'
+        ];
+        
+        // Setup Buy Now button
+        let buyBtn = null;
+        for (const selector of buyBtnSelectors) {
+            buyBtn = document.querySelector(selector);
+            if (buyBtn) break;
+        }
+        
+        if (buyBtn) {
+            // Remove any existing event listeners
+            buyBtn.replaceWith(buyBtn.cloneNode(true));
+            buyBtn = document.querySelector(buyBtnSelectors.find(sel => document.querySelector(sel)));
+            
+            buyBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.buyNow(productId);
+            });
+            
+            // Also set onclick attribute as fallback
+            buyBtn.setAttribute('onclick', `window.app.buyNow(${productId})`);
+            console.log('Buy Now button configured for product:', productId);
+        } else {
+            console.error('Buy Now button not found in product detail page');
+        }
+        
+        // Setup Add to Cart button
+        let addCartBtn = null;
+        for (const selector of addCartBtnSelectors) {
+            addCartBtn = document.querySelector(selector);
+            if (addCartBtn) break;
+        }
+        
+        if (addCartBtn) {
+            // Remove any existing event listeners
+            addCartBtn.replaceWith(addCartBtn.cloneNode(true));
+            addCartBtn = document.querySelector(addCartBtnSelectors.find(sel => document.querySelector(sel)));
+            
+            addCartBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.addToCart(productId);
+            });
+            
+            // Also set onclick attribute as fallback
+            addCartBtn.setAttribute('onclick', `window.app.addToCart(${productId})`);
+            console.log('Add to Cart button configured for product:', productId);
+        } else {
+            console.error('Add to Cart button not found in product detail page');
+        }
+    }
+
+    // Update the changeMainImage method signature
+    changeMainImage(newSrc, newAlt, clickedElement) {
+        const mainImage = document.getElementById('productMainImage');
+        if (mainImage) {
+            mainImage.src = newSrc;
+            mainImage.alt = newAlt;
+        }
+        
+        // Update active state
+        document.querySelectorAll('.additional-image').forEach(img => img.classList.remove('active'));
+        if (clickedElement) {
+            clickedElement.classList.add('active');
+        }
     }
 
     changeMainImage(newSrc, clickedElement) {
@@ -696,48 +851,40 @@ class AppState {
     }
 
     renderCart() {
-        const cartItems = document.getElementById('cartItems');
-        const cartSummary = document.getElementById('cartSummary');
-        
-        if (!cartItems || !cartSummary) return;
+    const cartItems = document.getElementById('cartItems');
+    const cartSummary = document.getElementById('cartSummary');
+    
+    if (!cartItems || !cartSummary) return;
 
-        if (this.cart.length === 0) {
-            cartItems.innerHTML = '<p class="empty-cart">Seu carrinho está vazio.</p>';
-            cartSummary.innerHTML = '';
-            return;
+    if (this.cart.length === 0) {
+        cartItems.innerHTML = '<p class="empty-cart">Seu carrinho está vazio.</p>';
+        cartSummary.innerHTML = '';
+        return;
+    }
+
+    cartItems.innerHTML = this.cart.map(item => {
+        if (!item || !item.id) {
+            console.error('Invalid cart item:', item);
+            return '';
         }
-
-        cartItems.innerHTML = this.cart.map(item => {
-            if (!item || !item.id) {
-                console.error('Invalid cart item:', item);
-                return '';
-            }
-
-
-
-            return `
-                <div class="cart-item" data-id="${item.id}">
-
-                    <div class="cart-item-image">
-                        <img src="${item.images && item.images[0] ? item.images[0] : 'placeholder.jpg'}" 
-                            alt="${item.name}" 
-                            onclick="window.app.showProductDetail(${item.id})" 
-                            style="cursor: pointer">
-                    </div>
-                    
-                    <div class="cart-item-info">
-                        <div class="cart-item-name" onclick="window.app.showProductDetail(${item.id})" style="cursor: pointer;">${item.name}</div>
-                        <div class="cart-item-price">R$ ${item.salePrice.toFixed(2).replace('.', ',')}</div>
-                    </div>
-                    <div class="cart-item-controls">
-                        <button class="quantity-btn" onclick="window.app.updateQuantity(${item.id}, ${item.quantity - 1})">-</button>
-                        <span class="quantity-display">${item.quantity}</span>
-                        <button class="quantity-btn" onclick="window.app.updateQuantity(${item.id}, ${item.quantity + 1})">+</button>
-                        <button class="btn btn--outline btn--sm" onclick="window.app.removeFromCart(${item.id})">Remover</button>
-                    </div>
+        
+        // Use the same helper method for consistent image handling
+        const mainImage = this.getFirstValidImage(item.images);
+        
+        return `
+            <div class="cart-item" data-id="${item.id}">
+                <div class="cart-item-image">
+                    <img src="${mainImage.url}" 
+                         alt="${mainImage.alt}" 
+                         onclick="window.app.showProductDetail(${item.id})" 
+                         style="cursor: pointer"
+                         loading="lazy"
+                         onerror="this.style.display='none';">
                 </div>
-            `;
-        }).filter(item => item !== '').join('');
+                <!-- rest of your cart item HTML -->
+            </div>
+        `;
+    }).filter(item => item !== '').join('');
 
         const subtotal = this.cart.reduce((total, item) => total + (item.salePrice * item.quantity), 0);
         const shipping = this.shippingInfo?.cost || 0;

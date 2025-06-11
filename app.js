@@ -48,33 +48,76 @@ class ZipperAnimation {
         }, 1000);
     }
     
-    generateTeeth() {
-        const isLandscape = window.matchMedia("(orientation: landscape)").matches;
-        const container = this.elements.zipperTeeth;
-        const actualHeight = Math.max(
+    // Enhanced height calculation that accounts for zoom and mobile browsers
+    getActualViewportHeight() {
+        // Multiple height detection methods for maximum coverage
+        const screenHeight = window.screen.height;
+        const availHeight = window.screen.availHeight;
+        const innerHeight = window.innerHeight;
+        const documentHeight = Math.max(
             document.documentElement.clientHeight,
-            window.innerHeight,
+            document.documentElement.scrollHeight,
+            document.body.clientHeight,
             document.body.scrollHeight
         );
-        const viewportHeight = isLandscape ? window.screen.width : window.screen.height;
-        const teethSpacing = isLandscape ? 18 : 15;
         
-        const teethCount = Math.floor(viewportHeight / teethSpacing) + 5;
+        // Detect zoom level for proper scaling
+        const zoomLevel = Math.max(0.1, Math.min(10, window.screen.width / window.innerWidth));
+        
+        // Use the maximum available height
+        const maxHeight = Math.max(screenHeight, availHeight, innerHeight, documentHeight);
+        
+        // Apply zoom compensation and generous safety margin
+        const safetyMargin = 500; // Increased margin for complete bottom coverage
+        const zoomCompensation = Math.max(1.0, 1.5 / zoomLevel);
+        
+        return Math.floor((maxHeight * zoomCompensation) + safetyMargin);
+    }
+
+    generateTeeth() {
+        const container = this.elements.zipperTeeth;
+        
+        // Use comprehensive height calculation
+        const totalHeight = this.getActualViewportHeight();
+        
+        // FIXED: Calculate zoom level for teeth count adjustment
+        const zoomLevel = Math.max(0.1, Math.min(10, window.screen.width / window.innerWidth));
+        
+        // Base configuration
+        const baseSpacing = 15; // Keep spacing consistent
+        const baseTeethCount = Math.floor(totalHeight / baseSpacing);
+        
+        // ZOOM-AWARE TEETH COUNT CALCULATION
+        // Zoom in (zoomLevel > 1): Reduce teeth count
+        // Zoom out (zoomLevel < 1): Increase teeth count
+        let zoomMultiplier;
+        if (zoomLevel > 1) {
+            // Zoomed in: reduce teeth count (inverse relationship)
+            zoomMultiplier = 1 / Math.pow(zoomLevel, 0.5); // Square root for smoother scaling
+        } else {
+            // Zoomed out: increase teeth count
+            zoomMultiplier = Math.pow(1 / zoomLevel, 0.3); // Gentler scaling for zoom out
+        }
+        
+        // Apply zoom-based adjustment to teeth count
+        const adjustedTeethCount = Math.floor(baseTeethCount * zoomMultiplier);
+        const finalTeethCount = adjustedTeethCount + 30; // Safety buffer
+        
         container.innerHTML = '';
         this.teeth = [];
 
-        for (let i = 0; i < teethCount; i++) {
+        for (let i = 0; i < finalTeethCount; i++) {
             const leftTooth = document.createElement('div');
             const rightTooth = document.createElement('div');
             leftTooth.className = 'tooth tooth-left';
             rightTooth.className = 'tooth tooth-right';
-            leftTooth.style.top = `${i * 15}px`;
-            rightTooth.style.top = `${i * 15}px`;
+            leftTooth.style.top = `${i * baseSpacing}px`; // Keep consistent spacing
+            rightTooth.style.top = `${i * baseSpacing}px`;
 
             this.teeth.push({
                 left: leftTooth,
                 right: rightTooth,
-                position: i * 15,
+                position: i * baseSpacing,
                 opened: false
             });
 
@@ -82,7 +125,7 @@ class ZipperAnimation {
             container.appendChild(rightTooth);
         }
         
-        console.log(`Generated ${teethCount * 2} teeth for height: ${actualHeight}px`);
+        console.log(`Generated ${finalTeethCount * 2} teeth for zoom level: ${zoomLevel.toFixed(2)}x (base: ${baseTeethCount}, adjusted: ${adjustedTeethCount})`);
     }
     
     setupInitialState() {

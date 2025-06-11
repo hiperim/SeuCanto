@@ -68,7 +68,6 @@
   --space-20: 20px;
   --space-24: 24px;
   --space-32: 32px;
-  --space-38: 38px;
 
   /* Border Radius */
   --radius-sm: 6px;
@@ -598,7 +597,7 @@ select.form-control {
 
 .nav-menu {
   display: flex;
-  gap: var(--space-38);
+  gap: var(--space-16);
 }
 
 .nav-menu a {

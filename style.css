@@ -20,11 +20,6 @@
   --color-info: rgba(98, 108, 113, 1);
   --color-focus-ring: rgba(33, 128, 141, 0.4);
   --color-select-caret: rgba(19, 52, 59, 0.8);
-  /* Enhanced mobile viewport support */
-  --viewport-height: 100vh;
-  --viewport-height-small: 100svh; /* Small viewport height */
-  --viewport-height-large: 100lvh; /* Large viewport height */
-  --viewport-height-dynamic: 100dvh; /* Dynamic viewport height */
 
   /* Common style patterns */
   --focus-ring: 0 0 0 3px var(--color-focus-ring);
@@ -698,18 +693,10 @@ body {
     top: 0;
     left: 0;
     width: 100vw;
-    width: 100dvw; /* Dynamic viewport width for mobile */
     height: var(--viewport-height);
-    min-height: 100vh;
-    min-height: 100dvh; /* Ensure minimum coverage */
-    max-height: none;
     overflow: hidden;
     z-index: 1000;
     transform: none !important;
-
-    /* Mobile-specific enhancements */
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
 }
 
 /* White panels */
@@ -717,10 +704,7 @@ body {
     position: absolute;
     top: 0;
     width: 50vw;
-    width: 50dvw;
     height: 100vh;
-    height: var(--viewport-height);
-    min-height: calc(100vh + 60px);
     background: #ffffff;
     will-change: transform, clip-path;
     transform: translateZ(0);
@@ -1147,22 +1131,6 @@ body {
     }
 }
 
-/* Enhanced mobile support */
-@media screen and (max-width: 768px) {
-    #zipper-container {
-        height: 100vh;
-        height: 100dvh;
-        height: calc(100vh + env(keyboard-inset-height, 0px));
-        min-height: calc(100vh + 60px); /* Account for nav bars */
-    }
-
-    .fabric-panel {
-        height: 100dvh;
-        min-height: calc(100vh + env(safe-area-inset-bottom, 60px));
-        bottom: 0;
-    }
-}
-
 /* Products Grid */
 .products-grid {
     display: grid;
@@ -1548,12 +1516,6 @@ body {
     }
 }
 
-@supports (height: 100svh) {
-    :root {
-        --viewport-height: max(100vh, 100svh);
-    }
-}
-
 @supports not (height: 100dvh) {
     :root {
         --viewport-height: 100vh;
@@ -1582,7 +1544,7 @@ body {
 }
 @media (max-width: 768px) {
   .products-grid {
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

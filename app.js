@@ -276,6 +276,9 @@ class AppState {
         this.isAdmin = false;
         this.zipperAnimation = null;
         this.domReady = false;
+        // Image gallery state management
+        this.currentProductImages = null;
+        this.currentMainImageIndex = 0;
     }
 
     init() {
@@ -578,6 +581,10 @@ class AppState {
         const product = this.products.find(p => p.id === productId);
         if (!product) return;
         
+        // Store the original product images for reference
+        this.currentProductImages = [...product.images];
+        this.currentMainImageIndex = 0; // Track which image is currently displayed
+
         // Update product detail page elements
         const mainImage = document.getElementById('productMainImage');
         const productName = document.getElementById('productDetailName');
@@ -615,6 +622,9 @@ class AppState {
             }
         }
         
+        // Enhanced thumbnail generation - initially show images 1-3 as thumbnails
+        this.renderProductThumbnails();
+        
         // Set up action buttons
         if (buyBtn) {
             buyBtn.onclick = () => this.buyNow(productId);
@@ -626,16 +636,62 @@ class AppState {
         this.showPage('productDetail');
     }
 
-    changeMainImage(newSrc, clickedElement) {
-        const mainImage = document.getElementById('productMainImage');
-        if (mainImage) {
-            mainImage.src = newSrc;
+    renderProductThumbnails() {
+        const additionalImages = document.getElementById('additionalImages');
+        if (!additionalImages || !this.currentProductImages) return;
+        
+        // Get all images except the currently displayed one
+        const availableImages = this.currentProductImages
+            .map((imgSrc, index) => ({ src: imgSrc, originalIndex: index }))
+            .filter((img, index) => index !== this.currentMainImageIndex && img.src.trim() !== '');
+        
+        if (availableImages.length > 0) {
+            additionalImages.innerHTML = availableImages.map((image, index) => `
+                <div class="additional-image" 
+                    onclick="window.app.switchToImage(${image.originalIndex})"
+                    data-image-index="${image.originalIndex}">
+                    <img src="${image.src}" 
+                        alt="Imagem alternativa ${image.originalIndex + 1}"
+                        onerror="this.parentElement.style.display='none';">
+                </div>
+            `).join('');
+        } else {
+            additionalImages.innerHTML = '<p style="color: #999; font-size: 14px;">Nenhuma imagem adicional disponível.</p>';
+        }
+    }
+
+    switchToImage(imageIndex) {
+        if (!this.currentProductImages || imageIndex < 0 || imageIndex >= this.currentProductImages.length) {
+            return;
         }
         
-        // Update active state
-        document.querySelectorAll('.additional-image').forEach(img => img.classList.remove('active'));
-        if (clickedElement) {
-            clickedElement.classList.add('active');
+        const newImageSrc = this.currentProductImages[imageIndex];
+        if (!newImageSrc || newImageSrc.trim() === '') {
+            return;
+        }
+        
+        // Update the main image display
+        const mainImage = document.getElementById('productMainImage');
+        if (mainImage) {
+            mainImage.src = newImageSrc;
+            mainImage.alt = `Imagem principal ${imageIndex + 1}`;
+        }
+        
+        // Update the current main image index
+        this.currentMainImageIndex = imageIndex;
+        
+        // Re-render thumbnails to reflect the new state
+        this.renderProductThumbnails();
+        
+        console.log(`Switched to image ${imageIndex + 1}`);
+    }
+
+    // Keep the old method for backward compatibility, but redirect to new logic
+    changeMainImage(newSrc, clickedElement) {
+        // Find the index of the new image source
+        const imageIndex = this.currentProductImages?.findIndex(src => src === newSrc);
+        if (imageIndex !== -1) {
+            this.switchToImage(imageIndex);
         }
     }
 

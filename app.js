@@ -1,7 +1,7 @@
 class ZipperAnimation {
     constructor() {
         this.isAnimating = false;
-        this.animationDuration = 4000; // Total 4 sec
+        this.animationDuration = 2350; // Total 4 sec
         this.zipperDuration = 2000; // 2 sec for zipper opening
         this.zoomFadeDuration = 2000; // 2 sec for zoom and fade
         this.elements = {};
@@ -125,8 +125,8 @@ class ZipperAnimation {
                 this.updateContentVisibility(zipperProgress);
                 
             } else {
-                const zoomProgress = (elapsed - this.zipperDuration) / this.zoomFadeDuration;
-                this.updateZoomAndFade(zoomProgress);
+                const Progress = (elapsed - this.zipperDuration) / this.zoomFadeDuration;
+                this.updateAnimation(Progress);
             }
             
             if (totalProgress < 1) {
@@ -213,8 +213,8 @@ class ZipperAnimation {
         }
     }
     
-    updateZoomAndFade(zoomProgress) {
-        const clampedProgress = Math.min(zoomProgress, 1);
+    updateAnimation(Progress) {
+        const clampedProgress = Math.min(Progress, 1);
         
         this.elements.homepageContent.style.opacity = '1';
         
@@ -229,6 +229,12 @@ class ZipperAnimation {
     }
     
     onAnimationComplete() {
+
+        // Add scroll restoration after animation
+        window.requestAnimationFrame(() => {
+            window.scrollTo(0, this.savedScrollPosition);
+        });
+
         console.log('Animation complete - ensuring homepage content is visible');
         
         this.elements.homepageContent.style.opacity = '1';
@@ -268,7 +274,7 @@ class AppState {
         this.otpCode = null;
         this.otpTimer = null;
         this.isAdmin = false;
-        this.zipperAnimation = null; // Add zipper animation reference
+        this.zipperAnimation = null;
         this.domReady = false;
     }
 
@@ -359,24 +365,26 @@ class AppState {
                 "name": "Bolsa nº 01", 
                 "originalPrice": 249.90, 
                 "salePrice": 189.90, 
-                "image": "https://m.media-amazon.com/images/I/51b6Vv0gFXL._AC_SY1000_.jpg", 
-                "additionalImages": [
+                "images": [
+                    "https://m.media-amazon.com/images/I/51b6Vv0gFXL._AC_SY1000_.jpg",
                     "https://cdn-icons-png.flaticon.com/512/1042/1042536.png",
-                    "https://cdn-icons-png.flaticon.com/512/8322/8322731.png"
+                    "https://cdn-icons-png.flaticon.com/512/8322/8322731.png",
+                    ""
                 ],
                 "description": "Elegante bolsa de alta qualidade, perfeita para o dia a dia. Feita com materiais duráveis e design moderno que combina com qualquer ocasião. Material principal: couro ecológico",
                 "dimensions": {"width": 30, "height": 15, "depth": 6}, 
-                "weight": 2
+                "weight": 0.29
             },
             {
                 "id": 2, 
                 "name": "Bolsa nº 02", 
                 "originalPrice": 309.90, 
                 "salePrice": 289.90, 
-                "image": "https://images.tcdn.com.br/img/img_prod/965739/bolsa_de_croche_flor_189_variacao_55_1_265d48d1e7521b4e032531686bd96dcc.jpg", 
-                "additionalImages": [
+                "images": [
+                    "https://images.tcdn.com.br/img/img_prod/965739/bolsa_de_croche_flor_189_variacao_55_1_265d48d1e7521b4e032531686bd96dcc.jpg", 
                     "https://cdn-icons-png.flaticon.com/512/8322/8322731.png",
-                    "https://cdn-icons-png.flaticon.com/512/2345/2345130.png"
+                    "https://cdn-icons-png.flaticon.com/512/2345/2345130.png",
+                    ""
                 ],
                 "description": "Bolsa artesanal. Pequena por fora, mas espaçosa por dentro. Ideal para momentos especiais! Material principal: algodão",
                 "dimensions": {"width": 35, "height": 24, "depth": 5}, 
@@ -387,9 +395,10 @@ class AppState {
                 "name": "Bolsa nº 03", 
                 "originalPrice": 199.90, 
                 "salePrice": 169.90, 
-                "image": "https://dzg5mdpaq0k37.cloudfront.net/Custom/Content/Products/17/21/17211_bolsa-feminina-transversal-estilosa-pit-bull-jeans-88805_l15_638826648777502355.webp", 
-                "additionalImages": [
-                    "https://cdn-icons-png.flaticon.com/512/2345/2345130.png"
+                "images": [
+                    "https://dzg5mdpaq0k37.cloudfront.net/Custom/Content/Products/17/21/17211_bolsa-feminina-transversal-estilosa-pit-bull-jeans-88805_l15_638826648777502355.webp", 
+                    "https://cdn-icons-png.flaticon.com/512/2345/2345130.png",
+                    ""
                 ],
                 "description": "Bolsa compacta e versátil, perfeita para quem busca praticidade sem abrir mão do estilo. Material principal: couro ecológico",
                 "dimensions": {"width": 123.6, "height": 71.4, "depth": 8.9}, 
@@ -400,9 +409,10 @@ class AppState {
                 "name": "Bolsa nº 04", 
                 "originalPrice": 189.90, 
                 "salePrice": 159.90, 
-                "image": "https://www.manuel-dreesmann.com/cdn/shop/files/The-Rivet-Bag-Big-Leather-Dark-Brown-Color-Vegetable-Tanned-Full-Grain-Handcrafted-Spain-Full-Brass-Rivets-Design-Minimalistic-Modern-Handbag-Clutch-Atelier-Madre-Manuel-Dreesmann-Bar.jpg?v=1733758550&width=3000", 
-                "additionalImages": [
-                    "https://img.lojasrenner.com.br/item/928666563/original/8.jpg"
+                "images": [
+                    "https://www.manuel-dreesmann.com/cdn/shop/files/The-Rivet-Bag-Big-Leather-Dark-Brown-Color-Vegetable-Tanned-Full-Grain-Handcrafted-Spain-Full-Brass-Rivets-Design-Minimalistic-Modern-Handbag-Clutch-Atelier-Madre-Manuel-Dreesmann-Bar.jpg?v=1733758550&width=3000", 
+                    "https://img.lojasrenner.com.br/item/928666563/original/8.jpg",
+                    ""
                 ],
                 "description": "Bolsa artesanal em couro com design minimalista e acabamento em rebites de latão. Material principal: couro legítimo",
                 "dimensions": {"width": 18.5, "height": 20.2, "depth": 8.5}, 
@@ -413,9 +423,10 @@ class AppState {
                 "name": "Bolsa nº 05", 
                 "originalPrice": 289.90, 
                 "salePrice": 269.90, 
-                "image": "https://cdn-icons-png.flaticon.com/512/9011/9011529.png", 
-                "additionalImages": [
-                    "https://img.freepik.com/vetores-premium/moedas-do-saco-de-dinheiro_78370-217.jpg"
+                "images": [
+                    "https://cdn-icons-png.flaticon.com/512/9011/9011529.png", 
+                    "https://img.freepik.com/vetores-premium/moedas-do-saco-de-dinheiro_78370-217.jpg",
+                    ""                
                 ],
                 "description": "A bag preferida do Henrique. Para todas as ocasiões. Material principal: din-din",
                 "dimensions": {"width": 25, "height": 28, "depth": 15}, 
@@ -423,16 +434,16 @@ class AppState {
             },
             {
                 "id": 6, 
-                "name": "Bolsa nº 06", 
-                "originalPrice": 349.90, 
-                "salePrice": 309.90, 
-                "image": "https://img.freepik.com/free-photo/bag-hanging-from-furniture-item-indoors_23-2151073506.jpg?semt=ais_hybrid&w=740", 
-                "additionalImages": [
-                    "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS0lNKz7hRyLKujyZtPyrtAzALDLjYOrgTMKKYwonDDfwU7-wDY"
+                "name": "NOVIDADE EM BREVE", 
+                "originalPrice": 0, 
+                "salePrice": 0, 
+                "images": [
+                    "https://www.uel.br/eventos/sipim/pages/arquivos/Imagens%202020/breve.png", 
+                    ""
                 ],
-                "description": "Bolsa premium com acabamento refinado e detalhes exclusivos para quem aprecia qualidade superior. Material principal: couro ecológico",
-                "dimensions": {"width": 13.2, "height": 9.8, "depth": 6.9}, 
-                "weight": 0.4
+                "description": "Novidade em breve, aguarde!",
+                "dimensions": {"width": 0, "height": 0, "depth": 0}, 
+                "weight": 0
             }
         ];
         this.renderProducts();
@@ -449,6 +460,11 @@ class AppState {
             otpForm.addEventListener('submit', this.handleOTPVerification.bind(this));
         }
         
+        const shippingCpf = document.getElementById('shippingCpf');
+        if (shippingCpf) {
+            shippingCpf.addEventListener('input', this.formatCPF);
+        }
+
         const adminLoginForm = document.getElementById('adminLoginForm');
         if (adminLoginForm) {
             adminLoginForm.addEventListener('submit', this.handleAdminLogin.bind(this));
@@ -541,7 +557,7 @@ class AppState {
         
         grid.innerHTML = this.products.map(product => `
             <div class="product-card">
-                <img src="${product.image}" alt="${product.name}" class="product-image" onclick="window.app.showProductDetail(${product.id})" style="cursor: pointer;">
+                <img src="${product.images[0]}" alt="${product.name}" class="product-image" onclick="window.app.showProductDetail(${product.id})" style="cursor: pointer;">
                 <div class="product-info">
                     <h3 class="product-name" onclick="window.app.showProductDetail(${product.id})" style="cursor: pointer;">${product.name}</h3>
                     <div class="product-prices">
@@ -550,7 +566,7 @@ class AppState {
                     </div>
                     <div class="product-actions">
                         <button class="btn btn--buy-now" onclick="window.app.buyNow(${product.id})">Comprar</button>
-                        <button class="btn btn--add-cart" onclick="window.app.addToCart(${product.id})">Adicionar</button>
+                        <button class="btn btn--add-cart" onclick="window.app.addToCart(${product.id})">Adicionar ao carrinho</button>
                     </div>
                 </div>
             </div>
@@ -558,6 +574,7 @@ class AppState {
     }
 
     showProductDetail(productId) {
+        
         const product = this.products.find(p => p.id === productId);
         if (!product) return;
         
@@ -573,7 +590,7 @@ class AppState {
         const buyBtn = document.getElementById('buyNowDetailBtn');
         const addCartBtn = document.getElementById('addCartDetailBtn');
         
-        if (mainImage) mainImage.src = product.image;
+        if (mainImage) mainImage.src = product.images[0];
         if (productName) productName.textContent = product.name;
         if (originalPrice) originalPrice.textContent = `R$ ${product.originalPrice.toFixed(2).replace('.', ',')}`;
         if (salePrice) salePrice.textContent = `R$ ${product.salePrice.toFixed(2).replace('.', ',')}`;
@@ -583,10 +600,14 @@ class AppState {
         
         // Handle additional images
         if (additionalImages) {
-            if (product.additionalImages && product.additionalImages.length > 0) {
-                additionalImages.innerHTML = product.additionalImages.map((imgSrc, index) => `
-                    <div class="additional-image ${index === 0 ? 'active' : ''}" onclick="window.app.changeMainImage('${imgSrc}', this)">
-                        <img src="${imgSrc}" alt="${product.name} - Imagem ${index + 1}">
+            const validImages = product.images.slice(1).filter(img => img.trim() !== '');
+            
+            if (validImages.length > 0) {
+                additionalImages.innerHTML = validImages.map((imgSrc, index) => `
+                    <div class="additional-image ${index === 0 ? 'active' : ''}" 
+                        onclick="window.app.changeMainImage('${imgSrc}', this)">
+                        <img src="${imgSrc}" 
+                            alt="${product.name} - Imagem ${index + 2}">
                     </div>
                 `).join('');
             } else {
@@ -691,15 +712,21 @@ class AppState {
                 console.error('Invalid cart item:', item);
                 return '';
             }
-                  
-            
+
+
+
             return `
                 <div class="cart-item" data-id="${item.id}">
+
                     <div class="cart-item-image">
-                        <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
+                        <img src="${item.images && item.images[0] ? item.images[0] : 'placeholder.jpg'}" 
+                            alt="${item.name}" 
+                            onclick="window.app.showProductDetail(${item.id})" 
+                            style="cursor: pointer">
                     </div>
+                    
                     <div class="cart-item-info">
-                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-name" onclick="window.app.showProductDetail(${item.id})" style="cursor: pointer;">${item.name}</div>
                         <div class="cart-item-price">R$ ${item.salePrice.toFixed(2).replace('.', ',')}</div>
                     </div>
                     <div class="cart-item-controls">
@@ -719,18 +746,15 @@ class AppState {
         cartSummary.innerHTML = `
             <div class="cart-summary-content">
                 <div class="summary-row">
-                    <span>Subtotal:</span>
-                    <span>R$ ${subtotal.toFixed(2).replace('.', ',')}</span>
+                    <p>Subtotal: R$${subtotal.toFixed(2).replace('.', ',')}</span></p>
                 </div>
                 ${shipping > 0 ? `
                     <div class="summary-row">
-                        <span>Frete:</span>
-                        <span>R$ ${shipping.toFixed(2).replace('.', ',')}</span>
+                        <p>Frete: R$${shipping.toFixed(2).replace('.', ',')}</p>
                     </div>
                 ` : ''}
                 <div class="summary-row total">
-                    <span>Total:</span>
-                    <span>R$ ${total.toFixed(2).replace('.', ',')}</span>
+                    <p>Total: R$${total.toFixed(2).replace('.', ',')}</p>
                 </div>
             </div>
         `;
@@ -834,7 +858,7 @@ class AppState {
         const username = document.getElementById('adminUsername').value;
         const password = document.getElementById('adminPassword').value;
         
-        if (username === 'admin' && password === 'seucantto2025') {
+        if (username === 'admin' && password === 'mozao') {
             this.isAdmin = true;
             this.closeModal('adminLoginModal');
             this.showPage('admin');
@@ -887,20 +911,35 @@ class AppState {
             return;
         }
 
-        const zones = {
-            '01': { name: 'São Paulo - SP', cost: 15.90 },
-            '20': { name: 'Rio de Janeiro - RJ', cost: 18.90 },
-            '30': { name: 'Belo Horizonte - MG', cost: 22.90 },
-            '70': { name: 'Brasília - DF', cost: 25.90 },
-            '60': { name: 'Fortaleza - CE', cost: 29.90 }
-        };
+        // Determine the zone based of CEP prefix //
+        function getZoneByCEP(cep) {
+            const prefix = parseInt(cep.substring(0, 2), 10);
+            if (prefix >= 10 && prefix == 0 && prefix <= 19) {
+                return { name: 'São Paulo', cost: 28.00 };
+            } else if (prefix >= 20 && prefix <= 29) {
+                return { name: 'Região Sudeste', cost: 32.00 };
+            } else if (prefix >= 50 && prefix <= 67) {
+                return { name: 'Região Nordeste', cost: 30.00 };
+            } else if (prefix >= 30 && prefix <= 39) {
+                return { name: 'Minas Gerais', cost: 30.00 };
+            } else if (prefix >= 40 && prefix <= 49) {
+                return { name: 'Bahia / Sergipe', cost: 35.00 };
+            } else if (prefix >= 70 && prefix <= 79) {
+                return { name: 'Região Centro-Oeste', cost: 34.00 };
+            } else if (prefix >= 68 && prefix <= 69) {
+                return { name: 'Região Norte', cost: 40.00 };
+            } else if (prefix >= 80 && prefix <= 99) {
+                return { name: 'Região Sul', cost: 30.00 };
+            } else {
+                return { name: 'Outras localidades', cost: 44.00 };
+            }
+        }
 
-        const prefix = cep.substring(0, 2);
-        const zone = zones[prefix] || { name: 'Outras localidades', cost: 35.90 };
-        
+        const zone = getZoneByCEP(cep);
+
         const totalWeight = this.cart.reduce((total, item) => total + (item.weight * item.quantity), 0);
         const finalShippingCost = zone.cost + (totalWeight * 2.50);
-        
+
         this.shippingInfo = {
             cep,
             location: zone.name,
@@ -909,48 +948,70 @@ class AppState {
 
         const shippingResult = document.getElementById('shippingResult');
         if (shippingResult) {
-            shippingResult.innerHTML = `
-                <div class="message success">
-                    <strong>Frete calculado:</strong><br>
-                    Destino: ${zone.name}<br>
-                    Valor: R$ ${finalShippingCost.toFixed(2).replace('.', ',')}
+            shippingResult.innerHTML = this.shippingInfo && this.shippingInfo.cost > 0 ? `
+                <div class="shipping-info-section">
+                    <div class="summary-row shipping-calculated">
+                        <span><strong>Frete calculado</strong></span>
+                        <span></span>
+                    </div>
+                    <div class="summary-row shipping-destination">
+                        <span>Destino: ${this.shippingInfo.location}</span>
+                        <span></span>
+                    </div>
+                    <div class="summary-row shipping-cost">
+                        <span>Valor: R$${this.shippingInfo.cost.toFixed(2).replace('.', ',')}</span>
+                    </div>
                 </div>
-            `;
+            ` : '';
         }
 
         this.renderCart();
     }
 
-    lookupAddress() {
+    async lookupAddress() {
         const shippingCep = document.getElementById('shippingCep');
         if (!shippingCep) return;
         
         const cep = shippingCep.value.replace(/\D/g, '');
         
         if (cep.length === 8) {
-            const mockAddresses = {
-                '01310100': { street: 'Avenida Paulista', neighborhood: 'Bela Vista', city: 'São Paulo', state: 'SP' },
-                '22071900': { street: 'Avenida Atlântica', neighborhood: 'Copacabana', city: 'Rio de Janeiro', state: 'RJ' },
-                '30112000': { street: 'Avenida Afonso Pena', neighborhood: 'Centro', city: 'Belo Horizonte', state: 'MG' }
-            };
-
-            const address = mockAddresses[cep] || {
-                street: 'Rua Principal',
-                neighborhood: 'Centro',
-                city: 'Cidade',
-                state: 'UF'
-            };
-
-            const streetEl = document.getElementById('shippingStreet');
-            const neighborhoodEl = document.getElementById('shippingNeighborhood');
-            const cityEl = document.getElementById('shippingCity');
-            const stateEl = document.getElementById('shippingState');
-
-            if (streetEl) streetEl.value = address.street;
-            if (neighborhoodEl) neighborhoodEl.value = address.neighborhood;
-            if (cityEl) cityEl.value = address.city;
-            if (stateEl) stateEl.value = address.state;
+            try {
+                const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                const address = await response.json();
+                
+                if (!address.erro) {
+                    // Use the real address data
+                    this.populateAddressFields({
+                        street: address.logradouro,
+                        neighborhood: address.bairro,
+                        city: address.localidade,
+                        state: address.uf
+                    });
+                } else {
+                    // Fallback to default values
+                    this.populateAddressFields({
+                        street: 'Rua Principal',
+                        neighborhood: 'Centro',
+                        city: 'Cidade',
+                        state: 'UF'
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching address:', error);
+            }
         }
+    }
+
+    populateAddressFields(address) {
+        const streetEl = document.getElementById('shippingStreet');
+        const neighborhoodEl = document.getElementById('shippingNeighborhood');
+        const cityEl = document.getElementById('shippingCity');
+        const stateEl = document.getElementById('shippingState');
+
+        if (streetEl) streetEl.value = address.street || '';
+        if (neighborhoodEl) neighborhoodEl.value = address.neighborhood || '';
+        if (cityEl) cityEl.value = address.city || '';
+        if (stateEl) stateEl.value = address.state || '';
     }
 
     handleShippingForm(e) {
@@ -961,8 +1022,31 @@ class AppState {
             return;
         }
 
+        // Get recipient name and CPF values
+        const recipientName = document.getElementById('shippingRecipient')?.value || '';
+        const cpf = document.getElementById('shippingCpf')?.value || '';
+        
+        // Validate required fields
+        if (!recipientName.trim()) {
+            this.showMessage('Por favor, informe o nome do destinatário.', 'error');
+            return;
+        }
+        
+        if (!cpf.trim()) {
+            this.showMessage('Por favor, informe o CPF do destinatário.', 'error');
+            return;
+        }
+        
+        // Validate CPF format (basic validation)
+        if (!this.validateCPF(cpf)) {
+            this.showMessage('CPF inválido. Verifique o formato.', 'error');
+            return;
+        }
+
         this.shippingInfo = {
             ...this.shippingInfo,
+            recipient: recipientName.trim(),
+            cpf: cpf.replace(/\D/g, ''), // Store only numbers
             cep: document.getElementById('shippingCep')?.value || '',
             street: document.getElementById('shippingStreet')?.value || '',
             neighborhood: document.getElementById('shippingNeighborhood')?.value || '',
@@ -977,59 +1061,54 @@ class AppState {
         this.renderOrderSummary();
     }
 
+    validateCPF(cpf) {
+        // Remove all non-digit characters
+        cpf = cpf.replace(/\D/g, '');
+        
+        // Check if CPF has 11 digits
+        if (cpf.length !== 11) return false;
+        
+        // Check for known invalid CPFs (all same digits)
+        if (/^(\d)\1{10}$/.test(cpf)) return false;
+        
+        // Calculate first verification digit
+        let sum = 0;
+        for (let i = 0; i < 9; i++) {
+            sum += parseInt(cpf.charAt(i)) * (10 - i);
+        }
+        let remainder = (sum * 10) % 11;
+        if (remainder === 10 || remainder === 11) remainder = 0;
+        if (remainder !== parseInt(cpf.charAt(9))) return false;
+        
+        // Calculate second verification digit
+        sum = 0;
+        for (let i = 0; i < 10; i++) {
+            sum += parseInt(cpf.charAt(i)) * (11 - i);
+        }
+        remainder = (sum * 10) % 11;
+        if (remainder === 10 || remainder === 11) remainder = 0;
+        if (remainder !== parseInt(cpf.charAt(10))) return false;
+        
+        return true;
+    }
+
+    formatCPF(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 11) {
+            value = value.substring(0, 11);
+        }
+        // Format as XXX.XXX.XXX-XX
+        if (value.length > 9) {
+            value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        } else if (value.length > 6) {
+            value = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
+        } else if (value.length > 3) {
+            value = value.replace(/(\d{3})(\d{3})/, '$1.$2');
+        }
+        e.target.value = value;
+    }
+
     selectPaymentMethod(method) {
-        document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
-        
-        if (event && event.target) {
-            const paymentMethod = event.target.closest('.payment-method');
-            if (paymentMethod) {
-                paymentMethod.classList.add('selected');
-            }
-        }
-        
-        const details = document.getElementById('paymentDetails');
-        if (!details) return;
-        
-        if (method === 'credit') {
-            details.innerHTML = `
-                <div class="form-group">
-                    <label class="form-label">Número do Cartão</label>
-                    <input type="text" class="form-control" placeholder="0000 0000 0000 0000" maxlength="19">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Nome no Cartão</label>
-                    <input type="text" class="form-control">
-                </div>
-                <div style="display: flex; gap: 16px;">
-                    <div class="form-group" style="flex: 1;">
-                        <label class="form-label">Validade</label>
-                        <input type="text" class="form-control" placeholder="MM/AA" maxlength="5">
-                    </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label class="form-label">CVV</label>
-                        <input type="text" class="form-control" maxlength="4">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Parcelas</label>
-                    <select class="form-control">
-                        <option>1x sem juros</option>
-                        <option>2x sem juros</option>
-                        <option>3x sem juros</option>
-                        <option>6x com juros</option>
-                        <option>10x com juros</option>
-                        <option>12x com juros</option>
-                    </select>
-                </div>
-            `;
-        } else if (method === 'pix') {
-            details.innerHTML = `
-                <div class="message info">
-                    <strong>Pagamento via PIX</strong><br>
-                    Após confirmar o pedido, você receberá o código PIX para pagamento.
-                </div>
-            `;
-        }
     }
 
     renderOrderSummary() {
@@ -1116,7 +1195,11 @@ class AppState {
         const heightEl = document.getElementById('productHeight');
         const depthEl = document.getElementById('productDepth');
         const weightEl = document.getElementById('productWeight');
-        const imageEl = document.getElementById('productImage');
+        const descriptionEl = document.getElementById('productDescription');
+        const imageEl1 = document.getElementById('productImage1');
+        const imageEl2 = document.getElementById('productImage2');
+        const imageEl3 = document.getElementById('productImage3');
+        const imageEl4 = document.getElementById('productImage4');
 
         if (nameEl) nameEl.value = product.name;
         if (originalPriceEl) originalPriceEl.value = product.originalPrice;
@@ -1125,8 +1208,14 @@ class AppState {
         if (heightEl) heightEl.value = product.dimensions.height;
         if (depthEl) depthEl.value = product.dimensions.depth;
         if (weightEl) weightEl.value = product.weight;
-        if (imageEl) imageEl.value = product.image;
-        
+        if (descriptionEl) descriptionEl.value = product.description || '';
+
+        const images = [...product.images, '', '', '', ''].slice(0, 4);
+        if (imageEl1) imageEl1.value = product.images[0] || '';
+        if (imageEl2) imageEl2.value = product.images[1] || '';
+        if (imageEl3) imageEl3.value = product.images[2] || '';
+        if (imageEl4) imageEl4.value = product.images[3] || '';
+
         if (form) form.dataset.editingId = id;
         if (modal) modal.classList.add('active');
     }
@@ -1134,6 +1223,15 @@ class AppState {
     handleProductForm(e) {
         e.preventDefault();
         
+        // Collect all 4 image URLs
+        const images = Array(4).fill('');
+        for (let i = 0; i < 4; i++) {
+            const input = document.getElementById(`productImage${i+1}`);
+            if (input && input.value.trim()) {
+                images[i] = input.value.trim();
+            }
+        }
+
         const formData = {
             name: document.getElementById('productName')?.value || '',
             originalPrice: parseFloat(document.getElementById('productOriginalPrice')?.value || 0),
@@ -1144,7 +1242,8 @@ class AppState {
                 depth: parseFloat(document.getElementById('productDepth')?.value || 0)
             },
             weight: parseFloat(document.getElementById('productWeight')?.value || 0),
-            image: document.getElementById('productImage')?.value || ''
+            description: document.getElementById('productDescription')?.value || '',
+            images: images.filter(img => img !== '') // Remove empty strings
         };
 
         const editingId = e.target.dataset.editingId;

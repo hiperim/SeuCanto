@@ -16,7 +16,7 @@
   --color-card-border-inner: rgba(94, 82, 64, 0.12);
   --color-error: rgba(192, 21, 47, 1);
   --color-success: rgba(33, 128, 141, 1);
-  --color-warning: rgba(168, 75, 47, 1);
+  --color-warning: rgb(214, 19, 19);
   --color-info: rgba(98, 108, 113, 1);
   --color-focus-ring: rgba(33, 128, 141, 0.4);
   --color-select-caret: rgba(19, 52, 59, 0.8);
@@ -46,7 +46,7 @@
   --font-size-xl: 18px;
   --font-size-2xl: 20px;
   --font-size-3xl: 24px;
-  --font-size-4xl: 30px;
+  --font-size-4xl: 36px;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 550;
@@ -113,7 +113,6 @@ html {
 @supports (scrollbar-gutter: stable) {
     html {
         overflow-y: auto;
-        scrollbar-gutter: stable;
     }
     body {
         overflow-y: auto; /* Ensure body also respects scrollbar-gutter */
@@ -133,9 +132,13 @@ html {
   box-sizing: inherit;
 }
 
+span {
+  color: var(--color-text-secondary);
+}
+
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
-  margin: 0;
+  margin-bottom: var(--space-8);
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-tight);
   color: var(--color-text-secondary);
@@ -162,7 +165,8 @@ h6 {
 }
 
 p {
-  margin: 0 0 var(--space-16) 0;
+  margin: 0 0 var(--space-8) 0;
+  color: var(--color-text);
 }
 
 a {
@@ -531,7 +535,7 @@ select.form-control {
 
 /* Custom Properties for SeuCantto */
 :root {
-  --color-purple: #4c1068;
+  --color-purple: #5e1281;
   --color-purple-hover: #b923ff;
   --color-orange: #F97316;
   --color-orange-hover: #EA580C;
@@ -555,7 +559,7 @@ select.form-control {
   height: var(--header-height);
   background: rgb(255, 255, 255);
   border-bottom: 1px solid var(--color-border);
-  z-index: 1100;
+  z-index: 0;
   box-shadow: var(--shadow-sm);
 }
 
@@ -585,7 +589,7 @@ select.form-control {
 }
 
 .logo h1 {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-3xl);
   color: var(--color-purple);
   margin: 0;
 }
@@ -674,10 +678,12 @@ body {
     font-family: var(--font-family-base);
     margin: 0; 
     padding: 0;
-    background: #ec420f;
+    background: #f75929;
     overflow-x: hidden; /* Keep horizontal hidden */
     overflow-y: auto; /* Only show vertical scrolling when needed */
     min-height: var(--viewport-height); /* 100vh/100dvh */
+    display: flex;
+    flex-direction: column;
 }
 
 /* Main zipper container */
@@ -849,6 +855,16 @@ body {
     will-change: opacity, transform;
     transform: translateY(20px);
     top: 0;
+    flex: 1;
+}
+
+.page.active {
+    opacity: 1;
+    visibility: visible;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(0);
+    height: auto;
 }
 
 #homepage-content {
@@ -864,6 +880,9 @@ body {
     transform: none !important;
     transition: opacity 0.5s ease, transform 0.5s ease;
     padding-top: var(--header-height);
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 /* Main Content */
@@ -885,15 +904,7 @@ body {
     color: var(--color-text-secondary);
     position: relative;
     z-index: 0; /* Ensure footer is covered by zipper */ 
-    margin-top: 0;
-}
-
-.page.active {
-    opacity: 1;
-    visibility: visible;
-    display: block;
-    transform: translateY(0);
-    height: auto;
+    margin-top: auto;
 }
 
 /* Hero Section */
@@ -1002,13 +1013,16 @@ body {
 
 .product-detail-prices {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--space-8);
 }
 
 .original-price-detail {
     font-size: var(--font-size-xl);
-    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-bold);
+    color: white;
+    -webkit-text-stroke: 0.3px rgb(0, 0, 0); /* white outline with 1px width */
+    text-stroke: 1px rgb(0, 0, 0); /* for future compatibility */
     text-decoration: line-through;
     opacity: 0.7;
 }
@@ -1016,12 +1030,16 @@ body {
 .sale-price-detail {
     font-size: var(--font-size-4xl);
     font-weight: var(--font-weight-bold);
-    color: var(--color-orange);
+    color: var(--color-purple-hover);
+    -webkit-text-stroke: 0.3px rgb(0, 0, 0); /* white outline with 1px width */
+    text-stroke: 1px rgb(0, 0, 0); /* for future compatibility */
+    padding: 0.1em 0.3em; 
+
 }
 
 .product-description {
     background: var(--color-surface);
-    padding: var(--space-20);
+    padding: var(--space-8);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
 }
@@ -1038,27 +1056,28 @@ body {
 
 .product-specs {
     background: var(--color-surface);
-    padding: var(--space-20);
+    padding: var(--space-8);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
 }
 
 .product-specs h3 {
-    margin-bottom: var(--space-16);
+    margin-bottom: var(--space-4);
     color: var(--color-purple);
 }
 
 .specs-grid {
     display: flex;
     flex-direction: column;
-    gap: var(--space-12);
+    gap: var(--space-6);
 }
 
 .spec-item {
     display: flex;
     justify-content: space-between;
-    padding: var(--space-8) 0;
+    padding: var(--space-4) 0;
     border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-secondary)
 }
 
 .spec-item:last-child {
@@ -1243,7 +1262,7 @@ body {
 }
 
 .cart-item-price {
-    color: var(--color-orange);
+    color: rgb(255, 255, 255);
     font-weight: var(--font-weight-bold);
 }
 
@@ -1278,7 +1297,7 @@ body {
 
 .summary-row {
     display: flex;
-    justify-content: space-between;
+    justify-content: left;
     margin-bottom: var(--space-8);
 }
 
@@ -1571,7 +1590,7 @@ body {
 
 .message.success {
     background: #b923ff;
-    color: white;
+    color: var(--color-text);
     border: 1px solid rgba(var(--color-success-rgb), 1);
 }
 
@@ -1583,7 +1602,7 @@ body {
 
 .message.info {
     background: #b923ff;
-    color: white;
+    color: var(--color-text-secondary);
     border: 1px solid rgba(var(--color-info-rgb), 1);
 }
 

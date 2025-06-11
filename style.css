@@ -1721,3 +1721,20 @@ body {
     margin-bottom: var(--space-16);
     color: var(--color-purple);
 }
+
+#zipper-container,
+.fabric-panel,
+.zipper-teeth {
+    height: var(--safe-viewport-height);
+    min-height: calc(100vh + env(keyboard-inset-height, 0px));
+    min-height: calc(100vh + env(safe-area-inset-bottom, 0px));
+}
+
+/* Ensure coverage on devices with navigation bars */
+@supports (height: env(keyboard-inset-height)) {
+    #zipper-container,
+    .fabric-panel,
+    .zipper-teeth {
+        height: calc(100vh + env(keyboard-inset-height, 150px));
+    }
+}

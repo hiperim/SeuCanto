@@ -38,6 +38,7 @@
     BlinkMacSystemFont, "Segoe UI", Verdana, sans-serif;
   --font-family-mono: "Berkeley Mono", ui-monospace, SFMono-Regular, Menlo,
     Monaco, Consolas, monospace;
+  --font-size-xxs: 9px;
   --font-size-xs: 11px;
   --font-size-sm: 12px;
   --font-size-base: 14px;
@@ -1501,6 +1502,11 @@ body {
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+
+  .nav-menu {
+    font-size: var(--font-size-sm);
+    gap: var(--space-8);
+  }
   
   .mobile-menu-toggle {
     display: flex;
@@ -1572,6 +1578,7 @@ body {
 }
 
 @media (max-width: 480px) {
+
   .header-actions {
     gap: var(--space-8);
   }
@@ -1584,7 +1591,13 @@ body {
     width: 20px;
     height: 20px;
   }
+
+  .nav-menu {
+    font-size: var(--font-size-xxs);
+    gap: var(--space-4);
+  }
 }
+
 
 @media (max-width: 1200px) {
   .products-grid {

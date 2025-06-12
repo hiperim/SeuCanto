@@ -177,10 +177,8 @@ a {
   color: var(--color-primary);
   text-decoration: none;
   transition: color var(--duration-fast) var(--ease-standard);
-}
-
-a:hover {
-  color: var(--color-primary-hover);
+  font-size: var(--font-size-3xl);
+  font-weight: bold;
 }
 
 code,
@@ -597,6 +595,7 @@ select.form-control {
   font-size: var(--font-size-3xl);
   color: var(--color-purple);
   margin: 0;
+  font-weight: bolder;
 }
 
 .nav-menu {
@@ -609,6 +608,7 @@ select.form-control {
   text-decoration: none;
   font-weight: var(--font-weight-medium);
   transition: color var(--duration-fast) var(--ease-standard);
+  font-size: var(--font-size-md);
 }
 
 .nav-menu a:hover {
@@ -976,14 +976,23 @@ body {
 
 .hero-section h2 {
     font-size: var(--font-size-4xl);
-    color:  rgb(255, 255, 255);
+    color: rgb(255, 255, 255);
     margin-bottom: var(--space-16);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    text-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.8),
+        0 4px 8px rgba(0, 0, 0, 0.6),
+        0 8px 16px rgba(0, 0, 0, 0.4),
+        0 16px 32px rgba(0, 0, 0, 0.2);
+    font-weight: bold;
   }
 
 .hero-section h3 {
-  color: rgb(255, 255, 255);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    color: rgb(255, 255, 255);
+    text-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.8),
+        0 4px 8px rgba(0, 0, 0, 0.6),
+        0 8px 16px rgba(0, 0, 0, 0.4);
+    font-weight: bold;
 }
 
 /* Product Detail Page Styles */

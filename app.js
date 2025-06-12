@@ -954,6 +954,10 @@ class AppState {
         if (enteredCode === this.otpCode) {
             this.isLoggedIn = true;
             this.saveUserToStorage();
+            
+             // Clear the input field after successful verification
+            otpInput.value = '';
+
             this.closeModal('otpModal');
             this.showMessage('Login realizado com sucesso!', 'success');
             
@@ -962,6 +966,8 @@ class AppState {
                 clearInterval(this.otpTimer);
             }
         } else {
+            // Clear the input field even on error
+            otpInput.value = '';
             this.showMessage('Código inválido. Tente novamente.', 'error');
         }
     }
@@ -1089,6 +1095,53 @@ class AppState {
         this.renderCart();
     }
 
+    calculateShippingFromAddress(cep) {
+        const cleanCep = cep.replace(/\D/g, '');
+        
+        if (cleanCep.length !== 8) {
+            console.warn('Invalid CEP provided from shipping address');
+            return;
+        }
+
+        function getZoneByCEP(cep) {
+            const prefix = parseInt(cep.substring(0, 2), 10);
+            if (prefix >= 10 && prefix == 0 && prefix <= 19) {
+                return { name: 'São Paulo', cost: 28.00 };
+            } else if (prefix >= 20 && prefix <= 29) {
+                return { name: 'Região Sudeste', cost: 32.00 };
+            } else if (prefix >= 50 && prefix <= 67) {
+                return { name: 'Região Nordeste', cost: 30.00 };
+            } else if (prefix >= 30 && prefix <= 39) {
+                return { name: 'Minas Gerais', cost: 30.00 };
+            } else if (prefix >= 40 && prefix <= 49) {
+                return { name: 'Bahia / Sergipe', cost: 35.00 };
+            } else if (prefix >= 70 && prefix <= 79) {
+                return { name: 'Região Centro-Oeste', cost: 34.00 };
+            } else if (prefix >= 68 && prefix <= 69) {
+                return { name: 'Região Norte', cost: 40.00 };
+            } else if (prefix >= 80 && prefix <= 99) {
+                return { name: 'Região Sul', cost: 30.00 };
+            } else {
+                return { name: 'Outras localidades', cost: 44.00 };
+            }
+        }
+
+        const zone = getZoneByCEP(cleanCep);
+        const totalWeight = this.cart.reduce((total, item) => total + (item.weight * item.quantity), 0);
+        const finalShippingCost = zone.cost + (Math.max(totalWeight, 1) * 2.50);
+
+        // Update shipping info with calculated values
+        this.shippingInfo = {
+            ...this.shippingInfo,
+            cep: cleanCep,
+            location: zone.name,
+            cost: finalShippingCost
+        };
+
+        console.log(`Shipping auto-calculated from address: ${zone.name} - R$${finalShippingCost.toFixed(2)}`);
+        this.showMessage(`Frete calculado automaticamente: R$${finalShippingCost.toFixed(2).replace('.', ',')}`, 'success');
+    }
+
     async lookupAddress() {
         const shippingCep = document.getElementById('shippingCep');
         if (!shippingCep) return;
@@ -1158,10 +1211,18 @@ class AppState {
             return;
         }
         
-        // Validate CPF format (basic validation)
+        // Validate CPF format - basic validation
         if (!this.validateCPF(cpf)) {
             this.showMessage('CPF inválido. Verifique o formato.', 'error');
             return;
+        }
+
+        // Get CEP from shipping form
+        const shippingCep = document.getElementById('shippingCep')?.value || '';
+        
+        // Auto-calculate shipping if already not
+        if ((!this.shippingInfo || !this.shippingInfo.cost) && shippingCep) {
+            this.calculateShippingFromAddress(shippingCep);
         }
 
         this.shippingInfo = {

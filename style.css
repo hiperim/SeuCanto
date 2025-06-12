@@ -699,8 +699,10 @@ body {
     width: 100vw;
     height: var(--viewport-height);
     overflow: hidden;
-    z-index: 1000;
+    z-index: 9999;
     transform: none !important;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 /* White panels */
@@ -712,7 +714,7 @@ body {
     background: #ffffff;
     will-change: transform, clip-path;
     transform: translateZ(0);
-    z-index: 15;
+    z-index: 9998;
 
 }
 
@@ -750,7 +752,7 @@ body {
     width: 20px;
     height: var(--viewport-height); /* Changed from 100vh */
     transform: translateX(-50%);
-    z-index: 16;
+    z-index: 9998;
 }
 
 /* Individual teeth styling */
@@ -795,7 +797,7 @@ body {
     width: 40px;
     height: 60px;
     transform: translateX(-50%);
-    z-index: 20;
+    z-index: 9998;
     will-change: transform, clip-path;
 }
 

@@ -342,6 +342,30 @@ class AppState {
 
     }
     
+    // Send OTP e-mail to user
+    async sendOTPEmail(email, otpCode) {
+        const templateParams = {
+            to_email: email,
+            otp_code: otpCode,
+            user_name: email.split('@')[0], // Use email prefix as name
+            timestamp: new Date().toLocaleString('pt-BR')
+        };
+
+        try {
+            const response = await emailjs.send(
+                'service_6fhviva',    // Replace with your Service ID
+                'template_3gqjhzo',   // Replace with your Template ID
+                templateParams
+            );
+            
+            console.log('Email sent successfully:', response.status, response.text);
+            return response;
+        } catch (error) {
+            console.error('EmailJS error:', error);
+            throw error;
+        }
+    }
+
     initializeZipperAnimation() {
         if (this.animationInitialized) return;
         this.animationInitialized = true;
@@ -957,15 +981,23 @@ class AppState {
         }
     }
 
-    generateOTP() {
+    async generateOTP() {
+        // Generate 4-character OTP
         const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         this.otpCode = '';
         for (let i = 0; i < 4; i++) {
             this.otpCode += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         
-        console.log('OTP Code:', this.otpCode);
-        alert(`Código OTP para demonstração: ${this.otpCode}`);
+        // Send OTP via EmailJS
+        try {
+            await this.sendOTPEmail(this.user.email, this.otpCode);
+            console.log('OTP sent successfully:', this.otpCode);
+        } catch (error) {
+            console.error('Failed to send OTP:', error);
+            this.showMessage('Erro ao enviar código. Tente novamente.', 'error');
+            throw error;
+        }
     }
 
     startOTPTimer() {

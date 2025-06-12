@@ -612,6 +612,7 @@ select.form-control {
 }
 
 .nav-menu a:hover {
+  transform: scale(1.05);
   color: var(--color-purple);
 }
 
@@ -632,7 +633,8 @@ select.form-control {
 }
 
 .cart-btn:hover, .user-btn:hover {
-  background: var(--color-secondary);
+  transform: scale(1.05);
+  background: #5e128160;
 }
 
 .cart-btn svg, .user-btn svg {
@@ -925,15 +927,19 @@ body {
     text-align: center; 
 }
 
-.footer-left {
+.footer-top {
     order: 1;
 }
 
-.footer-right {
+.footer-bottom {
     order: 2;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.footer-bottom:hover {
+    transform: scale(1.05);
 }
 
 /* Privacy link styling in footer */
@@ -942,7 +948,7 @@ body {
     text-decoration: none;
     font-weight: var(--font-weight-medium);
     transition: color var(--duration-fast) var(--ease-standard);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-md);
 }
 
 .footer-privacy-link:hover {
@@ -1230,7 +1236,7 @@ body {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
     margin-bottom: var(--space-12);
-    color: var(--color-text-secondary);
+    color: var(--color-purple);
 }
 
 .product-prices {

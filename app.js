@@ -1459,6 +1459,67 @@ function goToHome() {
     window.app.showPage('home');
 }
 
+// Refresh animation with data save
+function refreshToAnimation() {
+    // Ensure cart data is saved before refresh
+    if (window.app) {
+        window.app.saveCartToStorage();
+        
+        // Check if zipper animation exists
+        if (window.app.zipperAnimation) {
+            // Reset animation state
+            window.app.zipperAnimation.isAnimating = false;
+            
+            // Show zipper container if hidden
+            const zipperContainer = window.app.zipperAnimation.elements.zipperContainer;
+            if (zipperContainer) {
+                zipperContainer.style.display = 'block';
+                zipperContainer.style.zIndex = '9999';
+            }
+            
+            // Show all zipper elements
+            const elements = window.app.zipperAnimation.elements;
+            if (elements.fabricLeft) elements.fabricLeft.style.display = 'block';
+            if (elements.fabricRight) elements.fabricRight.style.display = 'block';
+            if (elements.zipperSlider) elements.zipperSlider.style.display = 'block';
+            if (elements.zipperTeeth) elements.zipperTeeth.style.display = 'block';
+            
+            // Reset opacity for all elements
+            if (elements.fabricLeft) elements.fabricLeft.style.opacity = '1';
+            if (elements.fabricRight) elements.fabricRight.style.opacity = '1';
+            if (elements.zipperSlider) elements.zipperSlider.style.opacity = '1';
+            if (elements.zipperTeeth) elements.zipperTeeth.style.opacity = '1';
+            
+            // Hide homepage content initially
+            if (elements.homepageContent) {
+                elements.homepageContent.style.opacity = '0';
+                elements.homepageContent.style.transform = 'scale(0.8) rotateX(180deg)';
+            }
+            
+            // Regenerate teeth for current viewport
+            window.app.zipperAnimation.generateTeeth();
+            
+            // Setup initial state
+            window.app.zipperAnimation.setupInitialState();
+            
+            // Start animation with delay
+            setTimeout(() => {
+                window.app.zipperAnimation.startAnimation();
+            }, 500);
+            
+        } else {
+            // Fallback: reinitialize entire zipper animation
+            window.app.initializeZipperAnimation();
+        }
+        
+        // Navigate to home page
+        window.app.showPage('home');
+    } else {
+        // Fallback to page reload if app is not available
+        window.location.reload();
+    }
+}
+
 function showPage(page) {
     window.app.showPage(page);
 }
@@ -1547,3 +1608,4 @@ document.addEventListener('keypress', (e) => {
         }
     }
 });
+

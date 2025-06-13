@@ -257,6 +257,8 @@ class AppState {
         // Image gallery state management
         this.currentProductImages = null;
         this.currentMainImageIndex = 0;
+        this.inactivityTimer = null;
+        this.sessionDuration = 900000; // 15 * 60 * 1000 - in milisec
     }
 
     init() {
@@ -280,7 +282,25 @@ class AppState {
         this.loadUserProfileFromStorage();
         this.setupEventListeners();
         this.updateCartCount();
-        // Initialize zipper animation with proper error handling
+        // Session management for all logged-in users
+        if (this.isLoggedIn) {
+            const lastActivity = localStorage.getItem('seucantto_last_activity');
+            if (lastActivity) {
+                const timeSinceLastActivity = Date.now() - parseInt(lastActivity);
+                console.log(`Time since last activity: ${Math.round(timeSinceLastActivity / 1000)} seconds`);
+                
+                if (timeSinceLastActivity > this.sessionDuration) {
+                    console.log('Session expired on initialization - logging out');
+                    this.logout();
+                    return;
+                }
+            }
+            
+            // Start activity tracking for logged-in users
+            console.log('Starting activity tracking for existing session');
+            this.startActivityTracking();
+        }
+        
         this.initializeZipperAnimation();
     }
 
@@ -324,6 +344,46 @@ class AppState {
         }
     }
     
+    startActivityTracking() {
+        if (!this.isLoggedIn) {
+            console.log('Cannot start activity tracking - user not logged in');
+            return;
+        }
+        console.log('Starting comprehensive activity tracking for session management');
+        // Set initial activity time
+        localStorage.setItem('seucantto_last_activity', Date.now().toString());
+        // Start the inactivity timer
+        this.resetInactivityTimer();
+        // Setup activity event listeners
+        this.setupActivityListeners();
+        console.log(`Session tracking active - auto-logout in ${this.sessionDuration / 60000} minutes of inactivity`);
+    }
+
+    // Activity tracker 
+    setupActivityListeners() {
+        // Always remove existing listeners first to prevent duplicates
+        this.removeActivityListeners();
+        // Create bound functions to ensure proper cleanup
+        this.boundResetTimer = this.resetInactivityTimer.bind(this);
+        // Activity events that should reset the timer
+        const activityEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart', 'mousedown'];
+        activityEvents.forEach(event => {
+            document.addEventListener(event, this.boundResetTimer, { passive: true });
+        });
+        console.log('Activity listeners attached for session management');
+    }
+    // Cleanup method for activity listeners
+    removeActivityListeners() {
+        if (this.boundResetTimer) {
+            const activityEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart', 'mousedown'];
+            activityEvents.forEach(event => {
+                document.removeEventListener(event, this.boundResetTimer);
+            });
+            this.boundResetTimer = null;
+            console.log('Activity listeners removed');
+        }
+    }
+
     // Send OTP e-mail to user
     async sendOTPEmail(email, otpCode) {
         const templateParams = {
@@ -1157,17 +1217,50 @@ class AppState {
         this.showMessage(`Código enviado para ${email}`, 'success');
     }
     logout() {
+        console.log('Logging out user and cleaning up session');
         this.isLoggedIn = false;
-        this.user = null;
-        // Clear user data from storage
+        // Clear session-related data but keep profile
         localStorage.removeItem('seucantto_user');
-        // Move cart from localStorage to sessionStorage for guest use
+        localStorage.removeItem('seucantto_last_activity');
+        // Move cart to session storage if needed
         if (this.cart.length > 0) {
             sessionStorage.setItem('seucantto_cart', JSON.stringify(this.cart));
             localStorage.removeItem('seucantto_cart');
         }
+        // Clear timers and event listeners
+        if (this.inactivityTimer) {
+            clearTimeout(this.inactivityTimer);
+            this.inactivityTimer = null;
+            console.log('Inactivity timer cleared');
+        }
+        // Remove activity listeners
+        this.removeActivityListeners();
         this.showMessage('Logout realizado com sucesso!', 'success');
         this.showPage('home');
+    }
+
+    // Method to reset inactivity timer
+    resetInactivityTimer() {
+        if (!this.isLoggedIn) {
+            console.log('Not logged in - skipping timer reset');
+            return;
+        }
+        // Clear existing timer
+        if (this.inactivityTimer) {
+            clearTimeout(this.inactivityTimer);
+            this.inactivityTimer = null;
+        }
+        // Set new timer
+        this.inactivityTimer = setTimeout(() => {
+            console.log('Inactivity timeout reached - logging out user');
+            this.showMessage('Sessão expirada por inatividade', 'info');
+            this.logout();
+        }, this.sessionDuration);
+        // Update last activity time
+        const now = Date.now();
+        localStorage.setItem('seucantto_last_activity', now.toString());
+        // Debug logging (remove in production)
+        console.log(`Activity detected - timer reset. Next timeout in ${this.sessionDuration / 1000} seconds`);
     }
 
     handleOTPVerification(e) {
@@ -1177,16 +1270,19 @@ class AppState {
         if (enteredCode === this.otpCode) {
             this.isLoggedIn = true;
             this.saveUserToStorage();
-            // Clear the input field and timer
+            // Clear OTP-related data
             otpInput.value = '';
             if (this.otpTimer) {
                 clearInterval(this.otpTimer);
                 this.otpTimer = null;
             }
+            // Start activity tracking immediately after login
+            this.startActivityTracking();
             this.closeModal('otpModal');
             this.showMessage('Login realizado com sucesso!', 'success');
+            // Clear OTP code
             this.otpCode = null;
-            // Redirect to profile page after successful login
+            // Redirect to profile
             setTimeout(() => {
                 this.showPage('profile');
             }, 1000);

@@ -1755,3 +1755,102 @@ body {
     margin-bottom: var(--space-16);
     color: var(--color-purple);
 }
+
+/* Profile Information Grid */
+.profile-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-24);
+    margin-top: var(--space-32);
+}
+
+.profile-info-box {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-20);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--duration-normal) var(--ease-standard);
+}
+
+.profile-info-box:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.profile-info-box h3 {
+    color: var(--color-purple);
+    margin-bottom: var(--space-16);
+    font-size: var(--font-size-xl);
+    border-bottom: 2px solid var(--color-purple);
+    padding-bottom: var(--space-8);
+}
+
+.info-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+}
+
+/* User info styling */
+.user-info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-8) 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.user-info-item:last-child {
+    border-bottom: none;
+}
+
+.user-info-label {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+}
+
+.user-info-value {
+    color: var(--color-purple);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Purchase history styling */
+.purchase-item {
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--space-12);
+    margin-bottom: var(--space-8);
+}
+
+.purchase-date {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-4);
+}
+
+.purchase-total {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-purple);
+}
+
+/* Contact form styling */
+.profile-contact-form .form-group {
+    margin-bottom: var(--space-12);
+}
+
+.profile-contact-form .form-label {
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-4);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .profile-info-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-16);
+    }
+    
+    .profile-info-box {
+        padding: var(--space-16);
+    }
+}

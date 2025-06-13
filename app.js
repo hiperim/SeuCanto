@@ -14,7 +14,6 @@ class ZipperAnimation {
     
     init() {
         console.log('Initializing enhanced zipper animation...');
-        
         // Get DOM elements
         this.elements = {
             fabricLeft: document.getElementById('fabric-left'),
@@ -24,7 +23,6 @@ class ZipperAnimation {
             homepageContent: document.getElementById('homepage-content'),
             zipperContainer: document.getElementById('zipper-container')
         };
-        
         // Check if elements exist
         for (const [key, element] of Object.entries(this.elements)) {
             if (!element) {
@@ -32,17 +30,12 @@ class ZipperAnimation {
                 return;
             }
         }
-        
         console.log('All elements found successfully');
-        
         // Generate teeth
         this.generateTeeth();
-        
         // Setup initial state
         this.setupInitialState();
-
         this.setupZoomPrevention();
-        
         // Start animation after delay
         setTimeout(() => {
             console.log('Starting 6-step zipper animation...');
@@ -70,7 +63,6 @@ class ZipperAnimation {
         document.addEventListener('wheel', (e) => {
             if (e.ctrlKey) {
                 const currentZoom = window.screen.width / window.innerWidth;
-                
                 // Prevent zoom out if already at or below 66.66%
                 if (e.deltaY > 0 && currentZoom <= 0.67) {
                     e.preventDefault();
@@ -80,7 +72,7 @@ class ZipperAnimation {
             }
         }, { passive: false });
     }
-    
+
     generateTeeth() {
         const isLandscape = window.matchMedia("(orientation: landscape)").matches;
         const container = this.elements.zipperTeeth;
@@ -91,11 +83,9 @@ class ZipperAnimation {
         );
         const viewportHeight = isLandscape ? window.screen.width : window.screen.height;
         const teethSpacing = isLandscape ? 18 : 15;
-        
         const teethCount = Math.floor(viewportHeight / teethSpacing) + 5;
         container.innerHTML = '';
         this.teeth = [];
-
         for (let i = 0; i < teethCount; i++) {
             const leftTooth = document.createElement('div');
             const rightTooth = document.createElement('div');
@@ -103,96 +93,73 @@ class ZipperAnimation {
             rightTooth.className = 'tooth tooth-right';
             leftTooth.style.top = `${i * 15}px`;
             rightTooth.style.top = `${i * 15}px`;
-
             this.teeth.push({
                 left: leftTooth,
                 right: rightTooth,
                 position: i * 15,
                 opened: false
             });
-
             container.appendChild(leftTooth);
             container.appendChild(rightTooth);
         }
-        
         console.log(`Generated ${teethCount * 2} teeth for height: ${actualHeight}px`);
     }
-    
     setupInitialState() {
         this.elements.fabricLeft.style.clipPath = 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)';
         this.elements.fabricRight.style.clipPath = 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)';                       
-        
         this.elements.zipperSlider.style.top = '-30px';
         this.elements.zipperSlider.style.bottom = 'auto';
         this.elements.zipperSlider.style.left = '50%';
         this.elements.zipperSlider.style.transform = 'translateX(-50%)';
-        
         this.elements.homepageContent.style.opacity = '0';
         this.elements.homepageContent.style.transform = 'scale(0.8) rotateX(180deg)';
-        
         this.teeth.forEach(tooth => {
             tooth.left.classList.remove('opened-teeth-left');
             tooth.right.classList.remove('opened-teeth-right');
             tooth.opened = false;
         });
-        
         console.log('Step 1: Initial state setup complete - zipper body at top, fully closed');
     }
-    
     startAnimation() {
         if (this.isAnimating) return;
-        
         this.isAnimating = true;
         const startTime = Date.now();
-        
         const animate = () => {
             const elapsed = Date.now() - startTime;
             const totalProgress = Math.min(elapsed / this.animationDuration, 1);
-            
             if (elapsed < this.zipperDuration) {
                 const zipperProgress = elapsed / this.zipperDuration;
-                
                 this.updateSliderPosition(zipperProgress);
                 this.updateFabricOpening(zipperProgress);
                 this.updateTeethOpening(zipperProgress);
                 this.updateContentVisibility(zipperProgress);
-                
             } else {
                 const Progress = (elapsed - this.zipperDuration) / this.zoomFadeDuration;
                 this.updateAnimation(Progress);
             }
-            
             if (totalProgress < 1) {
                 requestAnimationFrame(animate);
             } else {
                 this.onAnimationComplete();
             }
         };
-        
         animate();
     }
-    
     updateSliderPosition(progress) {
         const windowHeight = window.innerHeight;
         const sliderHeight = 60;
         const maxY = windowHeight - sliderHeight + 30;
         const currentY = -30 + (progress * maxY);
-        
         this.elements.zipperSlider.style.top = `${currentY}px`;
-        
         console.log(`Step ${progress < 0.5 ? '2' : '3'}: Slider at ${Math.round(progress * 100)}% descent`);
     }
-    
     updateFabricOpening(progress) {
         const windowHeight = window.innerHeight;
         const sliderHeight = 60;
         const currentSliderY = -30 + (progress * (windowHeight - sliderHeight + 30));
-        
         const sliderCenterX = 50;
         const sliderTopY = ((currentSliderY) / windowHeight) * 100;
-        
         const currentVWidth = (progress * 44);
-        
         const leftClipPath = `polygon(
             0% 100%,
             100% 100%,
@@ -201,7 +168,6 @@ class ZipperAnimation {
             ${100 - currentVWidth}% 0%,
             0% 0%
         )`;
-        
         const rightClipPath = `polygon(
             100% 100%,
             0% 100%,
@@ -210,34 +176,25 @@ class ZipperAnimation {
             ${currentVWidth}% 0%,
             100% 0%
         )`;
-        
         this.elements.fabricLeft.style.clipPath = leftClipPath;
         this.elements.fabricRight.style.clipPath = rightClipPath;
     }
-    
     updateTeethOpening(progress) {
         const windowHeight = window.innerHeight;
         const currentSliderPosition = progress * windowHeight;
-        
         const centerGapWidth = progress * 270; 
-        
         this.teeth.forEach((tooth, index) => {
             if (currentSliderPosition >= tooth.position) {
                 const positionRatio = 1 - (tooth.position / windowHeight);
-                
                 const localGapWidth = centerGapWidth * positionRatio;
-                
                 const pixelDisplacement = (localGapWidth / 100) * window.innerWidth * 0.20;
-                
                 tooth.left.style.transform = `translateX(-${pixelDisplacement}px)`;
                 tooth.right.style.transform = `translateX(${pixelDisplacement}px)`;
-                
                 tooth.left.classList.add('opened-teeth-left');
                 tooth.right.classList.add('opened-teeth-right');
             }
         });
     }
-    
     updateContentVisibility(progress) {
         if (progress > 0.05) {
             const contentProgress = Math.min((progress - 0.05) / 0.95, 1);
@@ -245,57 +202,45 @@ class ZipperAnimation {
             this.elements.homepageContent.style.transform = `scale(${0.9 + (contentProgress * 0.1)})`;
         }
     }
-    
     updateAnimation(Progress) {
         const clampedProgress = Math.min(Progress, 1);
-        
         this.elements.homepageContent.style.opacity = '1';
-        
         const scaleValue = 1.0 + (clampedProgress * 0.3);
         this.elements.homepageContent.style.transform = `scale(${scaleValue})`;
-        
         const zipperOpacity = 1 - clampedProgress * 5.0;
         this.elements.fabricLeft.style.opacity = zipperOpacity.toString();
         this.elements.fabricRight.style.opacity = zipperOpacity.toString();
         this.elements.zipperSlider.style.opacity = zipperOpacity.toString();
         this.elements.zipperTeeth.style.opacity = zipperOpacity.toString();
     }
-    
     onAnimationComplete() {
-
         // Add scroll restoration after animation
         window.requestAnimationFrame(() => {
             window.scrollTo(0, this.savedScrollPosition);
         });
-
         console.log('Animation complete - ensuring homepage content is visible');
-        
         this.elements.homepageContent.style.opacity = '1';
         this.elements.homepageContent.style.transform = 'scale(1)';
         this.elements.homepageContent.style.zIndex = '100';
         this.elements.homepageContent.style.transform = 'none';
-
         this.elements.fabricLeft.style.display = 'none';
         this.elements.fabricRight.style.display = 'none';
         this.elements.zipperSlider.style.display = 'none';
         this.elements.zipperTeeth.style.display = 'none';
-
         // Hide the entire zipper container
         this.elements.zipperContainer.style.display = 'none';
         this.elements.zipperContainer.style.zIndex = '-1';
-
         // Restore body scrolling
         document.body.style.overflow = 'auto';        
-
         setTimeout(() => {
             this.elements.homepageContent.style.transition = 'none';
         }, 1200);
-        
         this.isAnimating = false;
     }
 }
 
-// SeuCantto E-commerce Application
+
+// SeuCantto E-commerce App
 class AppState {
     constructor() {
         this.products = [];
@@ -324,22 +269,59 @@ class AppState {
                 this.initializeApp();
             }
         }
-    
     handleNavigation() {
         window.scrollTo(0, 0);
         document.documentElement.scrollTop = 0;
-    }
-        
+    } 
     initializeApp() {
         this.loadProducts();
         this.loadCartFromStorage();
         this.loadUserFromStorage();
+        this.loadUserProfileFromStorage();
         this.setupEventListeners();
         this.updateCartCount();
-            
         // Initialize zipper animation with proper error handling
         this.initializeZipperAnimation();
+    }
 
+    initUserProfile() {
+        if (!this.userProfile) {
+            this.userProfile = {
+                name: '',
+                phone: '',
+                cpf: '',
+                cep: '',
+                street: '',
+                neighborhood: '',
+                city: '',
+                state: '',
+                number: '',
+                complement: ''
+            };
+        }
+    }
+    loadUserProfileFromStorage() {
+        try {
+            const profileKey = this.user?.email ? 
+                `seucantto_user_profile_${this.user.email}` : 
+                'seucantto_user_profile';
+            const stored = localStorage.getItem(profileKey);
+            if (stored) {
+                this.userProfile = JSON.parse(stored);
+            } else {
+                this.initUserProfile();
+            }
+        } catch (e) {
+            console.error('Error loading user profile:', e);
+            this.initUserProfile();
+        }
+    }
+    saveUserProfileToStorage() {
+        try {
+            localStorage.setItem('seucantto_user_profile', JSON.stringify(this.userProfile));
+        } catch (e) {
+            console.error('Error saving user profile:', e);
+        }
     }
     
     // Send OTP e-mail to user
@@ -350,14 +332,12 @@ class AppState {
             user_name: email.split('@')[0], // Use email prefix as name
             timestamp: new Date().toLocaleString('pt-BR')
         };
-
         try {
             const response = await emailjs.send(
                 'service_6fhviva',    // Replace with your Service ID
                 'template_3gqjhzo',   // Replace with your Template ID
                 templateParams
             );
-            
             console.log('Email sent successfully:', response.status, response.text);
             return response;
         } catch (error) {
@@ -366,10 +346,10 @@ class AppState {
         }
     }
 
+    // Initialize zipper animation
     initializeZipperAnimation() {
         if (this.animationInitialized) return;
         this.animationInitialized = true;
-        
         // Verify all required elements exist before initialization
         const requiredElements = [
             'fabric-left',
@@ -379,16 +359,13 @@ class AppState {
             'homepage-content',
             'zipper-container'
         ];
-        
         const missingElements = requiredElements.filter(id => !document.getElementById(id));
-        
         if (missingElements.length > 0) {
             console.error('Missing required elements for zipper animation:', missingElements);
-            // Fallback: show content immediately without animation
+            // Fallback
             this.showContentWithoutAnimation();
             return;
         }
-
         setTimeout(() => {
             try {
                 this.zipperAnimation = new ZipperAnimation();
@@ -399,22 +376,17 @@ class AppState {
             }
         }, 30);
     }
-
-
     showContentWithoutAnimation() {
         const homepageContent = document.getElementById('homepage-content');
         const zipperContainer = document.getElementById('zipper-container');
-        
         if (homepageContent) {
             homepageContent.style.opacity = '1';
             homepageContent.style.transform = 'scale(1)';
             homepageContent.style.zIndex = '100';
         }
-        
         if (zipperContainer) {
             zipperContainer.style.display = 'none';
         }
-        
         this.showPage('home');
     }
 
@@ -515,6 +487,28 @@ class AppState {
             loginForm.addEventListener('submit', this.handleLogin.bind(this));
         }
         
+        const editInfoForm = document.getElementById('editInfoForm');
+        if (editInfoForm) {
+            editInfoForm.addEventListener('submit', this.handleEditInfoForm.bind(this));
+        }
+        
+        // Formatters for edit form
+        const editCpf = document.getElementById('editCpf');
+        if (editCpf) {
+            editCpf.addEventListener('input', this.formatCPF);
+        }
+        
+        const editCep = document.getElementById('editCep');
+        if (editCep) {
+            editCep.addEventListener('input', this.formatCEP);
+            editCep.addEventListener('blur', this.lookupAddressEditP.bind(this));
+        }
+        
+        const editPhone = document.getElementById('editPhone');
+        if (editPhone) {
+            editPhone.addEventListener('input', this.formatPhone);
+        }
+
         const otpForm = document.getElementById('otpForm');
         if (otpForm) {
             otpForm.addEventListener('submit', this.handleOTPVerification.bind(this));
@@ -522,7 +516,7 @@ class AppState {
         
         const shippingCpf = document.getElementById('shippingCpf');
         if (shippingCpf) {
-            shippingCpf.addEventListener('input', this.formatCPF);
+            shippingCpf.addEventListener('input', this.formatCPFDisplay);
         }
 
         const adminLoginForm = document.getElementById('adminLoginForm');
@@ -578,7 +572,6 @@ class AppState {
         this.cart = [];
         }
     }
-
     saveCartToStorage() {
         try {
         const storage = this.isLoggedIn ? localStorage : sessionStorage;
@@ -587,7 +580,6 @@ class AppState {
         console.error('Error saving cart:', e);
         }
     }
-
     loadUserFromStorage() {
         try {
             const stored = localStorage.getItem('seucantto_user');
@@ -599,7 +591,6 @@ class AppState {
             console.error('Error loading user from storage:', e);
         }
     }
-
     saveUserToStorage() {
         try {
             localStorage.setItem('seucantto_user', JSON.stringify(this.user));
@@ -614,7 +605,6 @@ class AppState {
             console.error("The element with ID 'productsGrid' was not found.");
             return;
         }
-        
         grid.innerHTML = this.products.map(product => `
             <div class="product-card">
                 <img src="${product.images[0]}" alt="${product.name}" class="product-image" onclick="window.app.showProductDetail(${product.id})" style="cursor: pointer;">
@@ -632,16 +622,12 @@ class AppState {
             </div>
         `).join('');
     }
-
     showProductDetail(productId) {
-        
         const product = this.products.find(p => p.id === productId);
         if (!product) return;
-        
         // Store the original product images for reference
         this.currentProductImages = [...product.images];
         this.currentMainImageIndex = 0; // Track which image is currently displayed
-
         // Update product detail page elements
         const mainImage = document.getElementById('productMainImage');
         const productName = document.getElementById('productDetailName');
@@ -653,7 +639,6 @@ class AppState {
         const additionalImages = document.getElementById('additionalImages');
         const buyBtn = document.getElementById('buyNowDetailBtn');
         const addCartBtn = document.getElementById('addCartDetailBtn');
-        
         if (mainImage) mainImage.src = product.images[0];
         if (productName) productName.textContent = product.name;
         if (originalPrice) originalPrice.textContent = `R$ ${product.originalPrice.toFixed(2).replace('.', ',')}`;
@@ -661,7 +646,6 @@ class AppState {
         if (description) description.textContent = product.description || 'Descrição não disponível.';
         if (dimensions) dimensions.textContent = `${product.dimensions.width} x ${product.dimensions.height} x ${product.dimensions.depth} cm`;
         if (weight) weight.textContent = `${product.weight} kg`;
-        
         // Handle additional images
         if (additionalImages) {
             const validImages = product.images.slice(1).filter(img => img.trim() !== '');
@@ -678,10 +662,8 @@ class AppState {
                 additionalImages.innerHTML = '<p style="color: #999; font-size: 14px;">Nenhuma imagem adicional disponível.</p>';
             }
         }
-        
         // Enhanced thumbnail generation - initially show images 1-3 as thumbnails
         this.renderProductThumbnails();
-        
         // Set up action buttons
         if (buyBtn) {
             buyBtn.onclick = () => this.buyNow(productId);
@@ -689,10 +671,8 @@ class AppState {
         if (addCartBtn) {
             addCartBtn.onclick = () => this.addToCart(productId);
         }
-        
         this.showPage('productDetail');
     }
-
     renderProductThumbnails() {
         const additionalImages = document.getElementById('additionalImages');
         if (!additionalImages || !this.currentProductImages) return;
@@ -716,33 +696,26 @@ class AppState {
             additionalImages.innerHTML = '<p style="color: #999; font-size: 14px;">Nenhuma imagem adicional disponível.</p>';
         }
     }
-
     switchToImage(imageIndex) {
         if (!this.currentProductImages || imageIndex < 0 || imageIndex >= this.currentProductImages.length) {
             return;
         }
-        
         const newImageSrc = this.currentProductImages[imageIndex];
         if (!newImageSrc || newImageSrc.trim() === '') {
             return;
         }
-        
         // Update the main image display
         const mainImage = document.getElementById('productMainImage');
         if (mainImage) {
             mainImage.src = newImageSrc;
             mainImage.alt = `Imagem principal ${imageIndex + 1}`;
         }
-        
         // Update the current main image index
         this.currentMainImageIndex = imageIndex;
-        
         // Re-render thumbnails to reflect the new state
         this.renderProductThumbnails();
-        
         console.log(`Switched to image ${imageIndex + 1}`);
     }
-
     // Keep the old method for backward compatibility, but redirect to new logic
     changeMainImage(newSrc, clickedElement) {
         // Find the index of the new image source
@@ -762,12 +735,10 @@ class AppState {
         } else {
             this.cart.push({ ...product, quantity: 1 });
         }
-
         this.saveCartToStorage();
         this.updateCartCount();
         this.showMessage('Produto adicionado ao carrinho!', 'success');
     }
-
     buyNow(productId) {
         if (!this.isLoggedIn) {
             this.showLogin();
@@ -776,20 +747,17 @@ class AppState {
         this.addToCart(productId);
         this.showPage('shipping');
     }
-
     removeFromCart(productId) {
         this.cart = this.cart.filter(item => item.id !== productId);
         this.saveCartToStorage();
         this.updateCartCount();
         this.renderCart();
     }
-
     updateQuantity(productId, newQuantity) {
         if (newQuantity <= 0) {
             this.removeFromCart(productId);
             return;
         }
-
         const item = this.cart.find(item => item.id === productId);
         if (item) {
             item.quantity = newQuantity;
@@ -798,7 +766,6 @@ class AppState {
             this.updateCartCount();
         }
     }
-
     updateCartCount() {
         const count = this.cart.reduce((total, item) => total + item.quantity, 0);
         const cartCountEl = document.getElementById('cartCount');
@@ -807,27 +774,20 @@ class AppState {
             cartCountEl.style.display = count > 0 ? 'flex' : 'none';
         }
     }
-
     renderCart() {
         const cartItems = document.getElementById('cartItems');
         const cartSummary = document.getElementById('cartSummary');
-        
         if (!cartItems || !cartSummary) return;
-
         if (this.cart.length === 0) {
             cartItems.innerHTML = '<p class="empty-cart">Seu carrinho está vazio.</p>';
             cartSummary.innerHTML = '';
             return;
         }
-
         cartItems.innerHTML = this.cart.map(item => {
             if (!item || !item.id) {
                 console.error('Invalid cart item:', item);
                 return '';
             }
-
-
-
             return `
                 <div class="cart-item" data-id="${item.id}">
 
@@ -851,11 +811,9 @@ class AppState {
                 </div>
             `;
         }).filter(item => item !== '').join('');
-
         const subtotal = this.cart.reduce((total, item) => total + (item.salePrice * item.quantity), 0);
         const shipping = this.shippingInfo?.cost || 0;
         const total = subtotal + shipping;
-
         cartSummary.innerHTML = `
             <div class="cart-summary-content">
                 <div class="summary-row">
@@ -871,7 +829,6 @@ class AppState {
                 </div>
             </div>
         `;
-        
         console.log('Cart rendered successfully');
     }
 
@@ -888,9 +845,25 @@ class AppState {
 
         if (pageId === 'cart') {
             this.renderCart();
-        } else if (pageId === 'profile' && !this.isLoggedIn) {
-            this.showLogin();
-            return;
+        } else if (pageId === 'profile') {
+            if (!this.isLoggedIn) {
+                this.showMessage('Por favor, faça login para acessar seu perfil.', 'info');
+                this.showLogin();
+                return;
+            }
+            this.renderUserProfile();
+        } else if (pageId === 'edit-info') {
+            if (!this.isLoggedIn) {
+                this.showLogin();
+                return;
+            }
+            this.populateEditInfoForm();
+        } else if (pageId === 'shipping') {
+            // SYNC: Auto-populate shipping form from profile
+            this.loadUserProfileFromStorage();
+            setTimeout(() => {
+                this.populateShippingFormFromProfile();
+            }, 100); // Small delay to ensure form elements are rendered
         } else if (pageId === 'admin') {
             this.renderAdminProducts();
         }
@@ -902,6 +875,283 @@ class AppState {
             modal.classList.add('active');
         }
     }
+    renderUserProfile() {
+        if (!this.isLoggedIn) return;
+        // Render user information
+        this.renderUserInfo();
+        // Render last purchases
+        this.renderLastPurchases();
+        // Setup contact form
+        this.setupProfileContactForm();
+    }
+
+    renderUserInfo() {
+        const userInfoContent = document.getElementById('userInfoContent');
+        if (!userInfoContent) return;
+        
+        this.loadUserProfileFromStorage();
+        
+        // Get user info shown on user profile page
+        const userInfo = {
+            email: this.user?.email || 'Não informado',
+            name: this.userProfile?.name || this.shippingInfo?.recipient || 'Não informado',
+            phone: this.formatPhoneDisplay(this.userProfile?.phone || this.shippingInfo?.phone || '') || 'Não informado',
+            cpf: this.formatCPFDisplay(this.userProfile?.cpf || this.shippingInfo?.cpf || '') || 'Não informado',
+            address: this.userProfile?.address || 
+                    (this.shippingInfo ? 
+                        `${this.shippingInfo.street}, ${this.shippingInfo.number} - ${this.shippingInfo.city}/${this.shippingInfo.state}` : 
+                        'Não informado')
+        };
+        
+        userInfoContent.innerHTML = `
+            <div class="user-info-item">
+                <span class="user-info-label">E-mail:</span>
+                <span class="user-info-value">${userInfo.email}</span>
+            </div>
+            <div class="user-info-item">
+                <span class="user-info-label">Nome:</span>
+                <span class="user-info-value">${userInfo.name}</span>
+            </div>
+            <div class="user-info-item">
+                <span class="user-info-label">Telefone:</span>
+                <span class="user-info-value">${userInfo.phone}</span>
+            </div>
+            <div class="user-info-item">
+                <span class="user-info-label">CPF:</span>
+                <span class="user-info-value">${userInfo.cpf}</span>
+            </div>
+            <div class="user-info-item">
+                <span class="user-info-label">Endereço:</span>
+                <span class="user-info-value">${userInfo.address}</span>
+            </div>
+        `;
+    }
+
+    // Edit info form
+    populateEditInfoForm() {
+        this.loadUserProfileFromStorage();
+        
+        const nameEl = document.getElementById('editName');
+        const emailEl = document.getElementById('editEmail');
+        const phoneEl = document.getElementById('editPhone');
+        const cpfEl = document.getElementById('editCpf');
+        const cepEl = document.getElementById('editCep');
+        const streetEl = document.getElementById('editStreet');
+        const neighborhoodEl = document.getElementById('editNeighborhood');
+        const cityEl = document.getElementById('editCity');
+        const stateEl = document.getElementById('editState');
+        const numberEl = document.getElementById('editNumber');
+        const complementEl = document.getElementById('editComplement');
+        
+        // Populate with formatted data
+        if (nameEl) nameEl.value = this.userProfile?.name || this.shippingInfo?.recipient || '';
+        if (emailEl) emailEl.value = this.user?.email || '';
+        if (phoneEl) phoneEl.value = this.formatPhoneDisplay(this.userProfile?.phone || this.shippingInfo?.phone || '');
+        if (cpfEl) cpfEl.value = this.formatCPFDisplay(this.userProfile?.cpf || this.shippingInfo?.cpf || '');
+        
+        // Address fields
+        if (cepEl) cepEl.value = this.formatCEPDisplay(this.userProfile?.cep || this.shippingInfo?.cep || '');
+        if (streetEl) streetEl.value = this.userProfile?.street || this.shippingInfo?.street || '';
+        if (neighborhoodEl) neighborhoodEl.value = this.userProfile?.neighborhood || this.shippingInfo?.neighborhood || '';
+        if (cityEl) cityEl.value = this.userProfile?.city || this.shippingInfo?.city || '';
+        if (stateEl) stateEl.value = this.userProfile?.state || this.shippingInfo?.state || '';
+        if (numberEl) numberEl.value = this.userProfile?.number || this.shippingInfo?.number || '';
+        if (complementEl) complementEl.value = this.userProfile?.complement || this.shippingInfo?.complement || '';
+    }
+
+
+    // Method below allow sync back to shipping data
+    handleEditInfoForm(e) {
+        e.preventDefault();
+        
+        if (!this.isLoggedIn) {
+            this.showMessage('Você precisa estar logado para salvar informações.', 'error');
+            return;
+        }
+        
+        // Get all form data
+        const name = document.getElementById('editName')?.value || '';
+        const phone = document.getElementById('editPhone')?.value || '';
+        const cpf = document.getElementById('editCpf')?.value || '';
+        const cep = document.getElementById('editCep')?.value || '';
+        const street = document.getElementById('editStreet')?.value || '';
+        const neighborhood = document.getElementById('editNeighborhood')?.value || '';
+        const city = document.getElementById('editCity')?.value || '';
+        const state = document.getElementById('editState')?.value || '';
+        const number = document.getElementById('editNumber')?.value || '';
+        const complement = document.getElementById('editComplement')?.value || '';
+        
+        // Validate required fields
+        if (!name.trim()) {
+            this.showMessage('Por favor, informe seu nome completo.', 'error');
+            return;
+        }
+        
+        if (!number.trim()) {
+            this.showMessage('Por favor, informe o número do endereço.', 'error');
+            return;
+        }
+        
+        // Create formatted address string for display
+        const formattedAddress = `${street}, ${number} - ${city}/${state}`;
+        
+        // Update user profile with all data
+        this.userProfile = {
+            ...this.userProfile,
+            name: name.trim(),
+            phone: phone.replace(/\D/g, ''), // Store clean phone
+            cpf: cpf.replace(/\D/g, ''), // Store clean CPF
+            cep: cep.replace(/\D/g, ''), // Store clean CEP
+            street: street.trim(),
+            neighborhood: neighborhood.trim(),
+            city: city.trim(),
+            state: state.trim(),
+            number: number.trim(),
+            complement: complement.trim(),
+            address: formattedAddress // For display purposes
+        };
+        
+        // SYNC: Update shipping info with the same data
+        this.shippingInfo = {
+            ...this.shippingInfo,
+            recipient: name.trim(),
+            phone: phone.replace(/\D/g, ''),
+            cpf: cpf.replace(/\D/g, ''),
+            cep: cep.replace(/\D/g, ''),
+            street: street.trim(),
+            neighborhood: neighborhood.trim(),
+            city: city.trim(),
+            state: state.trim(),
+            number: number.trim(),
+            complement: complement.trim()
+        };
+        
+        // Save both profile and shipping data
+        this.saveUserProfileToStorage();
+        
+        this.showMessage('Informações salvas com sucesso!', 'success');
+        
+        // Redirect back to profile and refresh user info
+        setTimeout(() => {
+            this.showPage('profile');
+            this.renderUserInfo();
+        }, 1000);
+    }
+
+    // Parse address from the Edit Form
+    parseAddress(addressString) {
+        // Default values
+        const defaultParts = {
+            street: '',
+            number: '',
+            city: '',
+            state: ''
+        };
+        if (!addressString || !addressString.trim()) {
+            return defaultParts;
+        }
+        try {
+            // Try to parse format: "Rua, número - Cidade/Estado"
+            const parts = addressString.split(' - ');
+            if (parts.length >= 2) {
+                const streetPart = parts[0].trim();
+                const cityStatePart = parts[1].trim();
+                // Extract street and number
+                const streetMatch = streetPart.match(/^(.+),\s*(.+)$/);
+                const street = streetMatch ? streetMatch[1].trim() : streetPart;
+                const number = streetMatch ? streetMatch[2].trim() : '';
+                // Extract city and state
+                const cityStateMatch = cityStatePart.match(/^(.+)\/(.+)$/);
+                const city = cityStateMatch ? cityStateMatch[1].trim() : cityStatePart;
+                const state = cityStateMatch ? cityStateMatch[2].trim() : '';
+                return { street, number, city, state };
+            }
+        } catch (e) {
+            console.warn('Error parsing address:', e);
+        }
+        return defaultParts;
+    }
+
+    renderLastPurchases() {
+        const lastPurchasesContent = document.getElementById('lastPurchasesContent');
+        if (!lastPurchasesContent) return;
+        // Mock purchase data - in a real app, this would come from your backend
+        const mockPurchases = [
+            {
+                id: 1,
+                date: '2025-06-10',
+                items: ['Bolsa nº 01', 'Bolsa nº 03'],
+                total: 359.80
+            },
+            {
+                id: 2,
+                date: '2025-06-05',
+                items: ['Bolsa nº 02'],
+                total: 289.90
+            }
+        ];
+        if (mockPurchases.length === 0) {
+            lastPurchasesContent.innerHTML = '<p>Nenhuma compra realizada ainda.</p>';
+            return;
+        }
+        lastPurchasesContent.innerHTML = mockPurchases.map(purchase => `
+            <div class="purchase-item">
+                <div class="purchase-date">Pedido #${purchase.id} - ${new Date(purchase.date).toLocaleDateString('pt-BR')}</div>
+                <div class="purchase-items">${purchase.items.join(', ')}</div>
+                <div class="purchase-total">Total: R$ ${purchase.total.toFixed(2).replace('.', ',')}</div>
+            </div>
+        `).join('');
+    }
+
+    setupProfileContactForm() {
+        const contactForm = document.getElementById('profileContactForm');
+        const contactEmail = document.getElementById('contactEmail');
+        if (contactEmail && this.user?.email) {
+            contactEmail.value = this.user.email;
+        }
+        if (contactForm) {
+            contactForm.addEventListener('submit', this.handleProfileContactForm.bind(this));
+        }
+    }
+    async handleProfileContactForm(e) {
+        e.preventDefault();
+        const formData = {
+            email: document.getElementById('contactEmail')?.value,
+            subject: document.getElementById('contactSubject')?.value,
+            reason: document.getElementById('contactReason')?.value,
+            message: document.getElementById('contactMessage')?.value
+        };
+        // Validate form
+        if (!formData.subject || !formData.reason || !formData.message) {
+            this.showMessage('Por favor, preencha todos os campos obrigatórios.', 'error');
+            return;
+        }
+        try {
+            // Send contact email using EmailJS
+            await this.sendContactEmail(formData);
+            this.showMessage('Mensagem enviada com sucesso! Retornaremos em breve.', 'success');
+            // Clear form
+            document.getElementById('profileContactForm').reset();
+            document.getElementById('contactEmail').value = this.user.email;
+        } catch (error) {
+            console.error('Error sending contact message:', error);
+            this.showMessage('Erro ao enviar mensagem. Tente novamente.', 'error');
+        }
+    }
+    async sendContactEmail(formData) {
+        const templateParams = {
+            from_email: formData.email,
+            subject: formData.subject,
+            reason: formData.reason,
+            message: formData.message,
+            timestamp: new Date().toLocaleString('pt-BR')
+        };
+        return await emailjs.send(
+            'service_6fhviva',
+            'template_3gqjhzo', // You may want to create a separate template for contact messages
+            templateParams
+        );
+    }
 
     showAdminLogin() {
         const modal = document.getElementById('adminLoginModal');
@@ -909,23 +1159,19 @@ class AppState {
             modal.classList.add('active');
         }
     }
-
     closeModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.remove('active');
         }
     }
-
     handleLogin(e) {
         e.preventDefault();
         const email = document.getElementById('emailInput').value;
-        
         if (!this.validateEmail(email)) {
             this.showMessage('Por favor, insira um e-mail válido.', 'error');
             return;
         }
-
         if (!this.isLoggedIn) {
             const sessionCart = sessionStorage.getItem('seucantto_cart');
             if (sessionCart) {
@@ -933,40 +1179,51 @@ class AppState {
             sessionStorage.removeItem('seucantto_cart');
             }
         }
-
         this.generateOTP();
         this.user = { email };
-        
         this.closeModal('loginModal');
         const otpModal = document.getElementById('otpModal');
         if (otpModal) {
             otpModal.classList.add('active');
         }
-        
         this.startOTPTimer();
         this.showMessage(`Código enviado para ${email}`, 'success');
+    }
+    logout() {
+        this.isLoggedIn = false;
+        this.user = null;
+        // Clear user data from storage
+        localStorage.removeItem('seucantto_user');
+        // Move cart from localStorage to sessionStorage for guest use
+        if (this.cart.length > 0) {
+            sessionStorage.setItem('seucantto_cart', JSON.stringify(this.cart));
+            localStorage.removeItem('seucantto_cart');
+        }
+        this.showMessage('Logout realizado com sucesso!', 'success');
+        this.showPage('home');
     }
 
     handleOTPVerification(e) {
         e.preventDefault();
-        const enteredCode = document.getElementById('otpInput').value;
-        
+        const otpInput = document.getElementById('otpInput');
+        const enteredCode = otpInput.value;
         if (enteredCode === this.otpCode) {
             this.isLoggedIn = true;
             this.saveUserToStorage();
-            
-             // Clear the input field after successful verification
+            // Clear the input field and timer
             otpInput.value = '';
-
-            this.closeModal('otpModal');
-            this.showMessage('Login realizado com sucesso!', 'success');
-            
-            this.otpCode = null;
             if (this.otpTimer) {
                 clearInterval(this.otpTimer);
+                this.otpTimer = null;
             }
+            this.closeModal('otpModal');
+            this.showMessage('Login realizado com sucesso!', 'success');
+            this.otpCode = null;
+            // Redirect to profile page after successful login
+            setTimeout(() => {
+                this.showPage('profile');
+            }, 1000);
         } else {
-            // Clear the input field even on error
             otpInput.value = '';
             this.showMessage('Código inválido. Tente novamente.', 'error');
         }
@@ -976,7 +1233,6 @@ class AppState {
         e.preventDefault();
         const username = document.getElementById('adminUsername').value;
         const password = document.getElementById('adminPassword').value;
-        
         if (username === 'admin' && password === 'mozao') {
             this.isAdmin = true;
             this.closeModal('adminLoginModal');
@@ -1007,26 +1263,41 @@ class AppState {
     }
 
     startOTPTimer() {
-        let timeLeft = 900;
+        let timeLeft = 900; // 15 minutes
         const timerElement = document.getElementById('otpTimer');
+        let hasExpired = false; // Flag to prevent spam
         
         if (!timerElement) return;
+        
+        // Clear any existing timer first
+        if (this.otpTimer) {
+            clearInterval(this.otpTimer);
+            this.otpTimer = null;
+        }
         
         this.otpTimer = setInterval(() => {
             const minutes = Math.floor(timeLeft / 60);
             const seconds = timeLeft % 60;
             timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
             
-            if (timeLeft <= 0) {
+            if (timeLeft <= 0 && !hasExpired) {
+                hasExpired = true; // Prevent multiple executions
                 clearInterval(this.otpTimer);
+                this.otpTimer = null;
                 this.otpCode = null;
-                this.showMessage('Código expirado. Solicite um novo.', 'error');
-                this.closeModal('otpModal');
+                
+                // Only show message if modal is still open
+                const otpModal = document.getElementById('otpModal');
+                if (otpModal && otpModal.classList.contains('active')) {
+                    this.showMessage('Código expirado. Solicite um novo.', 'error');
+                    this.closeModal('otpModal');
+                }
             }
             timeLeft--;
         }, 1000);
     }
 
+    // Calculate shipping from informed CEP
     calculateShipping() {
         const cepInput = document.getElementById('cepInput');
         if (!cepInput) return;
@@ -1038,7 +1309,7 @@ class AppState {
             return;
         }
 
-        // Determine the zone based of CEP prefix //
+        // Determine the zone based of CEP prefix
         function getZoneByCEP(cep) {
             const prefix = parseInt(cep.substring(0, 2), 10);
             if (prefix >= 10 && prefix == 0 && prefix <= 19) {
@@ -1095,6 +1366,7 @@ class AppState {
         this.renderCart();
     }
 
+    // Calculate shipping from Address page aswell
     calculateShippingFromAddress(cep) {
         const cleanCep = cep.replace(/\D/g, '');
         
@@ -1176,71 +1448,159 @@ class AppState {
         }
     }
 
-    populateAddressFields(address) {
-        const streetEl = document.getElementById('shippingStreet');
-        const neighborhoodEl = document.getElementById('shippingNeighborhood');
-        const cityEl = document.getElementById('shippingCity');
-        const stateEl = document.getElementById('shippingState');
+    async lookupAddressEditP() {
+        const editCep = document.getElementById('editCep');
+        if (!editCep) return;
+        
+        const cep = editCep.value.replace(/\D/g, '');
+        
+        if (cep.length === 8) {
+            try {
+                const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                const address = await response.json();
+                
+                if (!address.erro) {
+                    this.populateAddressFieldsEditP({
+                        street: address.logradouro,
+                        neighborhood: address.bairro,
+                        city: address.localidade,
+                        state: address.uf
+                    });
+                } else {
+                    this.populateAddressFieldsEditP({
+                        street: 'Rua Principal',
+                        neighborhood: 'Centro',
+                        city: 'Cidade',
+                        state: 'UF'
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching address:', error);
+            }
+        }
+    }
 
+    populateAddressFieldsEditP(address) {
+        const streetEl = document.getElementById('editStreet');
+        const neighborhoodEl = document.getElementById('editNeighborhood');
+        const cityEl = document.getElementById('editCity');
+        const stateEl = document.getElementById('editState');
+        
         if (streetEl) streetEl.value = address.street || '';
         if (neighborhoodEl) neighborhoodEl.value = address.neighborhood || '';
         if (cityEl) cityEl.value = address.city || '';
         if (stateEl) stateEl.value = address.state || '';
     }
 
+    populateAddressFields(address) {
+        const streetEl = document.getElementById('shippingStreet');
+        const neighborhoodEl = document.getElementById('shippingNeighborhood');
+        const cityEl = document.getElementById('shippingCity');
+        const stateEl = document.getElementById('shippingState');
+        if (streetEl) streetEl.value = address.street || '';
+        if (neighborhoodEl) neighborhoodEl.value = address.neighborhood || '';
+        if (cityEl) cityEl.value = address.city || '';
+        if (stateEl) stateEl.value = address.state || '';
+    }
+    
     handleShippingForm(e) {
         e.preventDefault();
-        
         if (!this.isLoggedIn) {
             this.showLogin();
             return;
         }
-
-        // Get recipient name and CPF values
+        // Get all form data
         const recipientName = document.getElementById('shippingRecipient')?.value || '';
         const cpf = document.getElementById('shippingCpf')?.value || '';
-        
+        const cep = document.getElementById('shippingCep')?.value || '';
+        const street = document.getElementById('shippingStreet')?.value || '';
+        const neighborhood = document.getElementById('shippingNeighborhood')?.value || '';
+        const city = document.getElementById('shippingCity')?.value || '';
+        const state = document.getElementById('shippingState')?.value || '';
+        const number = document.getElementById('shippingNumber')?.value || '';
+        const complement = document.getElementById('shippingComplement')?.value || '';
+        const phone = document.getElementById('shippingPhone')?.value || '';
         // Validate required fields
         if (!recipientName.trim()) {
             this.showMessage('Por favor, informe o nome do destinatário.', 'error');
             return;
         }
-        
         if (!cpf.trim()) {
             this.showMessage('Por favor, informe o CPF do destinatário.', 'error');
             return;
         }
-        
-        // Validate CPF format - basic validation
         if (!this.validateCPF(cpf)) {
             this.showMessage('CPF inválido. Verifique o formato.', 'error');
             return;
         }
-
-        // Get CEP from shipping form
-        const shippingCep = document.getElementById('shippingCep')?.value || '';
-        
-        // Auto-calculate shipping if already not
-        if ((!this.shippingInfo || !this.shippingInfo.cost) && shippingCep) {
-            this.calculateShippingFromAddress(shippingCep);
+        // Auto-calculate shipping if not already calculated
+        if ((!this.shippingInfo || !this.shippingInfo.cost) && cep) {
+            this.calculateShippingFromAddress(cep);
         }
-
+        // Update user profile with shipping data
+        this.userProfile = {
+            ...this.userProfile,
+            name: recipientName.trim(),
+            phone: phone.trim(),
+            cpf: cpf.replace(/\D/g, ''),
+            cep: cep.replace(/\D/g, ''),
+            street: street.trim(),
+            neighborhood: neighborhood.trim(),
+            city: city.trim(),
+            state: state.trim(),
+            number: number.trim(),
+            complement: complement.trim(),
+            // Create formatted address for profile display
+            address: `${street.trim()}, ${number.trim()} - ${city.trim()}/${state.trim()}`
+        };
+        // Save updated profile
+        this.saveUserProfileToStorage();
+        // Update shipping info
         this.shippingInfo = {
             ...this.shippingInfo,
             recipient: recipientName.trim(),
-            cpf: cpf.replace(/\D/g, ''), // Store only numbers
-            cep: document.getElementById('shippingCep')?.value || '',
-            street: document.getElementById('shippingStreet')?.value || '',
-            neighborhood: document.getElementById('shippingNeighborhood')?.value || '',
-            city: document.getElementById('shippingCity')?.value || '',
-            state: document.getElementById('shippingState')?.value || '',
-            number: document.getElementById('shippingNumber')?.value || '',
-            complement: document.getElementById('shippingComplement')?.value || '',
-            phone: document.getElementById('shippingPhone')?.value || ''
+            cpf: cpf.replace(/\D/g, ''),
+            cep: cep,
+            street: street,
+            neighborhood: neighborhood,
+            city: city,
+            state: state,
+            number: number,
+            complement: complement,
+            phone: phone
         };
-
+        this.showMessage('Informações salvas automaticamente no perfil!', 'success');
         this.showPage('payment');
         this.renderOrderSummary();
+    }
+
+    populateShippingFormFromProfile() {
+        if (!this.userProfile) return;
+        
+        const recipientEl = document.getElementById('shippingRecipient');
+        const cpfEl = document.getElementById('shippingCpf');
+        const phoneEl = document.getElementById('shippingPhone');
+        const cepEl = document.getElementById('shippingCep');
+        const streetEl = document.getElementById('shippingStreet');
+        const neighborhoodEl = document.getElementById('shippingNeighborhood');
+        const cityEl = document.getElementById('shippingCity');
+        const stateEl = document.getElementById('shippingState');
+        const numberEl = document.getElementById('shippingNumber');
+        const complementEl = document.getElementById('shippingComplement');
+        
+        // Use formatted display for user-facing fields
+        if (recipientEl && this.userProfile.name) recipientEl.value = this.userProfile.name;
+        if (cpfEl && this.userProfile.cpf) cpfEl.value = this.formatCPFDisplay(this.userProfile.cpf);
+        if (phoneEl && this.userProfile.phone) phoneEl.value = this.formatPhoneDisplay(this.userProfile.phone);
+        if (cepEl && this.userProfile.cep) cepEl.value = this.formatCEPDisplay(this.userProfile.cep);
+        
+        // Address components
+        if (streetEl && this.userProfile.street) streetEl.value = this.userProfile.street;
+        if (neighborhoodEl && this.userProfile.neighborhood) neighborhoodEl.value = this.userProfile.neighborhood;
+        if (cityEl && this.userProfile.city) cityEl.value = this.userProfile.city;
+        if (stateEl && this.userProfile.state) stateEl.value = this.userProfile.state;
+        if (numberEl && this.userProfile.number) numberEl.value = this.userProfile.number;
+        if (complementEl && this.userProfile.complement) complementEl.value = this.userProfile.complement;
     }
 
     validateCPF(cpf) {
@@ -1274,11 +1634,21 @@ class AppState {
         return true;
     }
 
-    formatCPF(e) {
-        let value = e.target.value.replace(/\D/g, '');
+    formatCPFDisplay(cpf) {
+        // Handle both event objects and direct string values
+        let value;
+        if (cpf && cpf.target) {
+            // Event handler case (for input formatting)
+            value = cpf.target.value.replace(/\D/g, '');
+        } else {
+            // Direct string case (for display formatting)
+            value = (cpf || '').replace(/\D/g, '');
+        }
+        
         if (value.length > 11) {
             value = value.substring(0, 11);
         }
+        
         // Format as XXX.XXX.XXX-XX
         if (value.length > 9) {
             value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
@@ -1287,7 +1657,51 @@ class AppState {
         } else if (value.length > 3) {
             value = value.replace(/(\d{3})(\d{3})/, '$1.$2');
         }
-        e.target.value = value;
+        
+        // If it's an event, update the input; if it's a string, return the formatted value
+        if (cpf && cpf.target) {
+            cpf.target.value = value;
+        } else {
+            return value;
+        }
+    }
+
+    formatCEPDisplay(cep) {
+        if (!cep) return '';
+        const cleaned = cep.replace(/\D/g, '');
+        if (cleaned.length === 8) {
+            return cleaned.replace(/(\d{5})(\d{3})/, '$1-$2');
+        }
+        return cep;
+    }
+
+    formatPhoneDisplay(phone) {
+        // Handle both event objects and direct string values
+        let value;
+        if (phone && phone.target) {
+            // Event handler case
+            value = phone.target.value.replace(/\D/g, '');
+        } else {
+            // Direct string case
+            if (!phone) return '';
+            value = phone.replace(/\D/g, '');
+        }
+        
+        // Handle 11-digit phone numbers (mobile: 9XXXX-XXXX)
+        if (value.length === 11) {
+            value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        }
+        // Handle 10-digit phone numbers (landline: XXXX-XXXX)
+        else if (value.length === 10) {
+            value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        }
+        
+        // Return formatted value or update input
+        if (phone && phone.target) {
+            phone.target.value = value;
+        } else {
+            return value || phone;
+        }
     }
 
     selectPaymentMethod(method) {
@@ -1550,6 +1964,17 @@ window.app = new AppState();
 // Global Functions for HTML onclick events
 function goToHome() {
     window.app.showPage('home');
+}
+
+// User's icon click handler function
+function handleUserIconClick() {
+    if (window.app.isLoggedIn) {
+        // User is already logged in, go directly to profile
+        window.app.showPage('profile');
+    } else {
+        // User is not logged in, show login modal
+        window.app.showLogin();
+    }
 }
 
 // Refresh animation with data save

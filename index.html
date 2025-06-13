@@ -58,7 +58,7 @@
                         </svg>
                         <span class="cart-count" id="cartCount">0</span>
                     </button>
-                    <button class="user-btn" onclick="showLogin()">
+                    <button class="user-btn" onclick="handleUserIconClick()">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
@@ -189,12 +189,64 @@
             <div id="profilePage" class="page">
                 <div class="container">
                     <h2>Meu Perfil</h2>
+                    
+                    <!-- Profile Menu Buttons -->
                     <div class="profile-menu">
-                        <button class="btn btn--outline" onclick="showPage('edit-info')">Editar Informações</button>
-                        <button class="btn btn--outline" onclick="showPage('purchases')">Compras</button>
-                        <button class="btn btn--outline" onclick="showPage('notifications')">Notificações</button>
+                        <button class="btn btn--outline" onclick="showPage('edit-info')">Editar infos pessoais</button>
+                        <button class="btn btn--outline" onclick="showPage('purchases')">Compras realizadas</button>
                         <button class="btn btn--outline" onclick="showPage('contact')">Falar Conosco</button>
-                        <button class="btn btn--outline" onclick="showPage('payment-options')">Opções de Pagamento</button>
+                    </div>
+                    
+                    <!-- Three Information Boxes -->
+                    <div class="profile-info-grid">
+                        <!-- User Information Box -->
+                        <div class="profile-info-box">
+                            <h3>Informações pessoais</h3>
+                            <div id="userInfoContent" class="info-content">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <!-- Last Purchases Box -->
+                        <div class="profile-info-box">
+                            <h3>Compras realizadas</h3>
+                            <div id="lastPurchasesContent" class="info-content">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <!-- Contact Form Box -->
+                        <div class="profile-info-box">
+                            <h3>Formulário de contato</h3>
+                            <div class="info-content">
+                                <form id="profileContactForm" class="profile-contact-form">
+                                    <div class="form-group">
+                                        <label class="form-label">E-mail</label>
+                                        <input type="email" id="contactEmail" class="form-control" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Assunto</label>
+                                        <input type="text" id="contactSubject" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Motivo do Contato</label>
+                                        <select id="contactReason" class="form-control" required>
+                                            <option value="">Selecione o motivo</option>
+                                            <option value="duvida">Dúvida sobre produto</option>
+                                            <option value="entrega">Entrega</option>
+                                            <option value="pagamento">Problema com pagamento</option>
+                                            <option value="troca">Devolução</option>
+                                            <option value="sugestao">Sugestão/Outro</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Mensagem</label>
+                                        <textarea id="contactMessage" class="form-control" rows="4" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn--primary btn--full-width">Enviar Mensagem</button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -233,6 +285,66 @@
                     <a>Política de Privacidade</a>
                     <p>Esta página está em construção. Em breve disponibilizaremos nossa política de privacidade completa.</p>
                 </div>
+            </div>
+        </div>
+
+        <!-- Edit Information Page -->
+        <div id="edit-infoPage" class="page">
+            <div class="container">
+                <button class="btn btn--outline mb-16" onclick="window.app.showPage('profile')">← Voltar</button>
+                <h2>Editar Informações</h2>
+                <form id="editInfoForm" class="edit-info-form">
+                    <div class="form-group">
+                        <label class="form-label">Nome Completo</label>
+                        <input type="text" id="editName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">E-mail</label>
+                        <input type="email" id="editEmail" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Telefone</label>
+                        <input type="text" id="editPhone" class="form-control" placeholder="(11) 99999-9999">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CPF</label>
+                        <input type="text" id="editCpf" class="form-control" placeholder="000.000.000-00" maxlength="14">
+                    </div>
+                    
+                    <!-- Enhanced Address Section -->
+                    <h3 style="margin-top: var(--space-24); margin-bottom: var(--space-16); color: var(--color-purple);">Endereço</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">CEP</label>
+                        <input type="text" id="editCep" class="form-control" maxlength="9" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Rua</label>
+                        <input type="text" id="editStreet" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Bairro</label>
+                        <input type="text" id="editNeighborhood" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Cidade</label>
+                        <input type="text" id="editCity" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estado</label>
+                        <input type="text" id="editState" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Número</label>
+                        <input type="text" id="editNumber" class="form-control" maxlength="8" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Complemento (opcional)</label>
+                        <input type="text" id="editComplement" class="form-control" maxlength="16">
+                    </div>
+                    
+                    <button type="submit" class="btn btn--primary btn--full-width">Salvar Alterações</button>
+                </form>
             </div>
         </div>
 

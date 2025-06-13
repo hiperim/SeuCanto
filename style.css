@@ -69,6 +69,7 @@
   --space-20: 20px;
   --space-24: 24px;
   --space-32: 32px;
+  --space-68: 68px;
 
   /* Border Radius */
   --radius-sm: 6px;
@@ -1759,9 +1760,10 @@ body {
 /* Profile Information Grid */
 .profile-info-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--space-24);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 400px));
+    gap: var(--space-68);
     margin-top: var(--space-32);
+    justify-content: center;
 }
 
 .profile-info-box {
@@ -1771,6 +1773,7 @@ body {
     padding: var(--space-20);
     box-shadow: var(--shadow-sm);
     transition: box-shadow var(--duration-normal) var(--ease-standard);
+    max-width: 400px;
 }
 
 .profile-info-box:hover {
@@ -1783,6 +1786,16 @@ body {
     font-size: var(--font-size-xl);
     border-bottom: 2px solid var(--color-purple);
     padding-bottom: var(--space-8);
+}
+
+/* Edit form container */
+.edit-info-form {
+    max-width: 450px; 
+    margin: 0 auto; /* Center the form */
+}
+
+.edit-info-form .form-control {
+    max-width: 100%;
 }
 
 .info-content {
@@ -1848,9 +1861,21 @@ body {
     .profile-info-grid {
         grid-template-columns: 1fr;
         gap: var(--space-16);
+        max-width: 100%;
     }
     
     .profile-info-box {
         padding: var(--space-16);
+        max-width: 100%;
     }
+
+    .edit-info-form {
+        max-width: 100%;
+        padding: 0 var(--space-16);
+    }
+}
+
+/* Center the profile page content */
+#profilePage .container {
+    max-width: 900px; /* Reduce overall container width */
 }

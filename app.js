@@ -879,8 +879,6 @@ class AppState {
         if (!this.isLoggedIn) return;
         // Render user information
         this.renderUserInfo();
-        // Render last purchases
-        this.renderLastPurchases();
         // Setup contact form
         this.setupProfileContactForm();
     }
@@ -1070,37 +1068,6 @@ class AppState {
             console.warn('Error parsing address:', e);
         }
         return defaultParts;
-    }
-
-    renderLastPurchases() {
-        const lastPurchasesContent = document.getElementById('lastPurchasesContent');
-        if (!lastPurchasesContent) return;
-        // Mock purchase data - in a real app, this would come from your backend
-        const mockPurchases = [
-            {
-                id: 1,
-                date: '2025-06-10',
-                items: ['Bolsa nº 01', 'Bolsa nº 03'],
-                total: 359.80
-            },
-            {
-                id: 2,
-                date: '2025-06-05',
-                items: ['Bolsa nº 02'],
-                total: 289.90
-            }
-        ];
-        if (mockPurchases.length === 0) {
-            lastPurchasesContent.innerHTML = '<p>Nenhuma compra realizada ainda.</p>';
-            return;
-        }
-        lastPurchasesContent.innerHTML = mockPurchases.map(purchase => `
-            <div class="purchase-item">
-                <div class="purchase-date">Pedido #${purchase.id} - ${new Date(purchase.date).toLocaleDateString('pt-BR')}</div>
-                <div class="purchase-items">${purchase.items.join(', ')}</div>
-                <div class="purchase-total">Total: R$ ${purchase.total.toFixed(2).replace('.', ',')}</div>
-            </div>
-        `).join('');
     }
 
     setupProfileContactForm() {

@@ -18,3 +18,9 @@ git add .
 git commit .
 git add .
 git commit .
+git config --global core.editor "nano"
+git add .
+git commit .
+git config --global core.editor "notepad"
+git add .
+git commit .

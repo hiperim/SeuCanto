@@ -248,6 +248,7 @@ class AppState {
         this.user = null;
         this.isLoggedIn = false;
         this.currentPage = 'home';
+        this.previousPage = 'home';
         this.shippingInfo = null;
         this.otpCode = null;
         this.otpTimer = null;
@@ -897,6 +898,11 @@ class AppState {
 
         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
         
+        // Store current page before changing
+        if (pageId !== 'login' && pageId !== 'otp') {
+            this.previousPage = pageId;
+        }
+        
         const targetPage = document.getElementById(pageId + 'Page');
         if (targetPage) {
             targetPage.classList.add('active');
@@ -1227,6 +1233,8 @@ class AppState {
             }
             this.startOTPTimer();
             this.showMessage(`Código enviado para ${email}`, 'success');
+            // Preserve previous page context
+            this.previousPage = this.currentPage;
         } catch (error) {
             this.showMessage('Erro ao enviar código. Verifique seu email e tente novamente.', 'error');
             console.error('Login OTP generation failed:', error);
@@ -1298,10 +1306,12 @@ class AppState {
             this.showMessage('Login realizado com sucesso!', 'success');
             // Clear OTP code
             this.otpCode = null;
-            // Redirect to profile
+            // Redirect back to previous page
             setTimeout(() => {
-                this.showPage('profile');
+                this.showPage(this.previousPage || 'home'); // Default to home if not set
+                this.previousPage = 'home'; // Reset after use
             }, 1000);
+            
         } else {
             otpInput.value = '';
             this.showMessage('Código inválido. Tente novamente.', 'error');
@@ -2153,10 +2163,11 @@ function calculateShipping() {
 
 function proceedToShipping() {
     if (!window.app.isLoggedIn) {
-        window.app.showLogin();
+        this.previousPage = 'cart'; // Explicitly set previous page
+        this.showLogin();
         return;
     }
-    window.app.showPage('shipping');
+    this.showPage('shipping');
 }
 
 function selectPaymentMethod(method) {

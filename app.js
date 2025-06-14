@@ -250,6 +250,7 @@ class AppState {
         this.currentPage = 'home';
         this.previousPage = 'home';
         this.shippingInfo = null;
+        this.pendingPurchaseProductId = null;
         this.otpCode = null;
         this.otpTimer = null;
         this.isAdmin = false;
@@ -802,11 +803,21 @@ class AppState {
     }
     buyNow(productId) {
         if (!this.isLoggedIn) {
+            // Store the product ID and set context for post-login action
+            this.pendingPurchaseProductId = productId;
+            this.previousPage = 'cart';
+            
+            // Add item to cart first
+            this.addToCart(productId);
+            
+            // Show login modal instead of cart page
             this.showLogin();
             return;
         }
+        
+        // User is already logged in
         this.addToCart(productId);
-        this.showPage('shipping');
+        this.showPage('cart');
     }
     removeFromCart(productId) {
         this.cart = this.cart.filter(item => item.id !== productId);
@@ -1306,12 +1317,18 @@ class AppState {
             this.showMessage('Login realizado com sucesso!', 'success');
             // Clear OTP code
             this.otpCode = null;
-            // Redirect back to previous page
+            // Handle post-login redirection
             setTimeout(() => {
-                this.showPage(this.previousPage || 'home'); // Default to home if not set
+                if (this.pendingPurchaseProductId) {
+                    // User came from "Comprar" button - go to cart
+                    this.showPage('cart');
+                    this.pendingPurchaseProductId = null; // Clear the pending purchase
+                } else {
+                    // Normal login flow - go to previous page
+                    this.showPage(this.previousPage || 'home');
+                }
                 this.previousPage = 'home'; // Reset after use
-            }, 1000);
-            
+            }, 1000); 
         } else {
             otpInput.value = '';
             this.showMessage('Código inválido. Tente novamente.', 'error');
@@ -2163,11 +2180,11 @@ function calculateShipping() {
 
 function proceedToShipping() {
     if (!window.app.isLoggedIn) {
-        this.previousPage = 'cart'; // Explicitly set previous page
-        this.showLogin();
+        window.app.previousPage = 'cart'; // Set previous page correctly
+        window.app.showLogin(); // Show login modal
         return;
     }
-    this.showPage('shipping');
+    window.app.showPage('shipping');
 }
 
 function selectPaymentMethod(method) {

@@ -1148,35 +1148,43 @@ class AppState {
             reason: document.getElementById('contactReason')?.value,
             message: document.getElementById('contactMessage')?.value
         };
-        // Validate form
-        if (!formData.subject || !formData.reason || !formData.message) {
+        // Enhanced validation
+        if (!formData.subject?.trim() || !formData.reason?.trim() || !formData.message?.trim()) {
             this.showMessage('Por favor, preencha todos os campos obrigatórios.', 'error');
             return;
         }
         try {
-            // Send contact email using EmailJS
             await this.sendContactEmail(formData);
             this.showMessage('Mensagem enviada com sucesso! Retornaremos em breve.', 'success');
-            // Clear form
-            document.getElementById('profileContactForm').reset();
-            document.getElementById('contactEmail').value = this.user.email;
+            // Clear only mutable fields
+            document.getElementById('contactSubject').value = '';
+            document.getElementById('contactMessage').value = '';
+            document.getElementById('contactReason').selectedIndex = 0;
         } catch (error) {
-            console.error('Error sending contact message:', error);
-            this.showMessage('Erro ao enviar mensagem. Tente novamente.', 'error');
+            console.error('Contact form error:', error);
+            this.showMessage(`Erro ao enviar: ${error.message}`, 'error');
         }
     }
+
     async sendContactEmail(formData) {
         const templateParams = {
-            from_email: formData.email,
             subject: formData.subject,
             reason: formData.reason,
             message: formData.message,
+            user_email: formData.email,
             timestamp: new Date().toLocaleString('pt-BR')
         };
         return await emailjs.send(
-            'service_6fhviva',
-            'template_3gqjhzo', // You may want to create a separate template for contact messages
-            templateParams
+            'service_6fhviva', 
+            'template_7jjmeei',
+            templateParams,
+            {
+                publicKey: 'NGwJHe0io6sPytVMD',
+                // Enable reply-to functionality
+                headers: {
+                    'Reply-To': formData.email
+                }
+            }
         );
     }
 
@@ -1192,29 +1200,37 @@ class AppState {
             modal.classList.remove('active');
         }
     }
-    handleLogin(e) {
+    async handleLogin(e) {
         e.preventDefault();
         const email = document.getElementById('emailInput').value;
         if (!this.validateEmail(email)) {
             this.showMessage('Por favor, insira um e-mail válido.', 'error');
             return;
         }
+        // Show loading message
+        this.showMessage('Enviando código...', 'info');
         if (!this.isLoggedIn) {
             const sessionCart = sessionStorage.getItem('seucantto_cart');
             if (sessionCart) {
-            localStorage.setItem('seucantto_cart', sessionCart);
-            sessionStorage.removeItem('seucantto_cart');
+                localStorage.setItem('seucantto_cart', sessionCart);
+                sessionStorage.removeItem('seucantto_cart');
             }
         }
-        this.generateOTP();
         this.user = { email };
-        this.closeModal('loginModal');
-        const otpModal = document.getElementById('otpModal');
-        if (otpModal) {
-            otpModal.classList.add('active');
+        try {
+            // Wait for OTP generation to complete
+            await this.generateOTP();
+            this.closeModal('loginModal');
+            const otpModal = document.getElementById('otpModal');
+            if (otpModal) {
+                otpModal.classList.add('active');
+            }
+            this.startOTPTimer();
+            this.showMessage(`Código enviado para ${email}`, 'success');
+        } catch (error) {
+            this.showMessage('Erro ao enviar código. Verifique seu email e tente novamente.', 'error');
+            console.error('Login OTP generation failed:', error);
         }
-        this.startOTPTimer();
-        this.showMessage(`Código enviado para ${email}`, 'success');
     }
     logout() {
         console.log('Logging out user and cleaning up session');
@@ -1267,7 +1283,7 @@ class AppState {
         e.preventDefault();
         const otpInput = document.getElementById('otpInput');
         const enteredCode = otpInput.value;
-        if (enteredCode === this.otpCode) {
+        if (enteredCode.toLowerCase() === this.otpCode.toLocaleLowerCase()) {
             this.isLoggedIn = true;
             this.saveUserToStorage();
             // Clear OTP-related data
@@ -1313,15 +1329,29 @@ class AppState {
         for (let i = 0; i < 4; i++) {
             this.otpCode += chars.charAt(Math.floor(Math.random() * chars.length));
         }
-        
-        // Send OTP via EmailJS
-        try {
-            await this.sendOTPEmail(this.user.email, this.otpCode);
-            console.log('OTP sent successfully:', this.otpCode);
-        } catch (error) {
-            console.error('Failed to send OTP:', error);
-            this.showMessage('Erro ao enviar código. Tente novamente.', 'error');
-            throw error;
+        // Delay and retry logic for EmailJS
+        let attempts = 0;
+        const maxAttempts = 3;
+        while (attempts < maxAttempts) {
+            try {
+                // Add small delay on first attempt to ensure EmailJS is ready
+                if (attempts === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                await this.sendOTPEmail(this.user.email, this.otpCode);
+                console.log('OTP sent successfully on attempt:', attempts + 1);
+                break; // Success, exit retry loop
+            } catch (error) {
+                attempts++;
+                console.warn(`OTP send attempt ${attempts} failed:`, error);
+                if (attempts >= maxAttempts) {
+                    console.error('Failed to send OTP after', maxAttempts, 'attempts');
+                    this.showMessage('Erro ao enviar código. Tente novamente.', 'error');
+                    throw error;
+                }
+                // Wait between retries
+                await new Promise(resolve => setTimeout(resolve, 500 * attempts));
+            }
         }
     }
 

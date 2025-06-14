@@ -1,0 +1,18 @@
+git config --local user.name "hiperim"
+git config --local user.email "ignatowskiperim@gmail.com"
+git add .
+git commit .
+git status
+git commit .
+git config --global user.name "hiperim"
+setx HOME "C:\"
+git add .
+git commit .
+setx HOME "C:\fullWebDev"
+git config --global user.name "hiperim"
+setx HOME "C:\fullWebDev"
+git add .
+git commit .
+del .git\.COMMIT_EDITMSG.swp
+git add .
+git commit .

@@ -340,7 +340,11 @@ class AppState {
     }
     saveUserProfileToStorage() {
         try {
-            localStorage.setItem('seucantto_user_profile', JSON.stringify(this.userProfile));
+            // Use dynamic key based on email, same as in loadUserProfileFromStorage
+            const profileKey = this.user?.email ? 
+                `seucantto_user_profile_${this.user.email}` : 
+                'seucantto_user_profile';
+            localStorage.setItem(profileKey, JSON.stringify(this.userProfile));
         } catch (e) {
             console.error('Error saving user profile:', e);
         }
@@ -936,11 +940,11 @@ class AppState {
             }
             this.populateEditInfoForm();
         } else if (pageId === 'shipping') {
-            // SYNC: Auto-populate shipping form from profile
+            // Load user profile and auto-populate form
             this.loadUserProfileFromStorage();
             setTimeout(() => {
                 this.populateShippingFormFromProfile();
-            }, 100); // Small delay to ensure form elements are rendered
+            }, 100);
         } else if (pageId === 'admin') {
             this.renderAdminProducts();
         }
@@ -1421,14 +1425,11 @@ class AppState {
     calculateShipping() {
         const cepInput = document.getElementById('cepInput');
         if (!cepInput) return;
-        
         const cep = cepInput.value.replace(/\D/g, '');
-        
         if (cep.length !== 8) {
             this.showMessage('CEP inválido', 'error');
             return;
         }
-
         // Determine the zone based of CEP prefix
         function getZoneByCEP(cep) {
             const prefix = parseInt(cep.substring(0, 2), 10);
@@ -1452,18 +1453,14 @@ class AppState {
                 return { name: 'Outras localidades', cost: 44.00 };
             }
         }
-
         const zone = getZoneByCEP(cep);
-
         const totalWeight = this.cart.reduce((total, item) => total + (item.weight * item.quantity), 0);
         const finalShippingCost = zone.cost + (totalWeight * 2.50);
-
         this.shippingInfo = {
             cep,
             location: zone.name,
             cost: finalShippingCost
         };
-
         const shippingResult = document.getElementById('shippingResult');
         if (shippingResult) {
             shippingResult.innerHTML = this.shippingInfo && this.shippingInfo.cost > 0 ? `
@@ -1482,7 +1479,22 @@ class AppState {
                 </div>
             ` : '';
         }
+        // Store CEP in user profile for migration to shipping page
+        if (!this.userProfile) {
+            this.initUserProfile();
+        }
+        this.userProfile = {
+            ...this.userProfile,
+            cep: cep // Store the CEP for later use
+        };
+        // Save to storage immediately
+        this.saveUserProfileToStorage();
 
+        this.shippingInfo = {
+            cep,
+            location: zone.name,
+            cost: finalShippingCost
+        };
         this.renderCart();
     }
 
@@ -1712,7 +1724,17 @@ class AppState {
         if (recipientEl && this.userProfile.name) recipientEl.value = this.userProfile.name;
         if (cpfEl && this.userProfile.cpf) cpfEl.value = this.formatCPFDisplay(this.userProfile.cpf);
         if (phoneEl && this.userProfile.phone) phoneEl.value = this.formatPhoneDisplay(this.userProfile.phone);
-        if (cepEl && this.userProfile.cep) cepEl.value = this.formatCEPDisplay(this.userProfile.cep);
+        if (cepEl && this.userProfile.cep) {
+            cepEl.value = this.formatCEPDisplay(this.userProfile.cep);
+            console.log('CEP populated from cart:', this.userProfile.cep);
+            // Automatically trigger address lookup if CEP is 8 digits
+            const cleanCep = this.userProfile.cep.replace(/\D/g, '');
+            if (cleanCep.length === 8) {
+                setTimeout(() => {
+                    this.lookupAddress();
+                }, 500); // Small delay to ensure DOM is ready
+            }
+        }
         
         // Address components
         if (streetEl && this.userProfile.street) streetEl.value = this.userProfile.street;
@@ -2180,9 +2202,24 @@ function calculateShipping() {
 
 function proceedToShipping() {
     if (!window.app.isLoggedIn) {
-        window.app.previousPage = 'cart'; // Set previous page correctly
-        window.app.showLogin(); // Show login modal
+        window.app.previousPage = 'cart';
+        window.app.showLogin();
         return;
+    }
+    // Store cart page CEP before navigation
+    const cartCepInput = document.getElementById('cepInput');
+    if (cartCepInput && cartCepInput.value.trim()) {
+        const cartCep = cartCepInput.value.replace(/\D/g, '');
+        if (cartCep.length === 8) {
+            // Ensure user profile exists
+            if (!window.app.userProfile) {
+                window.app.initUserProfile();
+            }
+            // Store CEP in user profile
+            window.app.userProfile.cep = cartCep;
+            window.app.saveUserProfileToStorage();
+            console.log('Cart CEP migrated to profile:', cartCep);
+        }
     }
     window.app.showPage('shipping');
 }

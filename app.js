@@ -1274,8 +1274,58 @@ class AppState {
         }
         // Remove activity listeners
         this.removeActivityListeners();
-        this.showMessage('Logout realizado com sucesso!', 'success');
+        this.showMessage('Sessão expirada por inatividade', 'info');
+        this.resetZipperAnimation();
         this.showPage('home');
+    }
+
+    // Method to reset zipper animation
+    resetZipperAnimation() {
+        if (this.zipperAnimation) {
+            // Reset animation state
+            this.zipperAnimation.isAnimating = false;
+            
+            // Reset DOM elements
+            const elements = this.zipperAnimation.elements;
+            if (elements.zipperContainer) {
+                elements.zipperContainer.style.display = 'block';
+                elements.zipperContainer.style.zIndex = '9999';
+            }
+            
+            if (elements.fabricLeft) elements.fabricLeft.style.display = 'block';
+            if (elements.fabricRight) elements.fabricRight.style.display = 'block';
+            if (elements.zipperSlider) elements.zipperSlider.style.display = 'block';
+            if (elements.zipperTeeth) elements.zipperTeeth.style.display = 'block';
+            
+            // Reset opacity
+            if (elements.fabricLeft) elements.fabricLeft.style.opacity = '1';
+            if (elements.fabricRight) elements.fabricRight.style.opacity = '1';
+            if (elements.zipperSlider) elements.zipperSlider.style.opacity = '1';
+            if (elements.zipperTeeth) elements.zipperTeeth.style.opacity = '1';
+            
+            // Reset homepage content
+            if (elements.homepageContent) {
+                elements.homepageContent.style.opacity = '0';
+                elements.homepageContent.style.transform = 'scale(0.8) rotateX(180deg)';
+            }
+            
+            // Force DOM reflow
+            void elements.zipperContainer.offsetWidth;
+            
+            // Regenerate teeth for current viewport
+            this.zipperAnimation.generateTeeth();
+            
+            // Setup initial state
+            this.zipperAnimation.setupInitialState();
+            
+            // Start animation with delay
+            setTimeout(() => {
+                this.zipperAnimation.startAnimation();
+            }, 500);
+        } else {
+            // Fallback: reinitialize entire zipper animation
+            this.initializeZipperAnimation();
+        }
     }
 
     // Method to reset inactivity timer

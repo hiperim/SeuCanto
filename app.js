@@ -261,6 +261,12 @@ class AppState {
         this.currentMainImageIndex = 0;
         this.inactivityTimer = null;
         this.sessionDuration = 900000; // 15 * 60 * 1000 - in milisec
+        this.otpAttempts = new Map(); // Track attempts per email
+        this.otpGenerationAttempts = new Map(); // Track generation attempts
+        this.maxOtpAttempts = 3; // Max verification attempts
+        this.maxGenerationAttempts = 5; // Max generation attempts per hour
+        this.attemptWindowMs = 3600000; // 1 hour in milliseconds
+        this.lockoutDurationMs = 1800000; // 30 minutes lockout
     }
 
     init() {
@@ -1221,37 +1227,51 @@ class AppState {
             modal.classList.remove('active');
         }
     }
+    // Login handler with rate limiting
     async handleLogin(e) {
         e.preventDefault();
         const email = document.getElementById('emailInput').value;
+        
         if (!this.validateEmail(email)) {
             this.showMessage('Por favor, insira um e-mail válido.', 'error');
             return;
         }
-        // Show loading message
+        
+        // Check if generation is rate limited
+        if (!this.canGenerateOTP(email, Date.now())) {
+            const lockoutEnd = this.getGenerationLockoutEnd(email);
+            const remainingTime = Math.ceil((lockoutEnd - Date.now()) / 60000);
+            this.showMessage(`Muitas tentativas de login. Tente novamente em ${remainingTime} minutos.`, 'error');
+            return;
+        }
+        
         this.showMessage('Enviando código...', 'info');
+        
+        // Handle cart transfer for logged-in users
         if (!this.isLoggedIn) {
-            const sessionCart = sessionStorage.getItem('seucanto_cart');
+            const sessionCart = sessionStorage.getItem('seucantto_cart_session');
             if (sessionCart) {
-                localStorage.setItem('seucanto_cart', sessionCart);
-                sessionStorage.removeItem('seucanto_cart');
+                localStorage.setItem('seucantto_cart_persistent', sessionCart);
+                sessionStorage.removeItem('seucantto_cart_session');
             }
         }
+        
         this.user = { email };
+        
         try {
-            // Wait for OTP generation to complete
             await this.generateOTP();
             this.closeModal('loginModal');
+            
             const otpModal = document.getElementById('otpModal');
             if (otpModal) {
                 otpModal.classList.add('active');
             }
+            
             this.startOTPTimer();
             this.showMessage(`Código enviado para ${email}`, 'success');
-            // Preserve previous page context
-            this.previousPage = this.currentPage;
+            
         } catch (error) {
-            this.showMessage('Erro ao enviar código. Verifique seu email e tente novamente.', 'error');
+            this.showMessage(error.message || 'Erro inesperado. Tente novamente.', 'error');
             console.error('Login OTP generation failed:', error);
         }
     }
@@ -1274,7 +1294,7 @@ class AppState {
         }
         // Remove activity listeners
         this.removeActivityListeners();
-        this.showMessage('Sessão expirada por inatividade', 'info');
+        this.showMessage('Logout realizado', 'info');
         this.resetZipperAnimation();
         this.showPage('home');
     }
@@ -1434,6 +1454,105 @@ class AppState {
                 await new Promise(resolve => setTimeout(resolve, 500 * attempts));
             }
         }
+    }
+
+        // Check if user can generate OTP
+    canGenerateOTP(email, currentTime) {
+        const attempts = this.otpGenerationAttempts.get(email) || [];
+        // Remove old attempts outside the window
+        const recentAttempts = attempts.filter(time => 
+            currentTime - time < this.attemptWindowMs
+        );
+        // Update stored attempts
+        this.otpGenerationAttempts.set(email, recentAttempts);
+        // Check if under the limit
+        return recentAttempts.length < this.maxGenerationAttempts;
+    }
+    // Record OTP generation attempt
+    recordGenerationAttempt(email, currentTime) {
+        const attempts = this.otpGenerationAttempts.get(email) || [];
+        attempts.push(currentTime);
+        this.otpGenerationAttempts.set(email, attempts);
+    }
+    // Get when generation lockout ends
+    getGenerationLockoutEnd(email) {
+        const attempts = this.otpGenerationAttempts.get(email) || [];
+        if (attempts.length >= this.maxGenerationAttempts) {
+            return attempts[0] + this.attemptWindowMs;
+        }
+        return 0;
+    }
+    // Enhanced OTP verification with rate limiting
+    handleOTPVerification(e) {
+        e.preventDefault();
+        const otpInput = document.getElementById('otpInput');
+        const enteredCode = otpInput.value.trim();
+        const email = this.user.email;
+        const now = Date.now();
+        // Check if user is locked out
+        if (this.isOTPVerificationLocked(email, now)) {
+            const lockoutEnd = this.getVerificationLockoutEnd(email);
+            const remainingTime = Math.ceil((lockoutEnd - now) / 60000);
+            this.showMessage(`Muitas tentativas incorretas. Tente novamente em ${remainingTime} minutos.`, 'error');
+            return;
+        }
+        // Verify OTP
+        if (enteredCode.toLowerCase() === this.otpCode?.toLowerCase()) {
+            // Successful verification - clear attempts
+            this.otpAttempts.delete(email);
+            this.isLoggedIn = true;
+            this.saveUserToStorage();
+            // Clear OTP data
+            otpInput.value = '';
+            if (this.otpTimer) {
+                clearInterval(this.otpTimer);
+                this.otpTimer = null;
+            }
+            this.startActivityTracking();
+            this.closeModal('otpModal');
+            this.showMessage('Login realizado com sucesso!', 'success');
+            this.otpCode = null;
+            setTimeout(() => {
+                this.showPage('profile');
+            }, 1000);
+        } else {
+            // Failed verification - record attempt
+            this.recordVerificationAttempt(email, now);
+            const attempts = this.otpAttempts.get(email) || [];
+            const remainingAttempts = this.maxOtpAttempts - attempts.length;
+            otpInput.value = '';
+            if (remainingAttempts > 0) {
+                this.showMessage(`Código inválido. ${remainingAttempts} tentativas restantes.`, 'error');
+            } else {
+                this.showMessage('Muitas tentativas incorretas. Conta temporariamente bloqueada.', 'error');
+                this.closeModal('otpModal');
+                // Generate new OTP to invalidate current one
+                this.otpCode = null;
+            }
+        }
+    }
+    // Check if verification is locked
+    isOTPVerificationLocked(email, currentTime) {
+        const attempts = this.otpAttempts.get(email) || [];
+        if (attempts.length >= this.maxOtpAttempts) {
+            const lockoutEnd = attempts[attempts.length - 1] + this.lockoutDurationMs;
+            return currentTime < lockoutEnd;
+        }
+        return false;
+    }
+    // Record verification attempt
+    recordVerificationAttempt(email, currentTime) {
+        const attempts = this.otpAttempts.get(email) || [];
+        attempts.push(currentTime);
+        this.otpAttempts.set(email, attempts);
+    }
+    // Get when verification lockout ends
+    getVerificationLockoutEnd(email) {
+        const attempts = this.otpAttempts.get(email) || [];
+        if (attempts.length >= this.maxOtpAttempts) {
+            return attempts[attempts.length - 1] + this.lockoutDurationMs;
+        }
+        return 0;
     }
 
     startOTPTimer() {

@@ -330,13 +330,16 @@ class AppState {
     }
     loadUserProfileFromStorage() {
         try {
+            // Use consistent key naming
             const profileKey = this.user?.email ? 
-                `seucanto_user_profile_${this.user.email}` : 
-                'seucanto_user_profile';
+                `seucantto_user_profile_${this.user.email}` : 
+                'seucantto_user_profile';
             const stored = localStorage.getItem(profileKey);
             if (stored) {
                 this.userProfile = JSON.parse(stored);
+                console.log('User profile loaded:', this.userProfile);
             } else {
+                console.log('No stored profile found, initializing...');
                 this.initUserProfile();
             }
         } catch (e) {
@@ -346,11 +349,13 @@ class AppState {
     }
     saveUserProfileToStorage() {
         try {
-            // Use dynamic key based on email, same as in loadUserProfileFromStorage
+            // Use consistent key naming - changed from 'seucanto' to 'seucantto'
             const profileKey = this.user?.email ? 
-                `seucanto_user_profile_${this.user.email}` : 
-                'seucanto_user_profile';
+                `seucantto_user_profile_${this.user.email}` : 
+                'seucantto_user_profile';
+            
             localStorage.setItem(profileKey, JSON.stringify(this.userProfile));
+            console.log('User profile saved with key:', profileKey);
         } catch (e) {
             console.error('Error saving user profile:', e);
         }
@@ -956,38 +961,119 @@ class AppState {
         }
     }
 
+    renderUserProfile() {
+        // Ensure user profile is loaded
+        this.loadUserProfileFromStorage();
+        
+        // Call the user info renderer
+        this.renderUserInfo();
+        
+        // Setup contact form if it exists
+        this.setupProfileContactForm();
+        
+        console.log('User profile rendered successfully');
+    }
+
     showLogin() {
         const modal = document.getElementById('loginModal');
         if (modal) {
             modal.classList.add('active');
         }
     }
-    renderUserProfile() {
-        if (!this.isLoggedIn) return;
-        // Render user information
-        this.renderUserInfo();
-        // Setup contact form
-        this.setupProfileContactForm();
-    }
-
     renderUserInfo() {
         const userInfoContent = document.getElementById('userInfoContent');
-        if (!userInfoContent) return;
+        if (!userInfoContent) {
+            console.error('userInfoContent element not found');
+            return;
+        }
         
+        // Ensure profile is loaded
         this.loadUserProfileFromStorage();
         
-        // Get user info shown on user profile page
+        // Debug logging
+        console.log('User profile data:', this.userProfile);
+        console.log('Shipping info data:', this.shippingInfo);
+        console.log('User data:', this.user);
+        
+        // Helper function to safely format address
+        const formatAddress = () => {
+            // First try userProfile.address if it exists and is valid
+            if (this.userProfile?.address && this.userProfile.address !== 'Não informado') {
+                return this.userProfile.address;
+            }
+            
+            // Then try to build from shipping info if all required fields exist
+            if (this.shippingInfo) {
+                const street = this.shippingInfo.street?.trim();
+                const number = this.shippingInfo.number?.trim();
+                const city = this.shippingInfo.city?.trim();
+                const state = this.shippingInfo.state?.trim();
+                
+                // Only build address if all essential components exist
+                if (street && number && city && state) {
+                    return `${street}, ${number} - ${city}/${state}`;
+                }
+            }
+            
+            // Finally try to build from userProfile components
+            if (this.userProfile) {
+                const street = this.userProfile.street?.trim();
+                const number = this.userProfile.number?.trim();
+                const city = this.userProfile.city?.trim();
+                const state = this.userProfile.state?.trim();
+                
+                // Only build address if all essential components exist
+                if (street && number && city && state) {
+                    return `${street}, ${number} - ${city}/${state}`;
+                }
+            }
+            
+            return 'Não informado';
+        };
+        
+        // Helper function to safely format phone
+        const formatSafePhone = () => {
+            const phone = this.userProfile?.phone || this.shippingInfo?.phone || '';
+            if (!phone || phone.trim() === '') return 'Não informado';
+            
+            // Ensure formatPhoneDisplay exists and works
+            try {
+                const formatted = this.formatPhoneDisplay(phone);
+                return formatted || 'Não informado';
+            } catch (error) {
+                console.error('Error formatting phone:', error);
+                return phone || 'Não informado';
+            }
+        };
+        
+        // Helper function to safely format CPF
+        const formatSafeCPF = () => {
+            const cpf = this.userProfile?.cpf || this.shippingInfo?.cpf || '';
+            if (!cpf || cpf.trim() === '') return 'Não informado';
+            
+            // Ensure formatCPFDisplay exists and works
+            try {
+                const formatted = this.formatCPFDisplay(cpf);
+                return formatted || 'Não informado';
+            } catch (error) {
+                console.error('Error formatting CPF:', error);
+                return cpf || 'Não informado';
+            }
+        };
+        
+        // Get user info with safe fallbacks
         const userInfo = {
             email: this.user?.email || 'Não informado',
             name: this.userProfile?.name || this.shippingInfo?.recipient || 'Não informado',
-            phone: this.formatPhoneDisplay(this.userProfile?.phone || this.shippingInfo?.phone || '') || 'Não informado',
-            cpf: this.formatCPFDisplay(this.userProfile?.cpf || this.shippingInfo?.cpf || '') || 'Não informado',
-            address: this.userProfile?.address || 
-                    (this.shippingInfo ? 
-                        `${this.shippingInfo.street}, ${this.shippingInfo.number} - ${this.shippingInfo.city}/${this.shippingInfo.state}` : 
-                        'Não informado')
+            phone: formatSafePhone(),
+            cpf: formatSafeCPF(),
+            address: formatAddress()
         };
         
+        // Debug logging
+        console.log('Final user info object:', userInfo);
+        
+        // Render the user info
         userInfoContent.innerHTML = `
             <div class="user-info-item">
                 <span class="user-info-label">E-mail:</span>
@@ -1010,12 +1096,13 @@ class AppState {
                 <span class="user-info-value">${userInfo.address}</span>
             </div>
         `;
+        
+        console.log('User info HTML updated');
     }
 
     // Edit info form
     populateEditInfoForm() {
         this.loadUserProfileFromStorage();
-        
         const nameEl = document.getElementById('editName');
         const emailEl = document.getElementById('editEmail');
         const phoneEl = document.getElementById('editPhone');
@@ -1027,13 +1114,11 @@ class AppState {
         const stateEl = document.getElementById('editState');
         const numberEl = document.getElementById('editNumber');
         const complementEl = document.getElementById('editComplement');
-        
         // Populate with formatted data
         if (nameEl) nameEl.value = this.userProfile?.name || this.shippingInfo?.recipient || '';
         if (emailEl) emailEl.value = this.user?.email || '';
         if (phoneEl) phoneEl.value = this.formatPhoneDisplay(this.userProfile?.phone || this.shippingInfo?.phone || '');
         if (cpfEl) cpfEl.value = this.formatCPFDisplay(this.userProfile?.cpf || this.shippingInfo?.cpf || '');
-        
         // Address fields
         if (cepEl) cepEl.value = this.formatCEPDisplay(this.userProfile?.cep || this.shippingInfo?.cep || '');
         if (streetEl) streetEl.value = this.userProfile?.street || this.shippingInfo?.street || '';
@@ -1044,16 +1129,13 @@ class AppState {
         if (complementEl) complementEl.value = this.userProfile?.complement || this.shippingInfo?.complement || '';
     }
 
-
     // Method below allow sync back to shipping data
     handleEditInfoForm(e) {
         e.preventDefault();
-        
         if (!this.isLoggedIn) {
             this.showMessage('Você precisa estar logado para salvar informações.', 'error');
             return;
         }
-        
         // Get all form data
         const name = document.getElementById('editName')?.value || '';
         const phone = document.getElementById('editPhone')?.value || '';
@@ -1065,21 +1147,17 @@ class AppState {
         const state = document.getElementById('editState')?.value || '';
         const number = document.getElementById('editNumber')?.value || '';
         const complement = document.getElementById('editComplement')?.value || '';
-        
         // Validate required fields
         if (!name.trim()) {
             this.showMessage('Por favor, informe seu nome completo.', 'error');
             return;
         }
-        
         if (!number.trim()) {
             this.showMessage('Por favor, informe o número do endereço.', 'error');
             return;
         }
-        
         // Create formatted address string for display
         const formattedAddress = `${street}, ${number} - ${city}/${state}`;
-        
         // Update user profile with all data
         this.userProfile = {
             ...this.userProfile,
@@ -1095,8 +1173,7 @@ class AppState {
             complement: complement.trim(),
             address: formattedAddress // For display purposes
         };
-        
-        // SYNC: Update shipping info with the same data
+        // Update shipping info with the same data
         this.shippingInfo = {
             ...this.shippingInfo,
             recipient: name.trim(),
@@ -1110,19 +1187,16 @@ class AppState {
             number: number.trim(),
             complement: complement.trim()
         };
-        
         // Save both profile and shipping data
         this.saveUserProfileToStorage();
-        
         this.showMessage('Informações salvas com sucesso!', 'success');
-        
         // Redirect back to profile and refresh user info
         setTimeout(() => {
             this.showPage('profile');
             this.renderUserInfo();
         }, 1000);
     }
-
+    
     // Parse address from the Edit Form
     parseAddress(addressString) {
         // Default values
@@ -1159,11 +1233,10 @@ class AppState {
 
     setupProfileContactForm() {
         const contactForm = document.getElementById('profileContactForm');
-        const contactEmail = document.getElementById('contactEmail');
-        if (contactEmail && this.user?.email) {
-            contactEmail.value = this.user.email;
-        }
         if (contactForm) {
+            // Remove existing event listener if it exists
+            contactForm.removeEventListener('submit', this.handleProfileContactForm.bind(this));
+            // Add the event listener
             contactForm.addEventListener('submit', this.handleProfileContactForm.bind(this));
         }
     }

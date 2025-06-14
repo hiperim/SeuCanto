@@ -16,3 +16,5 @@ git commit .
 del .git\.COMMIT_EDITMSG.swp
 git add .
 git commit .
+git add .
+git commit .

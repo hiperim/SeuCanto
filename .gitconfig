@@ -1,5 +1,6 @@
 [core]
 	editor = nano
+	autocrlf = true
 [user]
 	name = hiperim
 	email = ignatowskiperim@gmail.com

@@ -240,7 +240,7 @@ class ZipperAnimation {
 }
 
 
-// SeuCantto E-commerce App
+// seucanto E-commerce App
 class AppState {
     constructor() {
         this.products = [];
@@ -286,7 +286,7 @@ class AppState {
         this.updateCartCount();
         // Session management for all logged-in users
         if (this.isLoggedIn) {
-            const lastActivity = localStorage.getItem('seucantto_last_activity');
+            const lastActivity = localStorage.getItem('seucanto_last_activity');
             if (lastActivity) {
                 const timeSinceLastActivity = Date.now() - parseInt(lastActivity);
                 console.log(`Time since last activity: ${Math.round(timeSinceLastActivity / 1000)} seconds`);
@@ -325,8 +325,8 @@ class AppState {
     loadUserProfileFromStorage() {
         try {
             const profileKey = this.user?.email ? 
-                `seucantto_user_profile_${this.user.email}` : 
-                'seucantto_user_profile';
+                `seucanto_user_profile_${this.user.email}` : 
+                'seucanto_user_profile';
             const stored = localStorage.getItem(profileKey);
             if (stored) {
                 this.userProfile = JSON.parse(stored);
@@ -342,8 +342,8 @@ class AppState {
         try {
             // Use dynamic key based on email, same as in loadUserProfileFromStorage
             const profileKey = this.user?.email ? 
-                `seucantto_user_profile_${this.user.email}` : 
-                'seucantto_user_profile';
+                `seucanto_user_profile_${this.user.email}` : 
+                'seucanto_user_profile';
             localStorage.setItem(profileKey, JSON.stringify(this.userProfile));
         } catch (e) {
             console.error('Error saving user profile:', e);
@@ -357,7 +357,7 @@ class AppState {
         }
         console.log('Starting comprehensive activity tracking for session management');
         // Set initial activity time
-        localStorage.setItem('seucantto_last_activity', Date.now().toString());
+        localStorage.setItem('seucanto_last_activity', Date.now().toString());
         // Start the inactivity timer
         this.resetInactivityTimer();
         // Setup activity event listeners
@@ -631,7 +631,7 @@ class AppState {
     loadCartFromStorage() {
         try {
         const storage = this.isLoggedIn ? localStorage : sessionStorage;
-        const stored = storage.getItem('seucantto_cart');
+        const stored = storage.getItem('seucanto_cart');
         this.cart = stored ? JSON.parse(stored) : [];
         } catch (e) {
         console.error('Error loading cart:', e);
@@ -641,14 +641,14 @@ class AppState {
     saveCartToStorage() {
         try {
         const storage = this.isLoggedIn ? localStorage : sessionStorage;
-        storage.setItem('seucantto_cart', JSON.stringify(this.cart));
+        storage.setItem('seucanto_cart', JSON.stringify(this.cart));
         } catch (e) {
         console.error('Error saving cart:', e);
         }
     }
     loadUserFromStorage() {
         try {
-            const stored = localStorage.getItem('seucantto_user');
+            const stored = localStorage.getItem('seucanto_user');
             if (stored) {
                 this.user = JSON.parse(stored);
                 this.isLoggedIn = true;
@@ -659,7 +659,7 @@ class AppState {
     }
     saveUserToStorage() {
         try {
-            localStorage.setItem('seucantto_user', JSON.stringify(this.user));
+            localStorage.setItem('seucanto_user', JSON.stringify(this.user));
         } catch (e) {
             console.error('Error saving user to storage:', e);
         }
@@ -1231,10 +1231,10 @@ class AppState {
         // Show loading message
         this.showMessage('Enviando código...', 'info');
         if (!this.isLoggedIn) {
-            const sessionCart = sessionStorage.getItem('seucantto_cart');
+            const sessionCart = sessionStorage.getItem('seucanto_cart');
             if (sessionCart) {
-                localStorage.setItem('seucantto_cart', sessionCart);
-                sessionStorage.removeItem('seucantto_cart');
+                localStorage.setItem('seucanto_cart', sessionCart);
+                sessionStorage.removeItem('seucanto_cart');
             }
         }
         this.user = { email };
@@ -1259,12 +1259,12 @@ class AppState {
         console.log('Logging out user and cleaning up session');
         this.isLoggedIn = false;
         // Clear session-related data but keep profile
-        localStorage.removeItem('seucantto_user');
-        localStorage.removeItem('seucantto_last_activity');
+        localStorage.removeItem('seucanto_user');
+        localStorage.removeItem('seucanto_last_activity');
         // Move cart to session storage if needed
         if (this.cart.length > 0) {
-            sessionStorage.setItem('seucantto_cart', JSON.stringify(this.cart));
-            localStorage.removeItem('seucantto_cart');
+            sessionStorage.setItem('seucanto_cart', JSON.stringify(this.cart));
+            localStorage.removeItem('seucanto_cart');
         }
         // Clear timers and event listeners
         if (this.inactivityTimer) {
@@ -1347,7 +1347,7 @@ class AppState {
         }, this.sessionDuration);
         // Update last activity time
         const now = Date.now();
-        localStorage.setItem('seucantto_last_activity', now.toString());
+        localStorage.setItem('seucanto_last_activity', now.toString());
         // Debug logging (remove in production)
         console.log(`Activity detected - timer reset. Next timeout in ${this.sessionDuration / 1000} seconds`);
     }
@@ -2314,7 +2314,7 @@ window.addEventListener('load', () => {
 // Handles session termination
 window.addEventListener('beforeunload', () => {
     if (!this.isLoggedIn) {
-      sessionStorage.removeItem('seucantto_cart');
+      sessionStorage.removeItem('seucanto_cart');
     }
 });
 

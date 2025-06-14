@@ -24,3 +24,9 @@ git commit .
 git config --global core.editor "notepad"
 git add .
 git commit .
+winget install GNU.Nano
+nano
+winget install --id=okibcn.nano -e
+choco install nano -y
+git add .
+git commit .

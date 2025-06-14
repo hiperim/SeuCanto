@@ -44,9 +44,9 @@
                 </div>
                     
                 <nav class="nav-menu">
-                    <a href="#home" onclick="showPage('home')">·Início·</a>
-                    <a href="#history" onclick="showPage('history')">·Nossa história·</a>
-                    <a href="#faq" onclick="showPage('faq')">·FAQ·</a>
+                    <a href="#home" tabindex="1" onclick="showPage('home')">·Início·</a>
+                    <a href="#history" tabindex="2" onclick="showPage('history')">·Nossa história·</a>
+                    <a href="#faq" tabindex="3" onclick="showPage('faq')">·FAQ·</a>
                 </nav>
                     
                 <div class="header-actions">
@@ -69,10 +69,9 @@
         </div>
     </header>
 
-    <!-- Main Content -->
+    <!-- MAIN CONTENT -->
     <main class="main-content">
-            
-        <div id="homepage-content" class="homepage-content">
+        <div id="homepage-content" tabindex="1" class="homepage-content">
             <!-- Home Page -->
             <div id="homePage" class="page active">
                 <div class="container">
@@ -190,8 +189,6 @@
             <div id="profilePage" class="page">
                 <div class="container">
                     <h2>Meu Perfil</h2>
-                    
-                    <!-- Modified Information Boxes - Removed purchases, added edit button inside -->
                     <div class="profile-info-grid">
                         <!-- User Information Box with Edit Button -->
                         <div class="profile-info-box">
@@ -258,26 +255,35 @@
             </div>
 
             <!-- FAQ Page -->
-            <div id="faqPage" class="page">
+            <div id="faqPage" tabindex="2" class="page">
                 <div class="container">
-                    <a>Perguntas Frequentes</a>
-                    <p>Esta página está em construção. Em breve teremos as principais dúvidas respondidas.</p>
+                    <button class="btn btn--outline mb-16" onclick="window.app.showPage('home')">← Voltar</button>
+                    <h1>Perguntas Frequentes</h1>
+                    <div class="faq-content">
+                        <p>Esta página está em construção. Em breve teremos as principais dúvidas respondidas.</p>
+                    </div>
                 </div>
             </div>
 
             <!-- Nossa história -->
-            <div id="historyPage" class="page">
+            <div id="historyPage" tabindex="3" class="page">
                 <div class="container">
-                    <a>Nossa história</a>
-                    <p>Esta página está em construção. Em breve disponibilizaremos nossa política de privacidade completa.</p>
+                    <button class="btn btn--outline mb-16" onclick="window.app.showPage('home')">← Voltar</button>
+                    <h1>Nossa História</h1>
+                    <div class="history-content">
+                        <p>Esta página está em construção. Em breve disponibilizaremos nossa história completa.</p>
+                    </div>
                 </div>
             </div>
 
             <!-- Privacy Policy Page -->
-            <div id="privacyPage" class="page">
+            <div id="privacyPage" tabindex="4" class="page">
                 <div class="container">
-                    <a>Política de Privacidade</a>
-                    <p>Esta página está em construção. Em breve disponibilizaremos nossa política de privacidade completa.</p>
+                    <button class="btn btn--outline mb-16" onclick="window.app.showPage('home')">← Voltar</button>
+                    <h1>Política de Privacidade</h1>
+                    <div class="privacy-content">
+                        <p>Esta página está em construção. Em breve disponibilizaremos nossa política de privacidade completa.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -307,7 +313,6 @@
                     
                     <!-- Enhanced Address Section -->
                     <h2>Endereço</h2>
-                    
                     <div class="form-group">
                         <label class="form-label">CEP</label>
                         <input type="text" id="editCep" class="form-control" maxlength="9" required>
@@ -336,7 +341,6 @@
                         <label class="form-label">Complemento (opcional)</label>
                         <input type="text" id="editComplement" class="form-control" maxlength="16">
                     </div>
-                    
                     <button type="submit" class="btn btn--primary btn--full-width">Salvar Alterações</button>
                 </form>
             </div>
@@ -346,7 +350,6 @@
         <div id="productDetailPage" class="page">
             <div class="container">
                 <button class="btn btn--outline mb-16" onclick="window.app.showPage('home')">← Voltar</button>
-                
                 <div class="product-detail-container">
                     <div class="product-images">
                         <div class="main-image">

@@ -49,7 +49,6 @@ class ZipperAnimation {
             // Detect Ctrl+Plus, Ctrl+Minus, Ctrl+0
             if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '0')) {
                 const currentZoom = window.screen.width / window.innerWidth;
-                
                 // Allow zoom in beyond current level, but prevent zoom out below 66.66%
                 if (e.key === '-' && currentZoom <= 0.67) {
                     e.preventDefault();
@@ -58,7 +57,6 @@ class ZipperAnimation {
                 }
             }
         }, { passive: false });
-
         // Prevent wheel zoom when below threshold
         document.addEventListener('wheel', (e) => {
             if (e.ctrlKey) {
@@ -214,7 +212,7 @@ class ZipperAnimation {
         this.elements.zipperTeeth.style.opacity = zipperOpacity.toString();
     }
     onAnimationComplete() {
-        // Add scroll restoration after animation
+        // Add scroll restore to 0 after animation
         window.requestAnimationFrame(() => {
             window.scrollTo(0, this.savedScrollPosition);
         });
@@ -332,8 +330,8 @@ class AppState {
         try {
             // Use consistent key naming
             const profileKey = this.user?.email ? 
-                `seucantto_user_profile_${this.user.email}` : 
-                'seucantto_user_profile';
+                `seucanto_user_profile_${this.user.email}` : 
+                'seucanto_user_profile';
             const stored = localStorage.getItem(profileKey);
             if (stored) {
                 this.userProfile = JSON.parse(stored);
@@ -349,10 +347,10 @@ class AppState {
     }
     saveUserProfileToStorage() {
         try {
-            // Use consistent key naming - changed from 'seucanto' to 'seucantto'
+            // Use consistent key naming
             const profileKey = this.user?.email ? 
-                `seucantto_user_profile_${this.user.email}` : 
-                'seucantto_user_profile';
+                `seucanto_user_profile_${this.user.email}` : 
+                'seucanto_user_profile';
             
             localStorage.setItem(profileKey, JSON.stringify(this.userProfile));
             console.log('User profile saved with key:', profileKey);
@@ -1324,10 +1322,10 @@ class AppState {
         
         // Handle cart transfer for logged-in users
         if (!this.isLoggedIn) {
-            const sessionCart = sessionStorage.getItem('seucantto_cart_session');
+            const sessionCart = sessionStorage.getItem('seucanto_cart_session');
             if (sessionCart) {
-                localStorage.setItem('seucantto_cart_persistent', sessionCart);
-                sessionStorage.removeItem('seucantto_cart_session');
+                localStorage.setItem('seucanto_cart_persistent', sessionCart);
+                sessionStorage.removeItem('seucanto_cart_session');
             }
         }
         

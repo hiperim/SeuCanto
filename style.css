@@ -1161,7 +1161,7 @@ body {
 }
 
 /* Product detail - mobile responsiveness */
-@media (max-width: 768px) {
+@media (max-width: 1080px) {
 
     .nav-menu {
       font-size: var(--font-size-md);

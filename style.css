@@ -1163,6 +1163,19 @@ body {
 /* Product detail - mobile responsiveness */
 @media (max-width: 768px) {
 
+    .nav-menu {
+      font-size: var(--font-size-md);
+      gap: var(--space-8);
+    }
+  
+    .mobile-menu-toggle {
+      display: flex;
+    }
+
+    .logo {
+      gap: var(--space-2)
+    }
+
     .footer-content {
         flex-direction: column;
         gap: var(--space-8);
@@ -1610,7 +1623,7 @@ body {
 
   .nav-menu {
     font-size: var(--font-size-xxs);
-    gap: var(--space-4);
+    gap: var(--space-2);
   }
 }
 

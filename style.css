@@ -1167,6 +1167,10 @@ body {
       font-size: var(--font-size-md);
       gap: var(--space-8);
     }
+
+    .nav-menu a[href="#home"] {
+      display: none;
+    }
   
     .mobile-menu-toggle {
       display: flex;

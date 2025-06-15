@@ -1813,7 +1813,10 @@ body {
 }
 
 .user-info-item:last-child {
-    border-bottom: none;
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-8) 0;
+    border-bottom: none !important;
 }
 
 .user-info-label {

@@ -1230,13 +1230,15 @@ class AppState {
         }
         return defaultParts;
     }
-
+        
     setupProfileContactForm() {
         const contactForm = document.getElementById('profileContactForm');
+        const contactEmail = document.getElementById('contactEmail');
+        if (contactEmail && this.user?.email) {
+            contactEmail.value = this.user.email;
+        }
         if (contactForm) {
-            // Remove existing event listener if it exists
             contactForm.removeEventListener('submit', this.handleProfileContactForm.bind(this));
-            // Add the event listener
             contactForm.addEventListener('submit', this.handleProfileContactForm.bind(this));
         }
     }
@@ -1943,7 +1945,6 @@ class AppState {
             complement: complement,
             phone: phone
         };
-        this.showMessage('Informações salvas automaticamente no perfil!', 'success');
         this.showPage('payment');
         this.renderOrderSummary();
     }

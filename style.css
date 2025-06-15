@@ -1161,11 +1161,11 @@ body {
 }
 
 /* Product detail - mobile responsiveness */
-@media (max-width: 1080px) {
+@media (max-width: 1081px) {
 
     .nav-menu {
       font-size: var(--font-size-md);
-      gap: var(--space-8);
+      gap: var(--space-12);
     }
 
     .nav-menu a[href="#home"] {

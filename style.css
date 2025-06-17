@@ -686,7 +686,7 @@ body {
     font-family: var(--font-family-base);
     margin: 0; 
     padding: 0;
-    background: #f75929;
+    background: #ffffff;
     overflow-x: hidden; /* Keep horizontal hidden */
     overflow-y: auto; /* Only show vertical scrolling when needed */
     min-height: var(--viewport-height); /* 100vh/100dvh */
@@ -1080,7 +1080,6 @@ body {
     font-weight: var(--font-weight-bold);
     color: white;
     -webkit-text-stroke: 0.3px rgb(0, 0, 0); /* white outline with 1px width */
-    text-stroke: 1px rgb(0, 0, 0); /* for future compatibility */
     text-decoration: line-through;
     opacity: 0.7;
 }
@@ -1090,7 +1089,6 @@ body {
     font-weight: var(--font-weight-bold);
     color: var(--color-purple-hover);
     -webkit-text-stroke: 0.3px rgb(0, 0, 0); /* white outline with 1px width */
-    text-stroke: 1px rgb(0, 0, 0); /* for future compatibility */
     padding: 0.1em 0.3em; 
 
 }

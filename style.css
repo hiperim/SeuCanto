@@ -603,7 +603,6 @@ select.form-control {
 }
 
 .nav-menu a:hover {
-  transform: scale(1.05);
   color: var(--color-purple);
 }
 
@@ -1187,7 +1186,7 @@ body {
 
   .nav-menu {
     font-size: var(--font-size-sm);
-    gap: var(--space-16);
+    gap: var(--space-4);
   }
   
   .nav-menu a[href="#home"] {

@@ -473,9 +473,9 @@ class AppState {
                 "originalPrice": 249.90, 
                 "salePrice": 189.90, 
                 "images": [
+                    "https://images.tcdn.com.br/img/img_prod/965739/bolsa_de_croche_flor_189_variacao_55_1_265d48d1e7521b4e032531686bd96dcc.jpg", 
                     "https://m.media-amazon.com/images/I/51b6Vv0gFXL._AC_SY1000_.jpg",
                     "https://cdn-icons-png.flaticon.com/512/1042/1042536.png",
-                    "https://cdn-icons-png.flaticon.com/512/8322/8322731.png",
                     ""
                 ],
                 "description": "Elegante bolsa de alta qualidade, perfeita para o dia a dia. Feita com materiais duráveis e design moderno que combina com qualquer ocasião. Material principal: couro ecológico",
@@ -488,7 +488,7 @@ class AppState {
                 "originalPrice": 309.90, 
                 "salePrice": 289.90, 
                 "images": [
-                    "https://images.tcdn.com.br/img/img_prod/965739/bolsa_de_croche_flor_189_variacao_55_1_265d48d1e7521b4e032531686bd96dcc.jpg", 
+                    "https://grupooscar.vtexassets.com/arquivos/ids/1384813/kit_bolsa_feminina_necessaire_chenson_original_tresse_elegance_mao_3485004_7217_variacao_22169_1_6bc7c995697d99bcd6fa2cc920cfc990.webp.webp?v=638809296401070000",
                     "https://cdn-icons-png.flaticon.com/512/8322/8322731.png",
                     "https://cdn-icons-png.flaticon.com/512/2345/2345130.png",
                     ""
@@ -503,7 +503,7 @@ class AppState {
                 "originalPrice": 199.90, 
                 "salePrice": 169.90, 
                 "images": [
-                    "https://dzg5mdpaq0k37.cloudfront.net/Custom/Content/Products/17/21/17211_bolsa-feminina-transversal-estilosa-pit-bull-jeans-88805_l15_638826648777502355.webp", 
+                    "https://d87n9o45kphpy.cloudfront.net/Custom/Content/Products/28/07/2807853_bolsa-de-praia-grande-gabriela-trama-rafia-bege-5197342_l1_638663983727213652.webp", 
                     "https://cdn-icons-png.flaticon.com/512/2345/2345130.png",
                     ""
                 ],
@@ -517,7 +517,7 @@ class AppState {
                 "originalPrice": 189.90, 
                 "salePrice": 159.90, 
                 "images": [
-                    "https://www.manuel-dreesmann.com/cdn/shop/files/The-Rivet-Bag-Big-Leather-Dark-Brown-Color-Vegetable-Tanned-Full-Grain-Handcrafted-Spain-Full-Brass-Rivets-Design-Minimalistic-Modern-Handbag-Clutch-Atelier-Madre-Manuel-Dreesmann-Bar.jpg?v=1733758550&width=3000", 
+                    "https://grupooscar.vtexassets.com/arquivos/ids/1462020/kit_bolsa_feminina_necessaire_chenson_original_tresse_elegance_hobo_3485002_7213_variacao_22157_3_04b7417ca5dcce02c69f75a2d6f69620.webp.webp?v=638814471189870000", 
                     "https://img.lojasrenner.com.br/item/928666563/original/8.jpg",
                     ""
                 ],
@@ -531,6 +531,7 @@ class AppState {
                 "originalPrice": 289.90, 
                 "salePrice": 269.90, 
                 "images": [
+                    "https://carmin.vteximg.com.br/arquivos/ids/183659-1000-1500/B018589-COR-8650-1%20-1-.webp.webp?v=638780059407400000",
                     "https://cdn-icons-png.flaticon.com/512/9011/9011529.png", 
                     "https://img.freepik.com/vetores-premium/moedas-do-saco-de-dinheiro_78370-217.jpg",
                     ""                

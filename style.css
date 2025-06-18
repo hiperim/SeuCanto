@@ -69,6 +69,9 @@
   --space-20: 20px;
   --space-24: 24px;
   --space-32: 32px;
+  --space-36: 36px;
+  --space-48: 48px;
+  --space-54: 54px;
   --space-68: 68px;
 
   /* Border Radius */
@@ -256,8 +259,8 @@ pre code {
 
 .btn--outline {
   background: transparent;
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
+  border: 2px solid var(--color-purple);
+  color: var(--color-purple-hover);
 }
 
 .btn--outline:hover {
@@ -419,26 +422,7 @@ select.form-control {
   color: var(--color-text-secondary)
 }
 
-@media (min-width: 640px) {
-  .container {
-    max-width: var(--container-sm);
-  }
-}
-@media (min-width: 768px) {
-  .container {
-    max-width: var(--container-md);
-  }
-}
-@media (min-width: 1024px) {
-  .container {
-    max-width: var(--container-lg);
-  }
-}
-@media (min-width: 1280px) {
-  .container {
-    max-width: var(--container-xl);
-  }
-}
+
 
 /* Utility classes */
 .flex {
@@ -540,10 +524,12 @@ select.form-control {
 /* Custom Properties for SeuCanto */
 :root {
   --color-purple: #5e1281;
-  --color-purple-hover: #b923ff;
+  --color-lavender: #d5b8db;
+  --color-purple-hover: #9d58bf; /* was #b923ff */
   --color-orange: #F97316;
+  --color-orange-background: #ffc599;
   --color-orange-hover: #EA580C;
-  --header-height: 70px;
+  --header-height: 115px;
   --mobile-breakpoint: 768px;
 }
 
@@ -551,17 +537,16 @@ select.form-control {
 :root {
   --color-primary: var(--color-purple);
   --color-primary-hover: var(--color-purple-hover);
-  --color-primary-active: #6D28D9;
 }
 
 /* Header Styles */
 .header {
+  background: var(--color-lavender);
   padding-top: var(--space-16);
   top: 0;
   left: 0;
   right: 0;
   height: var(--header-height);
-  background: rgb(255, 255, 255);
   border-bottom: 1px solid var(--color-border);
   z-index: 0;
   box-shadow: var(--shadow-sm);
@@ -572,7 +557,7 @@ select.form-control {
   align-items: center;
   justify-content: space-between;
   height: 100%;
-  padding: 0 var(--space-16);
+  padding: 0 var(--space-68);
 }
 
 .logo {
@@ -588,7 +573,7 @@ select.form-control {
 }
 
 .logo-img {
-  height: 40px;
+  height: 90px;
   width: auto;
 }
 
@@ -605,11 +590,16 @@ select.form-control {
 }
 
 .nav-menu a {
-  color: var(--color-text-secondary);
+  color: white;
+  text-shadow:
+    0 0px 4px rgba(94, 18, 129, 0.8),
+    0 0px 8px rgba(94, 18, 129, 0.6),
+    0 0px 16px rgba(94, 18, 129, 0.4),
+    0 0px 32px rgba(94, 18, 129, 0.2);
   text-decoration: none;
   font-weight: var(--font-weight-medium);
   transition: color var(--duration-fast) var(--ease-standard);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-xl);
 }
 
 .nav-menu a:hover {
@@ -641,7 +631,8 @@ select.form-control {
 .cart-btn svg, .user-btn svg {
   width: 24px;
   height: 24px;
-  color: var(--color-text-secondary);
+  color: var(--color-purple);
+  outline-color: #ffffff;
 }
 
 .cart-count {
@@ -686,7 +677,7 @@ body {
     font-family: var(--font-family-base);
     margin: 0; 
     padding: 0;
-    background: #ffffff;
+    background: var(--color-orange-background);
     overflow-x: hidden; /* Keep horizontal hidden */
     overflow-y: auto; /* Only show vertical scrolling when needed */
     min-height: var(--viewport-height); /* 100vh/100dvh */
@@ -699,6 +690,7 @@ body {
 #zipper-container {
     position: fixed;
     top: 0;
+    color: #ffffff;
     left: 0;
     width: 100vw;
     height: var(--viewport-height);
@@ -876,7 +868,10 @@ body {
     display: flex;
     flex-direction: column;
     transform: translateY(0);
+    color: var(--color-orange-background);
     height: auto;
+    max-width: 1280px;
+    margin: 0 auto;
 }
 
 #homepage-content {
@@ -891,7 +886,7 @@ body {
     opacity: 1 !important;
     transform: none !important;
     transition: opacity 0.5s ease, transform 0.5s ease;
-    padding-top: var(--header-height);
+    padding-top: 50px;
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -909,14 +904,16 @@ body {
 }
 
 .footer {
-    background: rgb(255, 255, 255);
+    background: var(--color-lavender);
     border-top: 1px solid var(--color-border);
-    padding: var(--space-16) 0;
+    padding: var(--space-8) 0;
     text-align: center;
     color: var(--color-text-secondary);
     position: relative;
     z-index: 0; /* Ensure footer is covered by zipper */ 
     margin-top: auto;
+    height: 115px;
+    gap: var(--space-10);
 }
 
 .footer-content {
@@ -928,24 +925,37 @@ body {
     text-align: center; 
 }
 
-.footer-top {
-    order: 1;
+.footer-mail-link {
+  font-size: var(--font-size-md);
+  color: black;
+}
+
+.footer-mail-link:hover {
+  color: var(--color-purple);
 }
 
 .footer-bottom {
+    order: 1;
+    font-size: var(--font-size-md);
+    color: black;
+}
+
+.footer-top {
     order: 2;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
 }
 
-.footer-bottom:hover {
-    transform: scale(1.05);
-}
-
 /* Privacy link styling in footer */
 .footer-privacy-link {
-    color: var(--color-text-secondary);
+    color: white;
+    text-shadow:
+      0 0px 4px rgb(0, 0, 0),
+      0 0px 8px rgba(94, 18, 129, 0.8),
+      0 0px 16px rgba(94, 18, 129, 0.6),
+      0 0px 32px rgba(94, 18, 129, 0.4);
     text-decoration: none;
     font-weight: var(--font-weight-medium);
     transition: color var(--duration-fast) var(--ease-standard);
@@ -954,6 +964,15 @@ body {
 
 .footer-privacy-link:hover {
     color: var(--color-purple);
+}
+
+.footer-social-icon {
+  width: 32px;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.footer-social-icon:hover {
+   transform: scale(1.15);
 }
 
 /* Hero Section */
@@ -968,9 +987,9 @@ body {
     /* Image with 65% dark overlay */
     background-image: 
         linear-gradient(rgba(255, 255, 255, 0.0), rgba(255, 255, 255, 0.0)),
-        url('https://www.supernova-postojna.si/fileadmin/_processed_/5/a/csm_Bags_More_727663e934.png');
+        url('https://i.ibb.co/4gSXHV1m/bagsmore3.png');
     
-    background-size: cover;
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
 }
@@ -997,6 +1016,11 @@ body {
 }
 
 /* Product Detail Page Styles */
+.product_pg {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
 .product-detail-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1078,7 +1102,7 @@ body {
 .original-price-detail {
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
-    color: white;
+    color: #737373;
     -webkit-text-stroke: 0.3px rgb(0, 0, 0); /* white outline with 1px width */
     text-decoration: line-through;
     opacity: 0.7;
@@ -1162,7 +1186,7 @@ body {
 @media (max-width: 1081px) {
 
   .nav-menu {
-    font-size: var(--font-size-md);
+    font-size: var(--font-size-sm);
     gap: var(--space-16);
   }
   
@@ -1179,7 +1203,7 @@ body {
   }
   
   .header-content {
-    padding: 0 var(--space-12);
+    padding: 0 var(--space-8);
   }
   
   .logo h1 {
@@ -1268,15 +1292,18 @@ body {
 }
 
 /* Products Grid */
+
+
 .products-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-    padding: 2rem;
+    gap: 5rem;
+    padding-top: 50px;
+    padding-bottom: 50px;
     margin: 0 auto;
-    max-width: 1200px;
     overflow: visible;
     align-content: start;
+    
     }
 
 .product-card {
@@ -1343,13 +1370,15 @@ body {
 
 .product-actions .btn {
     flex: 1;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-md);
     padding: var(--space-8) var(--space-12);
 }
 
 /* Cart Styles */
 /* Cart page specific style */
 #cartPage.active {
+    max-width: 1280px;
+    margin: 0 auto;
     display: block;
     opacity: 1;
     visibility: visible;
@@ -1722,8 +1751,12 @@ body {
 
 /* Custom button styles for specific actions */
 .btn--buy-now {
+    border: 1px dotted var(--color-purple-hover);
     background: var(--color-orange);
     color: white;
+    text-shadow:
+      0 0px 4px rgb(94, 18, 129),
+      0 0px 8px rgba(94, 18, 129, 0.8);
 }
 
 .btn--buy-now:hover {
@@ -1731,8 +1764,12 @@ body {
 }
 
 .btn--add-cart {
-    background: var(--color-secondary);
+    border: 1px dotted var(--color-purple-hover);
+    background: var(--color-lavender);
     color: var(--color-text);
+    text-shadow:
+      0 0px 4px rgb(0, 0, 0),
+      0 0px 8px rgba(94, 18, 129, 0.8);
 }
 
 .btn--add-cart:hover {

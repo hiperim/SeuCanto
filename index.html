@@ -38,8 +38,8 @@
         <div class="container">
             <div class="header-content">
                     
-                <div class="logo" onclick="refreshToAnimation()">
-                    <img src="https://cdn-icons-png.flaticon.com/512/1704/1704735.png" alt="SeuCanto Logo" class="logo-img">
+                <div class="logo" onclick="refreshToAnimation(), showPage('home')";>
+                    <img src="https://i.ibb.co/0prVzcXR/Acantto-logo-branca.png" alt="SeuCanto Logo" class="logo-img">
                     <h1>SeuCanto</h1>
                 </div>
                     
@@ -82,6 +82,7 @@
                     <section class="products-grid" id="productsGrid">
                         <!-- Products will be populated by JS -->
                     </section>
+                    <section class="depoimentos-clientes"></section>
                 </div>
             </div>
 
@@ -346,66 +347,82 @@
         </div>
 
         <!-- Product Detail Page -->
-        <div id="productDetailPage" class="page">
-            <div class="container">
-                <button class="btn btn--outline mb-16" onclick="window.app.showPage('home')">← Voltar</button>
-                <div class="product-detail-container">
-                    <div class="product-images">
-                        <div class="main-image">
-                            <img id="productMainImage" src="" alt="" class="main-product-image">
-                        </div>
-                        <div class="additional-images" id="additionalImages">
-                            <!-- Additional images will be populated by JS -->
-                        </div>
-                    </div>
-                    
-                    <div class="product-details">
-                        <h1 id="productDetailName" class="product-detail-name"></h1>
-                        
-                        <div class="product-detail-prices">
-                            <span id="productDetailOriginalPrice" class="original-price-detail"></span>
-                            <span id="productDetailSalePrice" class="sale-price-detail"></span>
-                        </div>
-                        
-                        <div class="product-description">
-                            <h3>Descrição</h3>
-                            <p id="productDetailDescription"></p>
-                        </div>
-                        
-                        <div class="product-specs">
-                            <h3>Especificações</h3>
-                            <div class="specs-grid">
-                                <div class="spec-item">
-                                    <span class="spec-label">Dimensões:</span>
-                                    <span id="productDetailDimensions"></span>
-                                </div>
-                                <div class="spec-item">
-                                    <span class="spec-label">Peso:</span>
-                                    <span id="productDetailWeight"></span>
-                                </div>
+        <div class="product_pg">
+            <div id="productDetailPage" class="page">
+                <div class="container">
+                    <button class="btn btn--outline mb-16" onclick="window.app.showPage('home')">← Voltar</button>
+                    <div class="product-detail-container">
+                        <div class="product-images">
+                            <div class="main-image">
+                                <img id="productMainImage" src="" alt="" class="main-product-image">
+                            </div>
+                            <div class="additional-images" id="additionalImages">
+                                <!-- Additional images will be populated by JS -->
                             </div>
                         </div>
                         
-                        <div class="product-detail-actions">
-                            <button class="btn btn--buy-now btn--lg" id="buyNowDetailBtn">Comprar</button>
-                            <button class="btn btn--add-cart btn--lg" id="addCartDetailBtn">Adicionar ao carrinho</button>
+                        <div class="product-details">
+                            <h1 id="productDetailName" class="product-detail-name"></h1>
+                            
+                            <div class="product-detail-prices">
+                                <span id="productDetailOriginalPrice" class="original-price-detail"></span>
+                                <span id="productDetailSalePrice" class="sale-price-detail"></span>
+                            </div>
+                            
+                            <div class="product-description">
+                                <h3>Descrição</h3>
+                                <p id="productDetailDescription"></p>
+                            </div>
+                            
+                            <div class="product-specs">
+                                <h3>Especificações</h3>
+                                <div class="specs-grid">
+                                    <div class="spec-item">
+                                        <span class="spec-label">Dimensões:</span>
+                                        <span id="productDetailDimensions"></span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Peso:</span>
+                                        <span id="productDetailWeight"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="product-detail-actions">
+                                <button class="btn btn--buy-now btn--lg" id="buyNowDetailBtn">Comprar</button>
+                                <button class="btn btn--add-cart btn--lg" id="addCartDetailBtn">Adicionar ao carrinho</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+
+
     </main>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
+        <div class="footer-container">
             <div class="footer-top">
-                © 2025 SeuCanto. Todos os direitos reservados.<br>
-                ignatowskiperim@gmail.com
-            </div>
-            <div class="footer-bottom">
                 <a href="#privacy" onclick="showPage('privacy')" class="footer-privacy-link">·Privacidade·</a>
             </div>
+            <div class="footer-bottom">
+                <a href="mailto:ignatowskiperim@gmail.com" class="footer-mail-link">
+                    ignatowskiperim@gmail.com
+                </a><br>
+                © 2025 SeuCanto - CNPJ XXXXXXXXXXXXXXX
+                <div class="footer-sub-bottom">
+                    <a href="https://whatsapp.com" onclick="open">
+                        <img src="https://img.icons8.com/m_outlined/512/whatsapp.png" alt="Whatsapp" class="footer-social-icon">
+                    </a>
+                    <a href="https://instagram.com" onclick="open">
+                        <img src="https://img.icons8.com/?size=512&id=44907&format=png" alt="Instagram" class="footer-social-icon">
+                    </a>
+                </div>
+            </div>
+        </div> 
     </footer>
 
     <!-- Login Modal -->

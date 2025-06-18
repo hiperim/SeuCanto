@@ -1201,10 +1201,6 @@ body {
     display: flex;
   }
   
-  .header-content {
-    padding: 0 var(--space-8);
-  }
-  
   .logo h1 {
     font-size: var(--font-size-lg);
   }

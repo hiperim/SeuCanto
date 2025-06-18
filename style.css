@@ -1182,7 +1182,7 @@ body {
 }
 
 /* Product detail - mobile responsiveness */
-@media (min-width: 481px) and (max-width: 1080px) {
+@media (min-width: 481px) and (max-width: 1180px) {
 
   .nav-menu {
     gap: var(--space-4);

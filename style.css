@@ -1250,7 +1250,7 @@ body {
   }
   
   .header-content {
-    padding: 0 var(--space-8);
+    padding: 0 var(--space-1);
   }
   
   .logo h1 {

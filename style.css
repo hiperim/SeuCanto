@@ -549,7 +549,7 @@ select.form-control {
 .header {
   background: var(--color-lavender);
   padding-top: var(--space-16);
-  position: fixed;
+  position: relative;
   width: 100%;
   max-width: 100vw;
   top: 0;

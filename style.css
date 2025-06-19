@@ -1219,6 +1219,10 @@ body {
     display: none;
   }
 
+  .header {
+    height: 90px;
+  }
+
   .headerContainer {
     padding-right: var(--space-1);
     padding-left: var(--space-1);
@@ -1271,7 +1275,7 @@ body {
   }
 
   .products-grid {
-    margin: 10px;
+    margin: 20px;
   }
   
   .product-actions {

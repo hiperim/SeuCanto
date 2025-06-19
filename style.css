@@ -545,7 +545,7 @@ select.form-control {
   --color-lavender: #d5b8db;
   --color-purple-hover: #9d58bf; /* was #b923ff */
   --color-orange: #F97316;
-  --color-orange-background: #ffc599;
+  --color-orange-background: #ffc599; /* ffc599 */
   --color-orange-hover: #EA580C;
   --header-height: 115px;
   --mobile-breakpoint: 768px;

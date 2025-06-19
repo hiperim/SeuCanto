@@ -260,7 +260,7 @@ class AppState {
         this.currentProductImages = null;
         this.currentMainImageIndex = 0;
         this.inactivityTimer = null;
-        this.sessionDuration = 900000; // 15 * 60 * 1000 - in milisec
+        this.sessionDuration = 259200000; // 72hrs in milisec
         this.otpAttempts = new Map(); // Track attempts per email
         this.otpGenerationAttempts = new Map(); // Track generation attempts
         this.maxOtpAttempts = 3; // Max verification attempts
@@ -297,7 +297,7 @@ class AppState {
             const lastActivity = localStorage.getItem('seucanto_last_activity');
             if (lastActivity) {
                 const timeSinceLastActivity = Date.now() - parseInt(lastActivity);
-                console.log(`Time since last activity: ${Math.round(timeSinceLastActivity / 1000)} seconds`);
+                console.log(`Time since last activity: ${Math.round(timeSinceLastActivity / 3600000)} hours`);
                 
                 if (timeSinceLastActivity > this.sessionDuration) {
                     console.log('Session expired on initialization - logging out');
@@ -375,7 +375,7 @@ class AppState {
         this.resetInactivityTimer();
         // Setup activity event listeners
         this.setupActivityListeners();
-        console.log(`Session tracking active - auto-logout in ${this.sessionDuration / 60000} minutes of inactivity`);
+        console.log(`Session tracking active - auto-logout in ${this.sessionDuration / 3600000} minutes of inactivity`);
     }
 
     // Activity tracker 
@@ -1451,7 +1451,7 @@ class AppState {
         const now = Date.now();
         localStorage.setItem('seucanto_last_activity', now.toString());
         // Debug logging (remove in production)
-        console.log(`Activity detected - timer reset. Next timeout in ${this.sessionDuration / 1000} seconds`);
+        console.log(`Activity detected - timer reset. Next timeout in ${this.sessionDuration / 3600000} minutes`);
     }
 
     handleOTPVerification(e) {

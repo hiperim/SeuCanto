@@ -1212,7 +1212,7 @@ body {
 @media (max-width: 1180px) {
 
   .nav-menu {
-    gap: var(--space-2);
+    gap: var(--space-10);
   }
   
   .nav-menu a[href="#home"] {
@@ -1229,8 +1229,8 @@ body {
   }
 
   .container {
-    padding-right: var(--space-4);
-    padding-left: var(--space-4);
+    padding-right: var(--space-8);
+    padding-left: var(--space-8);
   }
 
   .nav-menu a {

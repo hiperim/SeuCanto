@@ -1269,6 +1269,10 @@ body {
     height: 55px;
     width: auto;
   }
+
+  .products-grid {
+    margin: 10px;
+  }
   
   .product-actions {
     flex-direction: column;

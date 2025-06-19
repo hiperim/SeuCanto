@@ -35,7 +35,7 @@
 
     <!-- Header -->
     <header class="header">
-        <div class="container" id="headerContainer">
+        <div id="headerContainer" class="container">
             <div class="header-content">
                     
                 <div class="logo" onclick="refreshToAnimation(), showPage('home')";>
@@ -75,14 +75,21 @@
             <!-- Home Page -->
             <div id="homePage" class="page active">
                 <div class="container">
-                    <section class="hero-section">
-                        <h2>Seu estilo, sua moda, SeuCanto</h2>
-                        <h3>Bags selecionadas com os melhores preços</h3>
-                    </section>
-                    <section class="products-grid" id="productsGrid">
-                        <!-- Products will be populated by JS -->
-                    </section>
-                    <section class="depoimentos-clientes"></section>
+                    <div class="hero-container">
+                        <section class="hero-section">
+                            <h2>Seu estilo, sua moda, SeuCanto</h2>
+                            <h3>Bags selecionadas com<br>
+                                os melhores preços</h3>
+                        </section>
+                    </div>
+                    <div class="grid-container">
+                        <section class="products-grid" id="productsGrid">
+                            <!-- Products will be populated by JS -->
+                        </section>
+                    </div>
+                    <div class="depoimentos-container">
+                        <section class="depoimentos-clientes"></section>
+                    </div>
                 </div>
             </div>
 

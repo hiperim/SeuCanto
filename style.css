@@ -73,6 +73,7 @@
   --space-48: 48px;
   --space-54: 54px;
   --space-68: 68px;
+  --space-76: 76px;
 
   /* Border Radius */
   --radius-sm: 6px;
@@ -421,14 +422,25 @@ select.form-control {
   margin-right: auto;
   margin-left: auto;
   margin-top: 0;
-  padding-right: var(--space-68);
-  padding-left: var(--space-68);
   overflow: hidden;
   color: var(--color-text-secondary);
   box-sizing: border-box;
 }
 
+  .hero-container {
+    padding-right: var(--space-1);
+    padding-left: var(--space-1);
+  }
 
+  .grid-container {
+    padding-right: var(--space-68);
+    padding-left: var(--space-68);
+  }
+
+  #headerContainer {
+    padding-right: var(--space-68);
+    padding-left: var(--space-68);
+  }
 
 /* Utility classes */
 .flex {
@@ -1223,14 +1235,19 @@ body {
     height: 90px;
   }
 
-  .headerContainer {
+  .hero-container {
     padding-right: var(--space-1);
     padding-left: var(--space-1);
   }
 
-  .container {
-    padding-right: var(--space-8);
-    padding-left: var(--space-8);
+  .grid-container {
+    padding-right: var(--space-16);
+    padding-left: var(--space-16);
+  }
+
+  #headerContainer {
+    padding-right: var(--space-1);
+    padding-left: var(--space-1);
   }
 
   .nav-menu a {
@@ -1270,7 +1287,7 @@ body {
   }
   
   .logo-img {
-    height: 55px;
+    height: 60px;
     width: auto;
   }
 

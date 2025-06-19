@@ -420,9 +420,9 @@ select.form-control {
   max-width: 100%;
   margin-right: auto;
   margin-left: auto;
-  margin-top: auto;
-  padding-right: var(--space-16);
-  padding-left: var(--space-16);
+  margin-top: 0;
+  padding-right: var(--space-68);
+  padding-left: var(--space-68);
   overflow: hidden;
   color: var(--color-text-secondary);
   box-sizing: border-box;
@@ -690,7 +690,7 @@ body {
     font-family: var(--font-family-base);
     margin: 0; 
     padding: 0;
-    background: var(--color-orange-background);
+    background: white;
     overflow-x: hidden; /* Keep horizontal hidden */
     overflow-y: auto; /* Only show vertical scrolling when needed */
     width: 100%;
@@ -907,10 +907,14 @@ body {
     opacity: 1 !important;
     transform: none !important;
     transition: opacity 0.5s ease, transform 0.5s ease;
-    padding-top: 150px;
+
     display: flex;
     flex-direction: column;
     flex: 1;
+}
+
+.homePage {
+    padding-top: 150px;
 }
 
 /* Main Content */
@@ -922,6 +926,7 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
+    background-color: var(--color-orange-background);
 }
 
 .footer {
@@ -1212,6 +1217,11 @@ body {
   
   .nav-menu a [href="#home"] {
     display: none;
+  }
+
+  .container {
+    padding-right: var(--space-2);
+    padding-left: var(--space-2);
   }
 
   .nav-menu a {

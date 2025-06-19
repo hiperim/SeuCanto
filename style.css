@@ -965,7 +965,7 @@ body {
 
 .footer-mail-link {
   font-size: var(--font-size-md);
-  color: black;
+  color: var(--color-purple);
 }
 
 .footer-mail-link:hover {

@@ -8,6 +8,8 @@ class ZipperAnimation {
         this.teeth = [];
         this.archPoints = [];
         this.lastSliderY = 0;
+        this.reviews = [];
+        this.featuredReviews = [];
         
         this.init();
     }
@@ -288,6 +290,8 @@ class AppState {
         this.loadUserProfileFromStorage();
         this.setupEventListeners();
         this.updateCartCount();
+        this.loadReviewsFromStorage();
+        this.renderHomepageReviews();
         // Session management for all logged-in users
         if (this.isLoggedIn) {
             const lastActivity = localStorage.getItem('seucanto_last_activity');
@@ -922,7 +926,7 @@ class AppState {
         window.scrollTo(0, 0);
 
         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-        
+
         // Store current page before changing
         if (pageId !== 'login' && pageId !== 'otp') {
             this.previousPage = pageId;
@@ -957,6 +961,10 @@ class AppState {
             }, 100);
         } else if (pageId === 'admin') {
             this.renderAdminProducts();
+            this.renderAdminReviews();
+        // ALL REVIEWS PAGE
+        } else if (pageId === 'allReviews') {
+            this.renderAllReviews();
         }
     }
 
@@ -2340,6 +2348,264 @@ class AppState {
             }, 300);
         }
     }
+
+
+    // REVIEWS
+    // Load reviews from storage
+    loadReviewsFromStorage() {
+        try {
+            const stored = localStorage.getItem('seucanto_reviews');
+            this.reviews = stored ? JSON.parse(stored) : [];
+            const featuredStored = localStorage.getItem('seucanto_featured_reviews');
+            this.featuredReviews = featuredStored ? JSON.parse(featuredStored) : [];
+        } catch (e) {
+            console.error('Error loading reviews:', e);
+            this.reviews = [];
+            this.featuredReviews = [];
+        }
+    }
+    // Save reviews to storage
+    saveReviewsToStorage() {
+        try {
+            localStorage.setItem('seucanto_reviews', JSON.stringify(this.reviews));
+            localStorage.setItem('seucanto_featured_reviews', JSON.stringify(this.featuredReviews));
+        } catch (e) {
+            console.error('Error saving reviews:', e);
+        }
+    }
+    // Show review modal
+    showReviewModal() {
+        if (!this.isLoggedIn) {
+            this.showMessage('Você precisa estar logado para deixar um depoimento.', 'error');
+            this.showLogin();
+            return;
+        }
+        const modal = document.getElementById('reviewModal');
+        if (modal) {
+            modal.classList.add('active');
+            this.setupStarRating();
+            this.setupCharacterCounter();
+        }
+    }
+    // Setup star rating functionality
+    setupStarRating() {
+        const stars = document.querySelectorAll('.star');
+        const ratingInput = document.getElementById('reviewRating');
+        stars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+                const rating = index + 1;
+                ratingInput.value = rating;
+                // Update visual state
+                stars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+            star.addEventListener('mouseover', () => {
+                const rating = index + 1;
+                stars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.style.color = 'var(--color-orange)';
+                    } else {
+                        s.style.color = '#ddd';
+                    }
+                });
+            });
+        });
+        // Reset on mouse leave
+        const starContainer = document.querySelector('.star-rating');
+        if (starContainer) {
+            starContainer.addEventListener('mouseleave', () => {
+                const currentRating = parseInt(ratingInput.value) || 0;
+                stars.forEach((s, i) => {
+                    if (i < currentRating) {
+                        s.style.color = 'var(--color-orange)';
+                    } else {
+                        s.style.color = '#ddd';
+                    }
+                });
+            });
+        }
+    }
+    // Setup character counter
+    setupCharacterCounter() {
+        const textarea = document.getElementById('reviewComment');
+        const counter = document.querySelector('.character-count');
+        if (textarea && counter) {
+            textarea.addEventListener('input', () => {
+                const count = textarea.value.length;
+                counter.textContent = `${count}/720 caracteres`;
+                
+                if (count > 600) {
+                    counter.style.color = 'var(--color-warning)';
+                } else {
+                    counter.style.color = 'var(--color-text-secondary)';
+                }
+            });
+        }
+    }
+    // Handle review form submission
+    handleReviewForm(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const rating = parseInt(formData.get('rating'));
+        const comment = formData.get('comment').trim();
+        if (!rating || rating < 1 || rating > 5) {
+            this.showMessage('Por favor, selecione uma avaliação de 1 a 5 estrelas.', 'error');
+            return;
+        }
+        if (!comment || comment.length < 10) {
+            this.showMessage('Por favor, escreva um comentário com pelo menos 10 caracteres.', 'error');
+            return;
+        }
+        if (comment.length > 720) {
+            this.showMessage('O comentário não pode exceder 720 caracteres.', 'error');
+            return;
+        }
+        const review = {
+            id: Date.now(),
+            userId: this.user.email,
+            userName: this.user.email.split('@')[0],
+            rating: rating,
+            comment: comment,
+            date: new Date().toLocaleDateString('pt-BR'),
+            timestamp: Date.now()
+        };
+        this.reviews.push(review);
+        this.saveReviewsToStorage();
+        this.closeModal('reviewModal');
+        this.showMessage('Depoimento enviado com sucesso!', 'success');
+        this.renderHomepageReviews();
+        // Reset form
+        event.target.reset();
+        document.getElementById('reviewRating').value = '';
+        document.querySelectorAll('.star').forEach(star => {
+            star.classList.remove('active');
+            star.style.color = '#ddd';
+        });
+    }
+    // Render reviews on homepage
+    renderHomepageReviews() {
+        const container = document.getElementById('reviewsContainer');
+        if (!container) return;
+        // Get top 3 featured reviews or latest reviews
+        const reviewsToShow = this.featuredReviews.length > 0 
+            ? this.featuredReviews.slice(0, 3)
+            : this.reviews.slice(-3).reverse();
+        if (reviewsToShow.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: var(--color-text-secondary);">Ainda não há depoimentos. Seja o primeiro!</p>';
+            return;
+        }
+        container.innerHTML = reviewsToShow.map(review => `
+            <div class="review-card">
+                <div class="review-header">
+                    <span class="review-author">${review.userName}</span>
+                    <span class="review-date">${review.date}</span>
+                </div>
+                <div class="review-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
+                <div class="review-comment">${review.comment}</div>
+            </div>
+        `).join('');
+    }
+    // Render all reviews page
+    renderAllReviews() {
+        const container = document.getElementById('allReviewsContainer');
+        if (!container) return;
+        if (this.reviews.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: var(--color-text-secondary);">Ainda não há depoimentos.</p>';
+            return;
+        }
+        // Sort reviews by date (newest first)
+        const sortedReviews = [...this.reviews].sort((a, b) => b.timestamp - a.timestamp);
+        container.innerHTML = sortedReviews.map(review => `
+            <div class="review-card">
+                <div class="review-header">
+                    <span class="review-author">${review.userName}</span>
+                    <span class="review-date">${review.date}</span>
+                </div>
+                <div class="review-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
+                <div class="review-comment">${review.comment}</div>
+            </div>
+        `).join('');
+    }
+    // Render admin reviews
+    renderAdminReviews() {
+        const container = document.getElementById('adminReviewsContainer');
+        if (!container) return;
+        
+        if (this.reviews.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: var(--color-text-secondary);">Nenhum depoimento encontrado.</p>';
+            return;
+        }
+        
+        const sortedReviews = [...this.reviews].sort((a, b) => b.timestamp - a.timestamp);
+        
+        container.innerHTML = sortedReviews.map(review => {
+            const isFeatured = this.featuredReviews.some(fr => fr.id === review.id);
+            
+            return `
+                <div class="admin-review-item">
+                    <div class="admin-review-content">
+                        <div class="review-header">
+                            <span class="review-author">${review.userName}</span>
+                            <span class="review-date">${review.date}</span>
+                            ${isFeatured ? '<span class="featured-badge">Destaque</span>' : ''}
+                        </div>
+                        <div class="review-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
+                        <div class="review-comment">${review.comment}</div>
+                    </div>
+                    <div class="admin-review-actions">
+                        <button class="btn btn--sm ${isFeatured ? 'btn--secondary' : 'btn--primary'}" 
+                                onclick="app.toggleFeaturedReview(${review.id})">
+                            ${isFeatured ? 'Remover destaque' : 'Destacar'}
+                        </button>
+                        <button class="btn btn--sm" style="background: var(--color-error); color: white;" 
+                                onclick="app.deleteReview(${review.id})">
+                            Deletar
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    // Toggle featured review
+    toggleFeaturedReview(reviewId) {
+        const review = this.reviews.find(r => r.id === reviewId);
+        if (!review) return;
+        const isFeatured = this.featuredReviews.some(fr => fr.id === reviewId);
+        if (isFeatured) {
+            // Remove from featured
+            this.featuredReviews = this.featuredReviews.filter(fr => fr.id !== reviewId);
+            this.showMessage('Depoimento removido dos destaques.', 'info');
+        } else {
+            // Add to featured (max 3)
+            if (this.featuredReviews.length >= 3) {
+                this.showMessage('Máximo de 3 depoimentos em destaque. Remova um primeiro.', 'error');
+                return;
+            }
+            this.featuredReviews.push(review);
+            this.showMessage('Depoimento adicionado aos destaques.', 'success');
+        }
+        this.saveReviewsToStorage();
+        this.renderAdminReviews();
+        this.renderHomepageReviews();
+    }
+    // Delete review
+    deleteReview(reviewId) {
+        if (!confirm('Tem certeza que deseja deletar este depoimento?')) {
+            return;
+        }
+        this.reviews = this.reviews.filter(r => r.id !== reviewId);
+        this.featuredReviews = this.featuredReviews.filter(fr => fr.id !== reviewId);
+        this.saveReviewsToStorage();
+        this.renderAdminReviews();
+        this.renderHomepageReviews();
+        this.showMessage('Depoimento deletado com sucesso.', 'success');
+    }
+
 }
 
 // Global app instance

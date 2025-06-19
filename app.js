@@ -2514,22 +2514,34 @@ class AppState {
     renderAllReviews() {
         const container = document.getElementById('allReviewsContainer');
         if (!container) return;
+        // All reviews page structure 
+        let pageHTML = `
+            <div class="container">
+                <button class="btn btn--outline mb-16" onclick="window.app.showPage('home')">← Voltar</button>
+                <h1>Todos os Depoimentos</h1>
+                <div class="reviews-content">
+        `;
         if (this.reviews.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: var(--color-text-secondary);">Ainda não há depoimentos.</p>';
-            return;
-        }
-        // Sort reviews by date (newest first)
-        const sortedReviews = [...this.reviews].sort((a, b) => b.timestamp - a.timestamp);
-        container.innerHTML = sortedReviews.map(review => `
-            <div class="review-card">
-                <div class="review-header">
-                    <span class="review-author">${review.userName}</span>
-                    <span class="review-date">${review.date}</span>
+            pageHTML += '<p style="text-align: center; color: var(--color-text-secondary);">Ainda não há depoimentos.</p>';
+        } else {
+            // Sort reviews by newest first
+            const sortedReviews = [...this.reviews].sort((a, b) => b.timestamp - a.timestamp);
+            pageHTML += sortedReviews.map(review => `
+                <div class="review-card">
+                    <div class="review-header">
+                        <span class="review-author">${review.userName}</span>
+                        <span class="review-date">${review.date}</span>
+                    </div>
+                    <div class="review-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
+                    <div class="review-comment">${review.comment}</div>
                 </div>
-                <div class="review-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
-                <div class="review-comment">${review.comment}</div>
+            `).join('');
+        }
+        pageHTML += `
+                </div>
             </div>
-        `).join('');
+        `;
+        container.innerHTML = pageHTML;
     }
     // Render admin reviews
     renderAdminReviews() {

@@ -251,6 +251,7 @@ class AppState {
         this.previousPage = 'home';
         this.shippingInfo = null;
         this.pendingPurchaseProductId = null;
+        this.pendingReviewModal = false;
         this.otpCode = null;
         this.otpTimer = null;
         this.isAdmin = false;
@@ -565,6 +566,11 @@ class AppState {
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
             loginForm.addEventListener('submit', this.handleLogin.bind(this));
+        }
+
+        const reviewForm = document.getElementById('reviewForm');
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', this.handleReviewForm.bind(this));
         }
         
         const editInfoForm = document.getElementById('editInfoForm');
@@ -1475,16 +1481,20 @@ class AppState {
             this.otpCode = null;
             // Handle post-login redirection
             setTimeout(() => {
-                if (this.pendingPurchaseProductId) {
+                if (this.pendingReviewModal === true) {
+                    // User came from "Seu depoimento" button - show review modal
+                    this.pendingReviewModal = false; // Reset the flag
+                    this.showReviewModal(); // Show the review modal
+                } else if (this.pendingPurchaseProductId) {
                     // User came from "Comprar" button - go to cart
                     this.showPage('cart');
                     this.pendingPurchaseProductId = null; // Clear the pending purchase
                 } else {
                     // Normal login flow - go to previous page
-                    this.showPage(this.previousPage || 'home');
+                    this.showPage('profile');
                 }
                 this.previousPage = 'home'; // Reset after use
-            }, 1000); 
+            }, 1000);
         } else {
             otpInput.value = '';
             this.showMessage('Código inválido. Tente novamente.', 'error');
@@ -1564,55 +1574,7 @@ class AppState {
         }
         return 0;
     }
-    // Enhanced OTP verification with rate limiting
-    handleOTPVerification(e) {
-        e.preventDefault();
-        const otpInput = document.getElementById('otpInput');
-        const enteredCode = otpInput.value.trim();
-        const email = this.user.email;
-        const now = Date.now();
-        // Check if user is locked out
-        if (this.isOTPVerificationLocked(email, now)) {
-            const lockoutEnd = this.getVerificationLockoutEnd(email);
-            const remainingTime = Math.ceil((lockoutEnd - now) / 60000);
-            this.showMessage(`Muitas tentativas incorretas. Tente novamente em ${remainingTime} minutos.`, 'error');
-            return;
-        }
-        // Verify OTP
-        if (enteredCode.toLowerCase() === this.otpCode?.toLowerCase()) {
-            // Successful verification - clear attempts
-            this.otpAttempts.delete(email);
-            this.isLoggedIn = true;
-            this.saveUserToStorage();
-            // Clear OTP data
-            otpInput.value = '';
-            if (this.otpTimer) {
-                clearInterval(this.otpTimer);
-                this.otpTimer = null;
-            }
-            this.startActivityTracking();
-            this.closeModal('otpModal');
-            this.showMessage('Login realizado com sucesso!', 'success');
-            this.otpCode = null;
-            setTimeout(() => {
-                this.showPage('profile');
-            }, 1000);
-        } else {
-            // Failed verification - record attempt
-            this.recordVerificationAttempt(email, now);
-            const attempts = this.otpAttempts.get(email) || [];
-            const remainingAttempts = this.maxOtpAttempts - attempts.length;
-            otpInput.value = '';
-            if (remainingAttempts > 0) {
-                this.showMessage(`Código inválido. ${remainingAttempts} tentativas restantes.`, 'error');
-            } else {
-                this.showMessage('Muitas tentativas incorretas. Conta temporariamente bloqueada.', 'error');
-                this.closeModal('otpModal');
-                // Generate new OTP to invalidate current one
-                this.otpCode = null;
-            }
-        }
-    }
+
     // Check if verification is locked
     isOTPVerificationLocked(email, currentTime) {
         const attempts = this.otpAttempts.get(email) || [];
@@ -2377,6 +2339,7 @@ class AppState {
     showReviewModal() {
         if (!this.isLoggedIn) {
             this.showMessage('Você precisa estar logado para deixar um depoimento.', 'error');
+            this.pendingReviewModal = true; // Set the flag to indicate pending review modal
             this.showLogin();
             return;
         }
@@ -2761,25 +2724,20 @@ document.addEventListener('DOMContentLoaded', function() {
     window.app.init();
 });
 
-// Handle browser navigation
-window.addEventListener('hashchange', () => {
+// Handle browser navigation - setup de navegação
+function setupBrowserNavigation() {
+  window.addEventListener('popstate', (e) => {
     const page = window.location.hash.substring(1) || 'home';
     if (page === 'admin') {
-        window.app.showAdminLogin();
+      window.app.showAdminLogin();
     } else {
-        window.app.showPage(page);
-    }
-});
+      window.app.showPage(page);
+    };
+  });
+}
 
-// Handle initial load with hash
-window.addEventListener('load', () => {
-    const page = window.location.hash.substring(1) || 'home';
-    if (page === 'admin') {
-        window.app.showAdminLogin();
-    } else {
-        window.app.showPage(page);
-    }
-});
+// Após inicializar AppState
+this.setupBrowserNavigation();
 
 // Handles session termination
 window.addEventListener('beforeunload', () => {

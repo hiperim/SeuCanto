@@ -275,11 +275,9 @@ class AppState {
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => {
                     this.initializeApp();
-                    this.initializeZipperAnimation();
                 });
             } else {
                 this.initializeApp();
-                this.initializeZipperAnimation();
             }
         }
     handleNavigation() {
@@ -296,6 +294,9 @@ class AppState {
         this.updateCartCount();
         this.loadReviewsFromStorage();
         this.renderHomepageReviews();
+        this.loadFeaturedReviewsFromStorage();
+        this.renderHomepageReviews();
+        this.renderAdminReviews();
         // Session management for all logged-in users
         if (this.isLoggedIn) {
             const lastActivity = localStorage.getItem('seucanto_last_activity');
@@ -1340,7 +1341,7 @@ class AppState {
         if (!this.isLoggedIn) {
             const sessionCart = sessionStorage.getItem('seucanto_cart_session');
             if (sessionCart) {
-                localStorage.setItem('seucanto_cart_persistent', sessionCart);
+                localStorage.setItem('seucanto_cart', sessionCart);
                 sessionStorage.removeItem('seucanto_cart_session');
             }
         }
@@ -1734,7 +1735,7 @@ class AppState {
 
         function getZoneByCEP(cep) {
             const prefix = parseInt(cep.substring(0, 2), 10);
-            if (prefix >= 10 && prefix == 0 && prefix <= 19) {
+            if (prefix >= 10 && prefix <= 19) {
                 return { name: 'São Paulo', cost: 28.00 };
             } else if (prefix >= 20 && prefix <= 29) {
                 return { name: 'Região Sudeste', cost: 32.00 };
@@ -2451,9 +2452,15 @@ class AppState {
         };
         this.reviews.push(review);
         this.saveReviewsToStorage();
+        this.loadReviewsFromStorage();
+        this.loadFeaturedReviewsFromStorage();
+        // Update the list of reviews on admin page
+        this.renderAdminReviews();
+        // Update homepage preview
+        this.renderHomepageReviews();
         this.closeModal('reviewModal');
         this.showMessage('Depoimento enviado com sucesso!', 'success');
-        this.renderHomepageReviews();
+
         // Reset form
         event.target.reset();
         document.getElementById('reviewRating').value = '';
@@ -2757,21 +2764,3 @@ window.addEventListener('beforeunload', () => {
       sessionStorage.removeItem('seucanto_cart');
     }
 });
-
-// Handle window resize for zipper animation
-window.addEventListener('resize', () => {
-    if (window.app && window.app.zipperAnimation && !window.app.zipperAnimation.isAnimating) {
-        window.app.zipperAnimation.generateTeeth();
-    }
-});
-
-// Prevent form submission on Enter key in some inputs
-document.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type !== 'submit') {
-        const form = e.target.closest('form');
-        if (form && !e.target.classList.contains('allow-enter')) {
-            e.preventDefault();
-        }
-    }
-});
-

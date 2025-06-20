@@ -91,12 +91,12 @@ class ZipperAnimation {
             const rightTooth = document.createElement('div');
             leftTooth.className = 'tooth tooth-left';
             rightTooth.className = 'tooth tooth-right';
-            leftTooth.style.top = `${i * 15}px`;
-            rightTooth.style.top = `${i * 15}px`;
+            leftTooth.style.top = `${i * teethSpacing}px`;
+            rightTooth.style.top = `${i * teethSpacing}px`;
             this.teeth.push({
                 left: leftTooth,
                 right: rightTooth,
-                position: i * 15,
+                position: i * teethSpacing,
                 opened: false
             });
             container.appendChild(leftTooth);
@@ -134,8 +134,8 @@ class ZipperAnimation {
                 this.updateTeethOpening(zipperProgress);
                 this.updateContentVisibility(zipperProgress);
             } else {
-                const Progress = (elapsed - this.zipperDuration) / this.zoomFadeDuration;
-                this.updateAnimation(Progress);
+                const progress = (elapsed - this.zipperDuration) / this.zoomFadeDuration;
+                this.updateAnimation(progress);
             }
             if (totalProgress < 1) {
                 requestAnimationFrame(animate);
@@ -202,8 +202,8 @@ class ZipperAnimation {
             this.elements.homepageContent.style.transform = `scale(${0.9 + (contentProgress * 0.1)})`;
         }
     }
-    updateAnimation(Progress) {
-        const clampedProgress = Math.min(Progress, 1);
+    updateAnimation(progress) {
+        const clampedProgress = Math.min(progress, 1);
         this.elements.homepageContent.style.opacity = '1';
         const scaleValue = 1.0 + (clampedProgress * 0.3);
         this.elements.homepageContent.style.transform = `scale(${scaleValue})`;
@@ -275,9 +275,11 @@ class AppState {
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => {
                     this.initializeApp();
+                    this.initializeZipperAnimation();
                 });
             } else {
                 this.initializeApp();
+                this.initializeZipperAnimation();
             }
         }
     handleNavigation() {
@@ -285,6 +287,7 @@ class AppState {
         document.documentElement.scrollTop = 0;
     } 
     initializeApp() {
+        this.initializeZipperAnimation();
         this.loadProducts();
         this.loadCartFromStorage();
         this.loadUserFromStorage();
@@ -446,15 +449,13 @@ class AppState {
             this.showContentWithoutAnimation();
             return;
         }
-        setTimeout(() => {
-            try {
-                this.zipperAnimation = new ZipperAnimation();
-                console.log('Zipper animation initialized successfully');
-            } catch (error) {
-                console.error('Error initializing zipper animation:', error);
-                this.showContentWithoutAnimation();
-            }
-        }, 30);
+        try {
+            this.zipperAnimation = new ZipperAnimation();
+            console.log('Zipper animation initialized successfully');
+        } catch (error) {
+            console.error('Error initializing zipper animation: ', error);
+            this.showContentWithoutAnimation();
+        }
     }
     showContentWithoutAnimation() {
         const homepageContent = document.getElementById('homepage-content');
@@ -1332,9 +1333,9 @@ class AppState {
             this.showMessage(`Muitas tentativas de login. Tente novamente em ${remainingTime} minutos.`, 'error');
             return;
         }
-        
+        // Register the retry OTP attempt
+        this.recordGenerationAttempt(email, Date.now());
         this.showMessage('Enviando código...', 'info');
-        
         // Handle cart transfer for logged-in users
         if (!this.isLoggedIn) {
             const sessionCart = sessionStorage.getItem('seucanto_cart_session');
@@ -1463,55 +1464,66 @@ class AppState {
     handleOTPVerification(e) {
         e.preventDefault();
         const otpInput = document.getElementById('otpInput');
-        const enteredCode = otpInput.value;
-        if (enteredCode.toLowerCase() === this.otpCode.toLocaleLowerCase()) {
+        const enteredCode = otpInput.value.trim();
+        const email = this.user.email;
+        const now = Date.now();
+        // Verifiy if user is blocked
+        if (this.isOTPVerificationLocked(email, now)) {
+            const lockoutEnd = this.getVerificationLockoutEnd(email);
+            const remainingTime = Math.ceil((lockoutEnd - now) / 60000);
+            this.showMessage(
+                `Muitas tentativas incorretas. Tente novamente em ${remainingTime} minutos.`,
+                'error'
+            );
+            return;
+        }
+        // Verifiy OTP code
+        if (enteredCode.toLowerCase() === this.otpCode?.toLowerCase()) {
+            // Success - clear retry history
+            this.otpAttempts.delete(email);
             this.isLoggedIn = true;
             this.saveUserToStorage();
-            // Clear OTP-related data
+            // Clean OTP data
             otpInput.value = '';
             if (this.otpTimer) {
                 clearInterval(this.otpTimer);
                 this.otpTimer = null;
             }
-            // Start activity tracking immediately after login
             this.startActivityTracking();
             this.closeModal('otpModal');
             this.showMessage('Login realizado com sucesso!', 'success');
-            // Clear OTP code
             this.otpCode = null;
-            // Handle post-login redirection
+            // Post-login redirect
             setTimeout(() => {
-                if (this.pendingReviewModal === true) {
-                    // User came from "Seu depoimento" button - show review modal
-                    this.pendingReviewModal = false; // Reset the flag
-                    this.showReviewModal(); // Show the review modal
+                if (this.pendingReviewModal) {
+                    this.pendingReviewModal = false;
+                    this.showReviewModal();
                 } else if (this.pendingPurchaseProductId) {
-                    // User came from "Comprar" button - go to cart
                     this.showPage('cart');
-                    this.pendingPurchaseProductId = null; // Clear the pending purchase
+                    this.pendingPurchaseProductId = null;
                 } else {
-                    // Normal login flow - go to previous page
                     this.showPage('profile');
                 }
-                this.previousPage = 'home'; // Reset after use
             }, 1000);
         } else {
+            // 4) Fail - retry registry and avaliate blockage
+            this.recordVerificationAttempt(email, now);
+            const attempts = this.otpAttempts.get(email) || [];
+            const remainingAttempts = this.maxOtpAttempts - attempts.length;
             otpInput.value = '';
-            this.showMessage('Código inválido. Tente novamente.', 'error');
-        }
-    }
-
-    handleAdminLogin(e) {
-        e.preventDefault();
-        const username = document.getElementById('adminUsername').value;
-        const password = document.getElementById('adminPassword').value;
-        if (username === 'admin' && password === 'mozao') {
-            this.isAdmin = true;
-            this.closeModal('adminLoginModal');
-            this.showPage('admin');
-            this.showMessage('Acesso administrativo autorizado', 'success');
-        } else {
-            this.showMessage('Credenciais inválidas', 'error');
+            if (remainingAttempts > 0) {
+                this.showMessage(
+                    `Código inválido. ${remainingAttempts} tentativas restantes.`,
+                    'error'
+                );
+            } else {
+                this.showMessage(
+                    'Muitas tentativas incorretas. Conta temporariamente bloqueada.',
+                    'error'
+                );
+                this.closeModal('otpModal');
+                this.otpCode = null;
+            }
         }
     }
 
@@ -1646,7 +1658,7 @@ class AppState {
         // Determine the zone based of CEP prefix
         function getZoneByCEP(cep) {
             const prefix = parseInt(cep.substring(0, 2), 10);
-            if (prefix >= 10 && prefix == 0 && prefix <= 19) {
+            if (prefix >= 10 && prefix <= 19) {
                 return { name: 'São Paulo', cost: 28.00 };
             } else if (prefix >= 20 && prefix <= 29) {
                 return { name: 'Região Sudeste', cost: 32.00 };

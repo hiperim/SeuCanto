@@ -294,7 +294,6 @@ class AppState {
         this.updateCartCount();
         this.loadReviewsFromStorage();
         this.renderHomepageReviews();
-        this.loadFeaturedReviewsFromStorage();
         this.renderHomepageReviews();
         this.renderAdminReviews();
         // Session management for all logged-in users

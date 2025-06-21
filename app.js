@@ -2324,7 +2324,6 @@ class AppState {
         }
     }
 
-
     // REVIEWS
     // Load reviews from storage
     loadReviewsFromStorage() {

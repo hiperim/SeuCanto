@@ -2112,6 +2112,19 @@ class AppState {
         }, 2000);
     }
 
+    handleAdminLogin(e) {
+        e.preventDefault();
+        const password = document.getElementById('adminPassword').value;
+        if (password === 'mozao') {
+            this.isAdmin = true;
+            this.closeModal('adminLoginModal');
+            this.showPage('admin');
+            this.showMessage('Login de administrador realizado com sucesso!', 'success');
+        } else {
+            this.showMessage('Senha incorreta.', 'error');
+        }
+    }
+
     renderAdminProducts() {
         const list = document.getElementById('adminProductsList');
         if (!list) return;
@@ -2476,7 +2489,7 @@ class AppState {
             ? this.featuredReviews.slice(0, 3)
             : this.reviews.slice(-3).reverse();
         if (reviewsToShow.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: var(--color-text-secondary);">Ainda não há depoimentos. Seja o primeiro!</p>';
+            container.innerHTML = '<p style="text-align: center;">Ainda não há depoimentos. Seja o primeiro!</p>';
             return;
         }
         container.innerHTML = reviewsToShow.map(review => `

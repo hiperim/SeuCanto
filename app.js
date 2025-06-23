@@ -571,7 +571,8 @@ class AppState {
 
         const reviewForm = document.getElementById('reviewForm');
         if (reviewForm) {
-            reviewForm.addEventListener('submit', this.handleReviewForm.bind(this));
+            const boundHandler = this.handleReviewForm.bind(this);
+            reviewForm.addEventListener('submit', boundHandler);
         }
         
         const editInfoForm = document.getElementById('editInfoForm');

@@ -249,8 +249,12 @@ pre code {
 }
 
 .btn--secondary {
+  border: 1px dotted var(--color-purple-hover);
   background: var(--color-secondary);
   color: var(--color-text);
+  text-shadow:
+    0 0px 4px rgb(0, 0, 0),
+    0 0px 8px rgba(94, 18, 129, 0.8);
 }
 
 .btn--secondary:hover {
@@ -1333,10 +1337,17 @@ body {
 }
 .review-card {
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-purple);
     border-radius: var(--radius-base);
     padding: var(--space-16);
     box-shadow: var(--shadow-sm);
+}
+.reviews-content {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: var(--space-32);
+    margin: var(--space-32) 0;
+    border: 1px solid var(--color-border);
 }
 .review-header {
     display: flex;
@@ -1346,7 +1357,7 @@ body {
 }
 .review-author {
     font-weight: var(--font-weight-medium);
-    color: var(--color-text-secondary);
+    color: var(--color-purple);
 }
 .review-date {
     font-size: var(--font-size-sm);

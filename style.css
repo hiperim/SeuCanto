@@ -1123,6 +1123,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: var(--space-24);
+    margin: 20px;
 }
 
 .product-detail-name {

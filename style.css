@@ -1346,7 +1346,7 @@ body {
     background: var(--color-surface);
     border-radius: var(--radius-lg);
     padding: var(--space-32);
-    margin: var(--space-32) 0;
+    margin: 20px;
     border: 1px solid var(--color-border);
 }
 .review-header {

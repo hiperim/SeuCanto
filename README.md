@@ -1,8 +1,29 @@
-Full e-commerce website with implemented features:
+<strong>Website completo de e-commerce com recursos implementados:</strong>
+- Animação de abertura em forma de zíper ao visitar a URL;
+- Design focado em desempenho;
+- Avaliações de usuários com sistema de classificação por estrelas, contagem de caracteres e limitação de avaliações;
+- Página de administrador* com gerenciamento de produtos e de avaliações de usuários;
+- Avaliações armazenadas na página de administrador para pré-visualização antes de serem publicadas;
+- Gerenciamento de perfil do usuário e de dados distribuídos em vários formulários;
+- Implementação de sessionStorage para visitantes e localStorage para usuários autenticados;
+- Rastreamento de sessão e de atividade do usuário, com expiração automática da sessão e preservação de dados;
+- Login por meio de senha única (OTP) via EmailJS, com limitação de tentativas e bloqueio por excesso de tentativas;
+- Auto-completar endereço pelo CEP usando a API ViaCEP;
+- Formatação de entrada para CPF e número de telefone;
+- Galeria de produtos com miniaturas dinâmicas, "clique para zoom", carregamento preguiçoso e cache inteligente;
+- Calculadora de frete baseada em peso com recálculo automático ao alterar o endereço;
+- Navegação por teclado com suporte completo;
+- Implementações responsivas e otimizadas para dispositivos móveis;
+- <i>(*)Para acessar a página de administrador, adicione #admin ao final do endereço HTML.<br>
+    user: admin<br>
+    password: mozao</i>
 
-- Zipper opening animation on URL vistit;
+<strong>Full e-commerce website with implemented features:</strong>
+- Zipper opening animation on URL visit;
 - Performance-focused design;
-- Admin page* product management;
+- User reviews with star rating system, character and rate limiting;
+- Admin page* with product and user review management;
+- Reviews stored on admin page for preview before going online;
 - User profile and data management between multiple forms;
 - 'sessionStorage' implementation for guests, with 'localStorage' for users;
 - Session and user activity tracking, with session auto-expiration and data preservation;
@@ -12,9 +33,7 @@ Full e-commerce website with implemented features:
 - Dynamic product gallery with dynamic thumbnails, click to zoom, lazy loading and smart caching;
 - Weight-based shipping calculator with auto-recalculation on address changes;
 - Keyboard navigation - full tab support;
-- Mobile-friendly implementations.
-
-(*)Admin page: add "#admin" at the end of the html address.
-
-    user: admin
-    password: mozao
+- Mobile-friendly implementations;
+- <i>(*)To access the admin page, add "#admin" at the end of the HTML address.<br>
+    user: admin<br>
+    password: mozao </i>

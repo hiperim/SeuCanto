@@ -268,6 +268,18 @@ class AppState {
         this.attemptWindowMs = 3600000; // 1 hr in ms
         this.lockoutDurationMs = 1800000; // 30 min lockout
         this.reviewAttempts = new Map(); // Track attempts per user
+        // Restore persisted review attempts
+        const stored = localStorage.getItem('seucanto_review_attempts');
+        if (stored) {
+            try {
+                const obj = JSON.parse(stored);
+                Object.entries(obj).forEach(([email, times]) => {
+                    this.reviewAttempts.set(email, times);
+                });
+            } catch (e) {
+                console.warn('Invalid stored review attempts:', e);
+            }
+        }
         this.maxReviewsPerDay = 2; // Allow only 2 reviews
         this.reviewWindowMs = 86400000; // 24 hrs in ms
     }
@@ -1655,6 +1667,9 @@ class AppState {
         // Keep only attempts within last 24h
         const recent = attempts.filter(ts => now - ts < this.reviewWindowMs);
         this.reviewAttempts.set(email, recent);
+        // Persist pruned Map
+        const obj = Object.fromEntries(this.reviewAttempts);
+        localStorage.setItem('seucanto_review_attempts', JSON.stringify(obj));
         return recent.length < this.maxReviewsPerDay;
     }
     // Record review attempt
@@ -1662,6 +1677,9 @@ class AppState {
         const attempts = this.reviewAttempts.get(email) || [];
         attempts.push(now);
         this.reviewAttempts.set(email, attempts);
+        // Persist entire Map to localStorage
+        const obj = Object.fromEntries(this.reviewAttempts);
+        localStorage.setItem('seucanto_review_attempts', JSON.stringify(obj));
     }
 
     // Calculate shipping from informed CEP
@@ -2498,11 +2516,12 @@ class AppState {
         this.loadFeaturedReviewsFromStorage();
         // Update the list of reviews on admin page
         this.renderAdminReviews();
-        // Update homepage preview
-        this.renderHomepageReviews();
-        this.closeModal('reviewModal');
+        // Update homepage preview // removed this.renderHomepageReviews();
         this.showMessage('Depoimento enviado com sucesso!', 'success');
-
+        this.closeModal('reviewModal');
+        setTimeout(() => {
+            this.showPage('home'); // Redirect to homepage
+        }, 500);
         // Reset form
         event.target.reset();
         document.getElementById('reviewRating').value = '';

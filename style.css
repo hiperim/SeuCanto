@@ -1331,7 +1331,7 @@ body {
 }
 .reviews-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: 1fr; /* was: repeat(auto-fit, minmax(300px, 1fr)); */
     gap: var(--space-16);
     margin-bottom: var(--space-24);
 }
@@ -1341,6 +1341,7 @@ body {
     border-radius: var(--radius-base);
     padding: var(--space-16);
     box-shadow: var(--shadow-sm);
+    margin: 10px;
 }
 .reviews-content {
     background: var(--color-surface);

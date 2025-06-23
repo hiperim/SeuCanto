@@ -1,5 +1,3 @@
-import emailjs from 'emailjs-com'
-
 class ZipperAnimation {
     constructor() {
         this.isAnimating = false;
@@ -242,7 +240,7 @@ class ZipperAnimation {
 }
 
 
-// seucanto E-commerce App
+// SeuCantto e-commerce
 class AppState {
     constructor() {
         this.products = [];
@@ -259,17 +257,19 @@ class AppState {
         this.isAdmin = false;
         this.zipperAnimation = null;
         this.domReady = false;
-        // Image gallery state management
-        this.currentProductImages = null;
+        this.currentProductImages = null; // Image gallery state management
         this.currentMainImageIndex = 0;
         this.inactivityTimer = null;
-        this.sessionDuration = 259200000; // 72hrs in milisec
+        this.sessionDuration = 259200000; // 72 hrs in ms
         this.otpAttempts = new Map(); // Track attempts per email
         this.otpGenerationAttempts = new Map(); // Track generation attempts
         this.maxOtpAttempts = 3; // Max verification attempts
         this.maxGenerationAttempts = 5; // Max generation attempts per hour
-        this.attemptWindowMs = 3600000; // 1 hour in milliseconds
-        this.lockoutDurationMs = 1800000; // 30 minutes lockout
+        this.attemptWindowMs = 3600000; // 1 hr in ms
+        this.lockoutDurationMs = 1800000; // 30 min lockout
+        this.reviewAttempts = new Map(); // Track attempts per user
+        this.maxReviewsPerDay = 2; // Allow only 2 reviews
+        this.reviewWindowMs = 86400000; // 24 hrs in ms
     }
 
     init() {
@@ -1649,6 +1649,21 @@ class AppState {
         }, 1000);
     }
 
+    // CHECK IF USER CAN POST REVIEW
+    canPostReview(email, now) {
+        const attempts = this.reviewAttempts.get(email) || [];
+        // Keep only attempts within last 24h
+        const recent = attempts.filter(ts => now - ts < this.reviewWindowMs);
+        this.reviewAttempts.set(email, recent);
+        return recent.length < this.maxReviewsPerDay;
+    }
+    // Record review attempt
+    recordReviewAttempt(email, now) {
+        const attempts = this.reviewAttempts.get(email) || [];
+        attempts.push(now);
+        this.reviewAttempts.set(email, attempts);
+    }
+
     // Calculate shipping from informed CEP
     calculateShipping() {
         const cepInput = document.getElementById('cepInput');
@@ -2112,7 +2127,7 @@ class AppState {
             this.updateCartCount();
             
             this.showPage('home');
-        }, 2000);
+        }, 1000);
     }
 
     handleAdminLogin(e) {
@@ -2443,6 +2458,18 @@ class AppState {
         const formData = new FormData(event.target);
         const rating = parseInt(formData.get('rating'));
         const comment = formData.get('comment').trim();
+        const now = Date.now();
+        const email = this.user.email;
+
+        // Max 2 reviews in 24hrs
+        if (!this.canPostReview(email, now)) {
+            this.showMessage(
+              'Você atingiu o limite de 2 depoimentos em 24 horas.', 
+              'error'
+            );
+            return;
+        }
+        // Star rating
         if (!rating || rating < 1 || rating > 5) {
             this.showMessage('Por favor, selecione uma avaliação de 1 a 5 estrelas.', 'error');
             return;
@@ -2455,6 +2482,7 @@ class AppState {
             this.showMessage('O comentário não pode exceder 720 caracteres.', 'error');
             return;
         }
+        this.recordReviewAttempt(email, now); // Record attempt before saving
         const review = {
             id: Date.now(),
             userId: this.user.email,

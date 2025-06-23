@@ -1,3 +1,5 @@
+import emailjs from 'emailjs-com'
+
 class ZipperAnimation {
     constructor() {
         this.isAnimating = false;
@@ -2103,7 +2105,7 @@ class AppState {
         this.showMessage('Processando pagamento...', 'info');
         
         setTimeout(() => {
-            this.showMessage('Pedido realizado com sucesso! Você receberá um e-mail de confirmação.', 'success');
+            this.showMessage('Pedido realizado com sucesso!', 'success');
             
             this.cart = [];
             this.saveCartToStorage();

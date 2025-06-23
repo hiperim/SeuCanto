@@ -2518,9 +2518,19 @@ class AppState {
         this.renderAdminReviews();
         // Update homepage preview // removed this.renderHomepageReviews();
         this.showMessage('Depoimento enviado com sucesso!', 'success');
-        this.closeModal('reviewModal');
+        // Close review modal
+        const modal = document.getElementById('reviewModal');
+        if (modal) {
+            modal.classList.remove('active'); // Remove visibility class
+        }
+        // Remove backdrop
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) backdrop.remove();
+        // Restore body overflow - allows page scroll
+        document.body.classList.remove('modal-open');
         setTimeout(() => {
-            this.showPage('home'); // Redirect to homepage
+            this.showPage('home'); 
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 500);
         // Reset form
         event.target.reset();
@@ -2536,8 +2546,8 @@ class AppState {
         if (!container) return;
         // Get top 3 featured reviews or latest reviews
         const reviewsToShow = this.featuredReviews.length > 0 
-            ? this.featuredReviews.slice(0, 3)
-            : this.reviews.slice(-3).reverse();
+            ? this.featuredReviews.slice(0, 10)
+            : this.reviews.slice(-10).reverse();
         if (reviewsToShow.length === 0) {
             container.innerHTML = '<p style="text-align: center;">Ainda não há depoimentos. Seja o primeiro!</p>';
             return;
@@ -2636,9 +2646,9 @@ class AppState {
             this.featuredReviews = this.featuredReviews.filter(fr => fr.id !== reviewId);
             this.showMessage('Depoimento removido dos destaques.', 'info');
         } else {
-            // Add to featured (max 3)
-            if (this.featuredReviews.length >= 3) {
-                this.showMessage('Máximo de 3 depoimentos em destaque. Remova um primeiro.', 'error');
+            // Add to featured (max 10)
+            if (this.featuredReviews.length >= 10) {
+                this.showMessage('Máximo de 10 depoimentos em destaque. Remova um primeiro.', 'error');
                 return;
             }
             this.featuredReviews.push(review);

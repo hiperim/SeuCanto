@@ -7,7 +7,7 @@
 - Gerenciamento de perfil do usuário e de dados distribuídos em vários formulários;
 - Implementação de sessionStorage para visitantes e localStorage para usuários autenticados;
 - Rastreamento de sessão e de atividade do usuário, com expiração automática da sessão e preservação de dados;
-- Login por meio de senha única (OTP) via EmailJS, com limitação de tentativas e bloqueio por excesso de tentativas;
+- Login por meio de e-mail e senha única (OTP), com limitação de tentativas e bloqueio por excesso de tentativas;
 - Auto-completar endereço pelo CEP usando a API ViaCEP;
 - Formatação de entrada para CPF e número de telefone;
 - Galeria de produtos com miniaturas dinâmicas, "clique para zoom", carregamento preguiçoso e cache inteligente;
@@ -27,7 +27,7 @@
 - User profile and data management between multiple forms;
 - 'sessionStorage' implementation for guests, with 'localStorage' for users;
 - Session and user activity tracking, with session auto-expiration and data preservation;
-- Login throught One Time Password via 'EmailJS', with attempt rate limiting and lockout implementation;
+- Login throught e-mail and One Time Password (OTP), with attempt rate limiting and lockout implementation;
 - Zip-code (CEP) address auto-completion thought 'ViaCEP API';
 - CPF and phone number input formatting system;
 - Dynamic product gallery with dynamic thumbnails, click to zoom, lazy loading and smart caching;

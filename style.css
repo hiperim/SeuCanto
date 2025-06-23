@@ -1331,7 +1331,7 @@ body {
 }
 .reviews-container {
     display: grid;
-    grid-template-columns: 1fr; /* was: repeat(auto-fit, minmax(300px, 1fr)); */
+    grid-template-columns: repeat(2, 1fr); /* was: repeat(auto-fit, minmax(300px, 1fr)); */
     gap: var(--space-16);
     margin-bottom: var(--space-24);
 }

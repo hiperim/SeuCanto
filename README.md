@@ -14,7 +14,7 @@
 - Calculadora de frete baseada em peso com recálculo automático ao alterar o endereço;
 - Navegação por teclado com suporte completo;
 - Implementações responsivas e otimizadas para dispositivos móveis;
-- <i>(*)Para acessar a página de administrador, adicione #admin ao final do endereço HTML (ex.: hiperim.github.io/fullWebDev/#admin).<br>
+- <i>(*)Para acessar a página de administrador, adicione #admin ao final do endereço HTML.<br> (ex.: hiperim.github.io/fullWebDev/#admin)<br>
     user: admin<br>
     password: mozao</i>
 
@@ -34,6 +34,6 @@
 - Weight-based shipping calculator with auto-recalculation on address changes;
 - Keyboard navigation - full tab support;
 - Mobile-friendly implementations;
-- <i>(*)To access the admin page, add "#admin" at the end of the HTML address (ex.: hiperim.github.io/fullWebDev/#admin).<br>
+- <i>(*)To access the admin page, add "#admin" at the end of the HTML address.<br> (ex.: hiperim.github.io/fullWebDev/#admin)<br>
     user: admin<br>
     password: mozao </i>

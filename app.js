@@ -236,6 +236,10 @@ class ZipperAnimation {
             this.elements.homepageContent.style.transition = 'none';
         }, 1200);
         this.isAnimating = false;
+        // Verifiy reviewSuccess msg first; show msg to user
+        if (sessionStorage.getItem('reviewSuccess') === 'true') {
+            sessionStorage.removeItem('reviewSuccess');
+        }
     }
 }
 
@@ -2526,25 +2530,19 @@ class AppState {
                 star.style.color = '#ddd';
             });
         }, 100);
-        
+        // Mark review success on sessionStorage
+        sessionStorage.setItem('reviewSuccess', 'true');
         // Navigate to home page
         setTimeout(() => {
             this.showPage('home');
         }, 200);
-        
-        // Finally show success message (after everything else is done)
-        setTimeout(() => {
-            this.showMessage('Depoimento enviado com sucesso!', 'success');
-        }, 400);
     }
     // Render reviews on homepage
     renderHomepageReviews() {
         const container = document.getElementById('reviewsContainer');
         if (!container) return;
         // Get top 3 featured reviews or latest reviews
-        const reviewsToShow = this.featuredReviews.length > 0 
-            ? this.featuredReviews.slice(0, 10)
-            : this.reviews.slice(-10).reverse();
+        const reviewsToShow = this.featuredReviews.slice(0, 10);
         if (reviewsToShow.length === 0) {
             container.innerHTML = '<p style="text-align: center;">Ainda não há depoimentos. Seja o primeiro!</p>';
             return;

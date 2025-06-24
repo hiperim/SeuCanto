@@ -2464,32 +2464,38 @@ class AppState {
             });
         }
     }
-    // REVIEW SUBMISSION
+    // Handle review form submission
     submitReview() {
         const form = document.getElementById('reviewForm');
         if (!form) return;
+        
         const formData = new FormData(form);
         const rating = parseInt(formData.get('rating'));
         const comment = formData.get('comment').trim();
         const now = Date.now();
         const email = this.user.email;
-        // All your existing validation code stays the same
+
+        // Validation
         if (!this.canPostReview(email, now)) {
             this.showMessage('Você atingiu o limite de 2 depoimentos em 24 horas.', 'error');
             return;
         }
+        
         if (!rating || rating < 1 || rating > 5) {
             this.showMessage('Por favor, selecione uma avaliação de 1 a 5 estrelas.', 'error');
             return;
         }
+        
         if (!comment || comment.length < 10) {
             this.showMessage('Por favor, escreva um comentário com pelo menos 10 caracteres.', 'error');
             return;
         }
+        
         if (comment.length > 720) {
             this.showMessage('O comentário não pode exceder 720 caracteres.', 'error');
             return;
         }
+
         // Save the review
         this.recordReviewAttempt(email, now);
         const review = {
@@ -2501,13 +2507,16 @@ class AppState {
             date: new Date().toLocaleDateString('pt-BR'),
             timestamp: Date.now()
         };
+        
         this.reviews.push(review);
         this.saveReviewsToStorage();
         this.loadReviewsFromStorage();
         this.loadFeaturedReviewsFromStorage();
         this.renderAdminReviews();
+        
         // First, close the modal immediately
         this.closeModal('reviewModal');
+        
         // Then reset the form (after modal is closed)
         setTimeout(() => {
             form.reset();
@@ -2517,10 +2526,12 @@ class AppState {
                 star.style.color = '#ddd';
             });
         }, 100);
+        
         // Navigate to home page
         setTimeout(() => {
             this.showPage('home');
         }, 200);
+        
         // Finally show success message (after everything else is done)
         setTimeout(() => {
             this.showMessage('Depoimento enviado com sucesso!', 'success');

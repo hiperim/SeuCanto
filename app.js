@@ -280,7 +280,7 @@ class AppState {
                 console.warn('Invalid stored review attempts:', e);
             }
         }
-        this.maxReviewsPerDay = 2; // Allow only 2 reviews
+        this.maxReviewsPerDay = 20; // Allow only 2 reviews
         this.reviewWindowMs = 86400000; // 24 hrs in ms
     }
 
@@ -581,12 +581,6 @@ class AppState {
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
             loginForm.addEventListener('submit', this.handleLogin.bind(this));
-        }
-
-        const reviewForm = document.getElementById('reviewForm');
-        if (reviewForm) {
-            const boundHandler = this.handleReviewForm.bind(this);
-            reviewForm.addEventListener('submit', boundHandler);
         }
         
         const editInfoForm = document.getElementById('editInfoForm');
@@ -2470,24 +2464,20 @@ class AppState {
             });
         }
     }
-    // Handle review form submission
-    handleReviewForm(event) {
-        event.preventDefault();
-        const formData = new FormData(event.target);
+    // REVIEW SUBMISSION
+    submitReview() {
+        const form = document.getElementById('reviewForm');
+        if (!form) return;
+        const formData = new FormData(form);
         const rating = parseInt(formData.get('rating'));
         const comment = formData.get('comment').trim();
         const now = Date.now();
         const email = this.user.email;
-
-        // Max 2 reviews in 24hrs
+        // All your existing validation code stays the same
         if (!this.canPostReview(email, now)) {
-            this.showMessage(
-              'Você atingiu o limite de 2 depoimentos em 24 horas.', 
-              'error'
-            );
+            this.showMessage('Você atingiu o limite de 2 depoimentos em 24 horas.', 'error');
             return;
         }
-        // Star rating
         if (!rating || rating < 1 || rating > 5) {
             this.showMessage('Por favor, selecione uma avaliação de 1 a 5 estrelas.', 'error');
             return;
@@ -2500,7 +2490,8 @@ class AppState {
             this.showMessage('O comentário não pode exceder 720 caracteres.', 'error');
             return;
         }
-        this.recordReviewAttempt(email, now); // Record attempt before saving
+        // Save the review
+        this.recordReviewAttempt(email, now);
         const review = {
             id: Date.now(),
             userId: this.user.email,
@@ -2514,31 +2505,26 @@ class AppState {
         this.saveReviewsToStorage();
         this.loadReviewsFromStorage();
         this.loadFeaturedReviewsFromStorage();
-        // Update the list of reviews on admin page
         this.renderAdminReviews();
-        // Update homepage preview // removed this.renderHomepageReviews();
-        this.showMessage('Depoimento enviado com sucesso!', 'success');
-        // Close review modal
-        const modal = document.getElementById('reviewModal');
-        if (modal) {
-            modal.classList.remove('active'); // Remove visibility class
-        }
-        // Remove backdrop
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) backdrop.remove();
-        // Restore body overflow - allows page scroll
-        document.body.classList.remove('modal-open');
+        // First, close the modal immediately
+        this.closeModal('reviewModal');
+        // Then reset the form (after modal is closed)
         setTimeout(() => {
-            this.showPage('home'); 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 500);
-        // Reset form
-        event.target.reset();
-        document.getElementById('reviewRating').value = '';
-        document.querySelectorAll('.star').forEach(star => {
-            star.classList.remove('active');
-            star.style.color = '#ddd';
-        });
+            form.reset();
+            document.getElementById('reviewRating').value = '';
+            document.querySelectorAll('.star').forEach(star => {
+                star.classList.remove('active');
+                star.style.color = '#ddd';
+            });
+        }, 100);
+        // Navigate to home page
+        setTimeout(() => {
+            this.showPage('home');
+        }, 200);
+        // Finally show success message (after everything else is done)
+        setTimeout(() => {
+            this.showMessage('Depoimento enviado com sucesso!', 'success');
+        }, 400);
     }
     // Render reviews on homepage
     renderHomepageReviews() {

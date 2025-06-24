@@ -3,7 +3,7 @@
 - Design focado em desempenho;
 - Avaliações de usuários com sistema de classificação por estrelas, contagem de caracteres e limitação de avaliações;
 - Página de administrador* com gerenciamento de produtos e de avaliações de usuários;
-- Avaliações armazenadas na página de administrador para pré-visualização antes de serem publicadas;
+- Avaliações dinâmicas de usuários, com controles de administrador em sua página;
 - Gerenciamento de perfil do usuário e de dados distribuídos em vários formulários;
 - Implementação de sessionStorage para visitantes e localStorage para usuários autenticados;
 - Rastreamento de sessão e de atividade do usuário, com expiração automática da sessão e preservação de dados;
@@ -23,7 +23,7 @@
 - Performance-focused design;
 - User reviews with star rating system, character and rate limiting;
 - Admin page* with product and user review management;
-- Reviews stored on admin page for preview before going online;
+- Dynamic user reviews with admin page control;
 - User profile and data management between multiple forms;
 - 'sessionStorage' implementation for guests, with 'localStorage' for users;
 - Session and user activity tracking, with session auto-expiration and data preservation;

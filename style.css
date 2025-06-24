@@ -1070,7 +1070,7 @@ body {
 /* Product Detail Page Styles */
 .product_pg {
   max-width: 1280px;
-  margin: 0 auto;
+  margin: 0;
 }
 
 .product-detail-container {
@@ -1786,21 +1786,39 @@ body {
   .header-actions {
     gap: var(--space-8);
   }
-  
   .cart-btn, .user-btn {
     padding: var(--space-6);
   }
-  
   .cart-btn svg, .user-btn svg {
     width: 20px;
     height: 20px;
   }
-
   .nav-menu {
     font-size: var(--font-size-xxs);
     gap: var(--space-2);
   }
+  .main-image {
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    aspect-ratio: 1; /* Account for padding */
+  }
+  .product-details,
+  .product-specs,
+  .product-description {
+    padding: 0 var(--space-4);
+  }
+  .product-detail-container {
+    display: block;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+  html, body {
+    overflow-x: hidden !important;
+  }
 }
+
 
 @media (max-width: 1200px) {
   .products-grid {
@@ -1809,8 +1827,77 @@ body {
 }
 
 @media (max-width: 768px) {
+  .profile-info-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-16);
+    max-width: 100%;
+  }
+    
+  .profile-info-box {
+    padding: var(--space-16);
+    max-width: 100%;
+  }
+
+  .edit-info-form {
+    max-width: 100%;
+    padding: 0 var(--space-16);
+  }
+
   .products-grid {
     grid-template-columns: repeat(1, 1fr);
+  }
+  .toast-container {
+    top: 15px;
+    max-width: 95vw;
+  }
+  .message {
+    min-width: 250px;
+    padding: var(--space-10) var(--space-16);
+  }
+  .product_pg {
+    max-width: 100%;
+    margin: 0;
+  }
+  /* Make main image responsive */
+  .main-image {
+    width: 100%;
+    max-width: 360px;
+    height: auto;
+    aspect-ratio: 1; /* Maintains square aspect ratio */
+  }
+  /* Fix container overflow */
+  .product-detail-container {
+    grid-template-columns: 1fr;
+    gap: var(--space-16);
+    place-items: stretch; /* Prevents overflow */
+    width: 100%;
+    max-width: 100%;
+  }
+  /* Make product images container responsive */
+  .product-images {
+    width: 100%;
+    max-width: 100%;
+  }
+  /* Additional images layout */
+  .additional-images {
+    justify-content: center;
+    max-width: 100%;
+    overflow-x: auto; /* Allow horizontal scrolling if needed */
+  }
+  /* Ensure product details don't overflow */
+  .product-details {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 var(--space-8);
+  }
+  /* Make buttons responsive */
+  .product-detail-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .product-detail-actions .btn {
+    width: 100%;
+    max-width: 100%;
   }
 }
 
@@ -1885,7 +1972,7 @@ body {
   }
 
   .products-grid {
-    margin: 20px;
+    margin: 10px;
   }
   
   .product-actions {
@@ -1899,8 +1986,8 @@ body {
   }
     
   .main-image {
-    height: 420px;
-    width: 420px;
+    height: 360px;
+    width: 360px;
   }
     
   .product-detail-name {
@@ -1970,18 +2057,6 @@ body {
         width: 100%;
     }
 
-}
-
-@media (max-width: 768px) {
-    .toast-container {
-        top: 15px;
-        max-width: 95vw;
-    }
-    
-    .message {
-        min-width: 250px;
-        padding: var(--space-10) var(--space-16);
-    }
 }
 
 /* Custom button styles for specific actions */
@@ -2131,25 +2206,6 @@ body {
 .profile-contact-form .form-label {
     font-size: var(--font-size-sm);
     margin-bottom: var(--space-4);
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-    .profile-info-grid {
-        grid-template-columns: 1fr;
-        gap: var(--space-16);
-        max-width: 100%;
-    }
-    
-    .profile-info-box {
-        padding: var(--space-16);
-        max-width: 100%;
-    }
-
-    .edit-info-form {
-        max-width: 100%;
-        padding: 0 var(--space-16);
-    }
 }
 
 /* Center the profile page content */

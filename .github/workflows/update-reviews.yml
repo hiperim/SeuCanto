@@ -1,0 +1,41 @@
+name: Update Reviews JSON
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+    paths:
+      - 'reviews/*.md' # Local dos arquivos de novos depoimentos
+  push:
+    branches: [ master ]
+
+jobs:
+  update_reviews:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do repositório
+      uses: actions/checkout@v3
+
+    - name: Configurar Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Gerar JSON de depoimentos
+      run: |
+        mkdir -p data
+        node scripts/build-reviews.js
+
+    - name: Commit e push do reviews.json
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add public/reviews.json
+        git commit -m "Atualização de reviews.json via GitHub Actions" || echo "Sem mudanças"
+        git push origin master
+
+    - name: Deploy no GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public

@@ -1022,6 +1022,8 @@ body {
 .footer-social-icon {
   width: 32px;
   transition: transform var(--duration-fast) var(--ease-standard);
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 .footer-social-icon:hover {

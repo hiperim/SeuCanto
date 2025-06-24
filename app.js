@@ -284,7 +284,7 @@ class AppState {
                 console.warn('Invalid stored review attempts:', e);
             }
         }
-        this.maxReviewsPerDay = 20; // Allow only 2 reviews
+        this.maxReviewsPerDay = 2; // Allow only 2 reviews
         this.reviewWindowMs = 86400000; // 24 hrs in ms
     }
 

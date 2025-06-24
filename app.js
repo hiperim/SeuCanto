@@ -562,7 +562,7 @@ class AppState {
                 ],
                 "description": "A bag preferida do Henrique. Para todas as ocasiões. Material principal: din-din",
                 "dimensions": {"width": 25, "height": 28, "depth": 15}, 
-                "weight": 10
+                "weight": 0.3
             },
             {
                 "id": 6, 

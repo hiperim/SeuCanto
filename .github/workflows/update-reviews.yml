@@ -1,10 +1,14 @@
 name: Update Reviews JSON
 
+
+permissions:
+  contents: write # Allow workflow commit pushes
+
 on:
   pull_request:
     types: [opened, edited, reopened]
     paths:
-      - 'reviews/*.md' # Local dos arquivos de novos depoimentos
+      - 'reviews/*.md' # New reviews location
   push:
     branches: [ master ]
 
@@ -15,6 +19,8 @@ jobs:
     steps:
     - name: Checkout do repositório
       uses: actions/checkout@v3
+      with:
+        persist-credentials: true # Uses GITHUB_TOKEN for git push
 
     - name: Configurar Node.js
       uses: actions/setup-node@v3

@@ -21,9 +21,6 @@ jobs:
       with:
         node-version: '18'
 
-    - name: Instalar dependências (se houver)
-      run: npm ci
-
     - name: Gerar JSON de depoimentos
       run: |
         mkdir -p data

@@ -2564,7 +2564,7 @@ class AppState {
         if (!container) return;
         // All reviews page structure 
         let pageHTML = `
-            <div class="container">
+            <div class="review_container">
                 <button class="btn btn--outline mb-16" onclick="window.app.showPage('home')">← Voltar</button>
                 <h1>Todos os Depoimentos</h1>
                 <div class="reviews-content">

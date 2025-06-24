@@ -1,5 +1,5 @@
 :root {
-  /* Colors */
+  /* Base colors */
   --color-background: rgba(252, 252, 249, 0);
   --color-surface: rgb(255, 255, 255);
   --color-text: rgb(255, 255, 255);
@@ -551,9 +551,10 @@ select.form-control {
     format('woff2');
 }
 
-/* SeuCanto E-commerce Styles */
 
-/* Custom Properties for SeuCanto */
+/* SeuCanto e-commerce Styles */
+
+/* Custom properties for SeuCanto */
 :root {
   --color-purple: #5e1281;
   --color-lavender: #d5b8db;
@@ -832,7 +833,7 @@ body {
     transform: translateX(8px) skew(15deg) !important;
 }
 
-/* zipper slider - starts at top and moves down */
+/* Zipper slider - starts at top and moves down */
 .zipper-slider {
     position: absolute;
     left: 50%;
@@ -891,7 +892,7 @@ body {
     position: relative;
 }
 
-/* Page Management */
+/* Page management */
 .page {
     position: relative;
     width: 100%;
@@ -943,7 +944,7 @@ body {
     padding-top: 150px;
 }
 
-/* Main Content */
+/* Main content */
 .main-content {
     min-height: 0;
     position: relative;
@@ -1027,7 +1028,7 @@ body {
    transform: scale(1.15);
 }
 
-/* Hero Section */
+/* Hero section */
 .hero-section {
     text-align: center;
     padding: var(--space-32) 0;
@@ -1067,7 +1068,7 @@ body {
     font-weight: bold;
 }
 
-/* Product Detail Page Styles */
+/* Product detail page styles */
 .product_pg {
   max-width: 1280px;
   margin: 0;
@@ -1234,7 +1235,7 @@ body {
     margin-bottom: var(--space-16);
 }
 
-/* Products Grid */
+/* Products grid */
 .products-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1316,11 +1317,11 @@ body {
 }
 
 /* REVIEW /*
-/* Review System Styles */
+/* Review system styles */
 .depoimentos-container {
     background: var(--color-surface);
     border-radius: var(--radius-lg);
-    padding: var(--space-32);
+    padding: var(--space-16);
     margin: var(--space-32) 0;
     border: 1px solid var(--color-border);
 }
@@ -1346,8 +1347,8 @@ body {
 .reviews-content {
     background: var(--color-surface);
     border-radius: var(--radius-lg);
-    padding: var(--space-32);
-    margin: 20px;
+    padding: var(--space-16);
+    margin: 10px;
     border: 1px solid var(--color-border);
 }
 .review-header {
@@ -1378,7 +1379,7 @@ body {
     gap: var(--space-16);
     justify-content: center;
 }
-/* Star Rating Component */
+/* Star rating component */
 .star-rating {
     display: flex;
     gap: var(--space-4);
@@ -1401,16 +1402,27 @@ body {
     font-size: var(--font-size-sm);
     margin-top: var(--space-4);
 }
-/* All Reviews Page */
+/* All reviews page */
 .all-reviews-container {
     display: flex;
     flex-direction: column;
     gap: var(--space-16);
 }
+
+.review_container {
+    max-width: 100%;
+    margin-right: 20px;
+    margin-left: 20px;
+    margin-top: 0;
+    overflow: hidden;
+    color: var(--color-text-secondary);
+    box-sizing: border-box;
+}
+
 .all-reviews-container .review-card {
     max-width: 100%;
 }
-/* Admin Reviews */
+/* Admin reviews */
 .admin-reviews-container {
     display: flex;
     flex-direction: column;
@@ -1805,7 +1817,8 @@ body {
   }
   .product-details,
   .product-specs,
-  .product-description {
+  .product-description,
+  .reviews-content {
     padding: 0 var(--space-4);
   }
   .product-detail-container {

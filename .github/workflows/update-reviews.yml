@@ -1,41 +1,88 @@
 name: Update Reviews JSON
 
+
+permissions:
+  contents: write # Allow workflow commit pushes
+  pull-requests: write
+
 on:
   pull_request:
     types: [opened, edited, reopened]
     paths:
-      - 'reviews/*.md' # Local dos arquivos de novos depoimentos
+      - 'reviews/*.md' # New reviews location
   push:
     branches: [ master ]
+    paths:
+      - 'reviews/*.md'
+      - 'scripts/build-reviews.js'
+      - '.github/workflows/update-reviews.yml'
 
 jobs:
-  update_reviews:
+  build_and_pr:
     runs-on: ubuntu-latest
-
+    outputs:
+      pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
+    
     steps:
-    - name: Checkout do repositório
-      uses: actions/checkout@v3
+      - name: Criar/Atualizar Pull Request
+        id: create_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} # Token de autenticação do Actions
+          commit-message: "chore: create reviews.json" # Mensagem de commit para mudanças em reviews.json
+          path: public/reviews.json # Caminho do arquivo que será incluído no PR
+          branch: update-reviews-${{ github.run_id }} # Nome da branch temporária para o PR
+          base: main # Branch de destino do PR
+          title: "Atualiza reviews.json via Actions" # Título do Pull Request criado
+          body: "Este PR atualiza o arquivo reviews.json" # Descrição do Pull Request
 
-    - name: Configurar Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
+      - name: Checkout of repository
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: true # Uses GITHUB_TOKEN for git push
 
-    - name: Gerar JSON de depoimentos
-      run: |
-        mkdir -p data
-        node scripts/build-reviews.js
+      - name: Configure Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
 
-    - name: Commit e push do reviews.json
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add public/reviews.json
-        git commit -m "Atualização de reviews.json via GitHub Actions" || echo "Sem mudanças"
-        git push origin master
+      - name: Create JSON of reviews
+        run: |
+          mkdir -p data
+          node scripts/build-reviews.js
 
-    - name: Deploy no GitHub Pages
-      uses: peaceiris/actions-gh-pages@v4
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./public
+      - name: Commit and push reviews.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/reviews.json
+          git commit -m "Update of reviews.json via GitHub Actions" || echo "No changes"
+          git push origin master
+
+      - name: Deploy on GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+      
+      - name: Create/Refresh Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: create reviews.json"
+          path: public/reviews.json
+          branch: update-reviews-${{ github.run_id }}
+          base: main
+          title: "Atualiza reviews.json via Actions"
+          body: "Este PR atualiza o arquivo reviews.json" 
+        
+  automerge:
+    needs: build_and_pr
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable Auto-merge
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with: 
+            token: ${{ secrets.GITHUB_TOKEN }}
+            pull-request-number: ${{ needs.build_and_pr.outputs.pr_number }}
+            merge-method: merge

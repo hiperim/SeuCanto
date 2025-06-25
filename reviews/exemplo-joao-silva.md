@@ -8,7 +8,7 @@ verified: true
 location: "São Paulo, SP"
 tags: 
     - "qualidade"
-    - "design"
+    - "design" 
 ---
 Excelente experiência!
 Comprei e fiquei impressionado com a qualidade do material.

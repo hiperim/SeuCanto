@@ -312,7 +312,6 @@ class AppState {
         this.updateCartCount();
         this.loadReviewsFromStorage();
         this.renderHomepageReviews();
-        this.renderHomepageReviews();
         this.renderAdminReviews();
         // Session management for all logged-in users
         if (this.isLoggedIn) {
@@ -2370,29 +2369,7 @@ class AppState {
         }
     }
 
-    // REVIEWS
-    // Load reviews from storage
-    loadReviewsFromStorage() {
-        try {
-            const stored = localStorage.getItem('seucanto_reviews');
-            this.reviews = stored ? JSON.parse(stored) : [];
-            const featuredStored = localStorage.getItem('seucanto_featured_reviews');
-            this.featuredReviews = featuredStored ? JSON.parse(featuredStored) : [];
-        } catch (e) {
-            console.error('Error loading reviews:', e);
-            this.reviews = [];
-            this.featuredReviews = [];
-        }
-    }
-    // Save reviews to storage
-    saveReviewsToStorage() {
-        try {
-            localStorage.setItem('seucanto_reviews', JSON.stringify(this.reviews));
-            localStorage.setItem('seucanto_featured_reviews', JSON.stringify(this.featuredReviews));
-        } catch (e) {
-            console.error('Error saving reviews:', e);
-        }
-    }
+    //REVIEWS
     // Show review modal
     showReviewModal() {
         if (!this.isLoggedIn) {
@@ -2450,7 +2427,7 @@ class AppState {
                 });
             });
         }
-    }
+    };
     // Setup character counter
     setupCharacterCounter() {
         const textarea = document.getElementById('reviewComment');
@@ -2467,7 +2444,7 @@ class AppState {
                 }
             });
         }
-    }
+    };
     // Handle review form submission
     submitReview() {
         const form = document.getElementById('reviewForm');
@@ -2536,7 +2513,7 @@ class AppState {
         setTimeout(() => {
             this.showPage('home');
         }, 200);
-    }
+    };
     // Render reviews on homepage
     renderHomepageReviews() {
         const container = document.getElementById('reviewsContainer');
@@ -2665,11 +2642,170 @@ class AppState {
         this.renderHomepageReviews();
         this.showMessage('Depoimento deletado com sucesso.', 'success');
     }
+}
 
+// REVIEWS
+class ReviewManager {
+    constructor() {
+        this.reviews = [];
+        this.cache = new Map();
+        this.retryAttempts = 3;
+        this.baseUrl = window.location.origin;
+    }
+
+    async loadReviews() {
+        const cacheKey = 'reviews_data';
+        const cacheTimeout = 5 * 60 * 1000; // 5 minutos
+        
+        // Verificar cache primeiro
+        const cached = this.getCachedData(cacheKey, cacheTimeout);
+        if (cached) {
+        this.reviews = cached;
+        this.renderReviews();
+        return;
+        }
+
+        try {
+        const data = await this.fetchWithRetry('/reviews.json');
+        this.reviews = Array.isArray(data) ? data : [];
+        
+        // Cache os dados
+        this.setCachedData(cacheKey, this.reviews);
+        
+        this.renderReviews();
+        console.log(`Loaded ${this.reviews.length} reviews successfully`);
+        
+        } catch (error) {
+        console.error('Erro ao carregar reviews:', error);
+        this.handleLoadError(error);
+        }
+    }
+
+    async fetchWithRetry(url, attempts = this.retryAttempts) {
+        for (let i = 0; i < attempts; i++) {
+        try {
+            const response = await fetch(`${this.baseUrl}${url}?v=${Date.now()}`);
+            
+            if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            return data;
+            
+        } catch (error) {
+            console.warn(`Attempt ${i + 1} failed:`, error.message);
+            
+            if (i === attempts - 1) throw error;
+            
+            // Exponential backoff
+            await this.delay(Math.pow(2, i) * 1000);
+        }
+        }
+    }
+
+    getCachedData(key, maxAge) {
+        try {
+        const cached = localStorage.getItem(key);
+        if (!cached) return null;
+        
+        const { data, timestamp } = JSON.parse(cached);
+        
+        if (Date.now() - timestamp > maxAge) {
+            localStorage.removeItem(key);
+            return null;
+        }
+        
+        return data;
+        } catch (e) {
+        return null;
+        }
+    }
+
+    setCachedData(key, data) {
+        try {
+        const cacheEntry = {
+            data,
+            timestamp: Date.now()
+        };
+        localStorage.setItem(key, JSON.stringify(cacheEntry));
+        } catch (e) {
+        console.warn('Cache storage failed:', e);
+        }
+    }
+
+    handleLoadError(error) {
+        // Fallback para localStorage antigo
+        const fallbackData = localStorage.getItem('seucanto_reviews');
+        if (fallbackData) {
+        try {
+            this.reviews = JSON.parse(fallbackData);
+            this.renderReviews();
+            this.showMessage('Usando dados offline - alguns depoimentos podem estar desatualizados', 'warning');
+            return;
+        } catch (e) {
+            console.error('Fallback data corrupted:', e);
+        }
+        }
+        
+        // Estado vazio com mensagem
+        this.reviews = [];
+        this.renderEmptyState();
+        this.showMessage('Não foi possível carregar os depoimentos. Tente novamente mais tarde.', 'error');
+    }
+
+    renderReviews() {
+        const container = document.getElementById('reviewsContainer');
+        if (!container) return console.error('Container de reviews não encontrado');
+        if (this.reviews.length === 0) {
+            this.renderEmptyState();
+            return;
+        }
+        // Exemplo de como injetar os cards de review:
+        container.innerHTML = this.reviews
+            .map(r => `
+            <div class="review-card">
+                <h3>${r.author}</h3>
+                <p>${r.comment}</p>
+                <small>${new Date(r.timestamp).toLocaleString()}</small>
+            </div>
+            `).join('');
+    }
+
+    showMessage(text, type = 'info') {
+        // Exemplo simples de toast/message
+        const toast = document.createElement('div');
+        toast.className = `toast toast--${type}`;
+        toast.textContent = text;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    renderEmptyState() {
+        const container = document.getElementById('reviewsContainer');
+        if (container) {
+        container.innerHTML = `
+            <div class="empty-state">
+            <p>Não há depoimentos disponíveis no momento.</p>
+            <button onclick="app.loadReviews()" class="btn btn--primary">
+                Tentar novamente
+            </button>
+            </div>
+        `;
+        }
+    }
+
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 }
 
 // Global app instance
 window.app = new AppState();
+const app = new ReviewManager();
+document.addEventListener('DOMContentLoaded', () => {
+    app.loadReviews();
+});
 
 // Global Functions for HTML onclick events
 function goToHome() {

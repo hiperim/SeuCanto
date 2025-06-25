@@ -311,6 +311,9 @@ class AppState {
         this.setupEventListeners();
         this.updateCartCount();
         this.loadReviewsFromStorage();
+        this.renderHomepageReviews();
+        this.renderHomepageReviews();
+        this.renderAdminReviews();
         // Session management for all logged-in users
         if (this.isLoggedIn) {
             const lastActivity = localStorage.getItem('seucanto_last_activity');
@@ -2370,20 +2373,16 @@ class AppState {
     // REVIEWS
     // Load reviews from storage
     loadReviewsFromStorage() {
-    fetch('/reviews.json')
-        .then(response => {
-            if (!response.ok) throw new Error('Erro ao obter reviews.json');
-            return response.json();
-        })
-        .then(data => {
-            this.reviews = Array.isArray(data) ? data : [];
-            this.renderHomepageReviews();
-            this.renderAdminReviews();
-        })
-        .catch(error => {
-            console.error('Erro ao carregar avaliações:', error);
+        try {
+            const stored = localStorage.getItem('seucanto_reviews');
+            this.reviews = stored ? JSON.parse(stored) : [];
+            const featuredStored = localStorage.getItem('seucanto_featured_reviews');
+            this.featuredReviews = featuredStored ? JSON.parse(featuredStored) : [];
+        } catch (e) {
+            console.error('Error loading reviews:', e);
             this.reviews = [];
-        });
+            this.featuredReviews = [];
+        }
     }
     // Save reviews to storage
     saveReviewsToStorage() {

@@ -1,0 +1,191 @@
+name: Atualiza Reviews JSON
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'reviews/*.md'
+      - 'scripts/**/*.js'
+      - '.github/workflows/update-reviews.yml'
+      - 'package*.json'
+  pull_request:
+    paths:
+      - 'reviews/*.md'
+  workflow_dispatch:  # Permite execução manual
+
+permissions:
+  contents: write
+  pull-requests: write
+  pages: write
+  id-token: write
+
+env:
+  NODE_VERSION: '18'
+  CACHE_VERSION: 'v1'
+
+jobs:
+  validate:
+    name: Validar Reviews
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate reviews format
+        run: npm run validate
+
+      - name: Test build process
+        run: npm run build
+
+  update_reviews:
+    name: Atualizar Reviews JSON
+    needs: validate
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    outputs:
+      reviews_changed: ${{ steps.build.outputs.changed }}
+      pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Para comparar mudanças
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build reviews JSON
+        id: build
+        run: |
+          # Backup do arquivo atual
+          if [ -f "public/reviews.json" ]; then
+            cp public/reviews.json public/reviews.json.old
+          fi
+          
+          # Executar build
+          npm run build
+          
+          # Verificar se houve mudanças
+          if [ -f "public/reviews.json.old" ]; then
+            if ! cmp -s "public/reviews.json" "public/reviews.json.old"; then
+              echo "changed=true" >> $GITHUB_OUTPUT
+              echo "✅ Reviews JSON atualizado"
+            else
+              echo "changed=false" >> $GITHUB_OUTPUT
+              echo "ℹ️ Nenhuma mudança detectada"
+            fi
+            rm -f public/reviews.json.old
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "✅ Reviews JSON criado"
+          fi
+
+      - name: Generate build summary
+        if: steps.build.outputs.changed == 'true'
+        run: |
+          echo "## 📊 Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "- Reviews processados: $(jq length public/reviews.json)" >> $GITHUB_STEP_SUMMARY
+          echo "- Tamanho do arquivo: $(du -h public/reviews.json | cut -f1)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Commit and push changes
+        if: steps.build.outputs.changed == 'true'
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add public/reviews.json
+          git commit -m "chore: atualiza reviews.json
+
+          - Reviews processados: $(jq length public/reviews.json)
+          - Build timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          
+          [skip ci]"
+          
+          git push origin master
+
+      - name: Create Pull Request (if needed)
+        id: create_pr
+        if: steps.build.outputs.changed == 'true' && github.event_name == 'workflow_dispatch'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: atualiza reviews.json automaticamente"
+          branch: update-reviews-${{ github.run_id }}
+          base: master
+          title: "🤖 Atualização automática de reviews.json"
+          body: |
+            ## Atualização Automática de Reviews
+            
+            Este PR foi gerado automaticamente pelo GitHub Actions.
+            
+            ### Mudanças
+            - ✅ Reviews JSON regenerado
+            - 📊 $(jq length public/reviews.json) reviews processados
+            - 🕒 Build executado em $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+            
+            ### Próximos passos
+            Este PR será mergeado automaticamente após a validação dos checks.
+          delete-branch: true
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: update_reviews
+    runs-on: ubuntu-latest
+    if: needs.update_reviews.outputs.reviews_changed == 'true'
+    
+    outputs:
+        page_url: ${{ steps.deployment.outputs.page_url }}
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './public'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  notify:
+    name: Notificar Resultado
+    needs: [validate, update_reviews, deploy]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Report status
+        run: |
+          if [ "${{ needs.update_reviews.result }}" = "success" ]; then
+            echo "✅ Reviews atualizados com sucesso"
+            echo "🌐 Deploy URL: ${{ needs.deploy.outputs.page_url || 'Não disponível' }}"
+          else
+            echo "❌ Falha na atualização dos reviews"
+          fi

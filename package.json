@@ -1,18 +1,11 @@
 {
-  "name": "seucanto-reviews",
-  "version": "1.0.0",
-  "description": "Sync review system",
   "scripts": {
-    "build": "node scripts/build-reviews.js",
-    "validate": "node scripts/validate-reviews.js",
-    "dev": "python -m http.server 8000",
-    "test": "npm run validate && npm run build"
+    "build": "node .github/scripts/build-reviews.js",
+    "validate": "node .github/scripts/validate-reviews.js"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
-    "marked": "^9.1.6"
-  },
-  "devDependencies": {
+    "marked": "^9.1.6",
     "joi": "^17.11.0"
   }
 }

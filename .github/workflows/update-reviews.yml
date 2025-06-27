@@ -1,166 +1,101 @@
-name: Atualiza Reviews JSON
+name: Build & Publish Reviews
 
 on:
   push:
-    branches: [master]
+    branches: [ reviews_branch ]
     paths:
       - 'reviews/*.md'
-      - 'scripts/**/*.js'
+      - 'scripts/build-reviews.js'
+      - 'scripts/validate-reviews.js'
       - '.github/workflows/update-reviews.yml'
-      - 'package*.json'
-  pull_request:
-    paths:
-      - 'reviews/*.md'
-  workflow_dispatch:  # Permite execução manual
 
 permissions:
-  contents: write
-  pull-requests: write
-  pages: write
+  contents: write # For git push
+  pages: write # For GitHub Pages deploy
   id-token: write
 
-env:
-  NODE_VERSION: '18'
-  CACHE_VERSION: 'v1'
-
 jobs:
-  validate:
-    name: Validar Reviews
+  process_reviews:
     runs-on: ubuntu-latest
+    outputs:
+      reviews_changed: ${{ steps.build.outputs.changed }}
+      
     steps:
-      - name: Checkout
+      - name: Checkout reviews branch
         uses: actions/checkout@v4
+        with:
+          ref: reviews_branch
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '18'
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Validate reviews format
         run: npm run validate
 
-      - name: Test build process
-        run: npm run build
-
-  update_reviews:
-    name: Atualizar Reviews JSON
-    needs: validate
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    outputs:
-      reviews_changed: ${{ steps.build.outputs.changed }}
-      pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2  # Para comparar mudanças
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
       - name: Build reviews JSON
         id: build
         run: |
-          # Backup do arquivo atual
-          if [ -f "public/reviews.json" ]; then
-            cp public/reviews.json public/reviews.json.old
-          fi
-          
-          # Executar build
+          echo "Building reviews.json..."
           npm run build
-          
-          # Verificar se houve mudanças
-          if [ -f "public/reviews.json.old" ]; then
-            if ! cmp -s "public/reviews.json" "public/reviews.json.old"; then
-              echo "changed=true" >> $GITHUB_OUTPUT
-              echo "✅ Reviews JSON atualizado"
+            
+          # Check if reviews.json changed
+          if git diff --quiet public/reviews.json 2>/dev/null; then
+            echo "No changes in reviews.json"
+            echo "changed=false" >> $GITHUB_OUTPUT
             else
-              echo "changed=false" >> $GITHUB_OUTPUT
-              echo "ℹ️ Nenhuma mudança detectada"
-            fi
-            rm -f public/reviews.json.old
-          else
+            echo "Reviews.json updated"
             echo "changed=true" >> $GITHUB_OUTPUT
-            echo "✅ Reviews JSON criado"
           fi
 
-      - name: Generate build summary
+      - name: 📋 Generate build summary
         if: steps.build.outputs.changed == 'true'
         run: |
-          echo "## 📊 Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "- Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
           echo "- Reviews processados: $(jq length public/reviews.json)" >> $GITHUB_STEP_SUMMARY
           echo "- Tamanho do arquivo: $(du -h public/reviews.json | cut -f1)" >> $GITHUB_STEP_SUMMARY
 
-      - name: Commit and push changes
+      - name: Merge into master
         if: steps.build.outputs.changed == 'true'
         run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          
-          git add public/reviews.json
-          git commit -m "chore: atualiza reviews.json
-
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+            
+          # Checkout master and merge
+          git checkout master
+          git merge --no-ff reviews_branch -m "🚀 chore: update reviews.json
+            
           - Reviews processados: $(jq length public/reviews.json)
           - Build timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
-          
-          [skip ci]"
-          
+            
+          Co-authored-by: github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+            
           git push origin master
 
-      - name: Create Pull Request (if needed)
-        id: create_pr
-        if: steps.build.outputs.changed == 'true' && github.event_name == 'workflow_dispatch'
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: atualiza reviews.json automaticamente"
-          branch: update-reviews-${{ github.run_id }}
-          base: master
-          title: "🤖 Atualização automática de reviews.json"
-          body: |
-            ## Atualização Automática de Reviews
-            
-            Este PR foi gerado automaticamente pelo GitHub Actions.
-            
-            ### Mudanças
-            - ✅ Reviews JSON regenerado
-            - 📊 $(jq length public/reviews.json) reviews processados
-            - 🕒 Build executado em $(date -u '+%Y-%m-%d %H:%M:%S UTC')
-            
-            ### Próximos passos
-            Este PR será mergeado automaticamente após a validação dos checks.
-          delete-branch: true
-
-  deploy:
-    name: Deploy to GitHub Pages
-    needs: update_reviews
+  deploy_pages:
+    needs: process_reviews
+    if: needs.process_reviews.outputs.reviews_changed == 'true'
     runs-on: ubuntu-latest
-    if: needs.update_reviews.outputs.reviews_changed == 'true'
     
     outputs:
-        page_url: ${{ steps.deployment.outputs.page_url }}
+      page_url: ${{ steps.deployment.outputs.page_url }}
 
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     
     steps:
-      - name: Checkout
+      - name: Checkout master
         uses: actions/checkout@v4
+        with:
+          ref: master
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -174,18 +109,20 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  notify:
-    name: Notificar Resultado
-    needs: [validate, update_reviews, deploy]
+  notify_completion:
+    needs: [process_reviews, deploy_pages]
     runs-on: ubuntu-latest
     if: always()
     
     steps:
       - name: Report status
         run: |
-          if [ "${{ needs.update_reviews.result }}" = "success" ]; then
-            echo "✅ Reviews atualizados com sucesso"
-            echo "🌐 Deploy URL: ${{ needs.deploy.outputs.page_url || 'Não disponível' }}"
+          if [ "${{ needs.process_reviews.result }}" = "success" ] && [ "${{ needs.deploy_pages.result }}" = "success" ]; then
+            echo "Reviews processados e publicados com sucesso!"
+            echo "Site atualizado: ${{ needs.deploy_pages.outputs.page_url || 'https://hiperim.github.io/SeuCanto/' }}"
+          elif [ "${{ needs.process_reviews.outputs.reviews_changed }}" = "false" ]; then
+            echo "Nenhuma mudança detectada nos reviews"
           else
-            echo "❌ Falha na atualização dos reviews"
+            echo "Falha no processamento ou deploy dos reviews"
+            echo "Verifique os logs para mais detalhes"
           fi

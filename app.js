@@ -272,20 +272,18 @@ class AppState {
         this.attemptWindowMs = 3600000; // 1 hr in ms
         this.lockoutDurationMs = 1800000; // 30 min lockout
         this.reviewAttempts = new Map(); // Track attempts per user
-        // Restore persisted review attempts
-        const stored = localStorage.getItem('seucanto_review_attempts');
-        if (stored) {
-            try {
-                const obj = JSON.parse(stored);
-                Object.entries(obj).forEach(([email, times]) => {
-                    this.reviewAttempts.set(email, times);
-                });
-            } catch (e) {
-                console.warn('Invalid stored review attempts:', e);
-            }
-        }
         this.maxReviewsPerDay = 2; // Allow only 2 reviews
         this.reviewWindowMs = 86400000; // 24 hrs in ms
+        this.githubAuth = null;
+        this.useProxy = false;
+        this.proxyUrl = null;
+        this.authRetries = 0;
+        this.maxAuthRetries = 3;
+        this.config = {
+            maxReviews: 100,
+            reviewsPerPage: 10,
+            autoRefreshInterval: 30000, // 30 sec
+        };
     }
 
     init() {
@@ -313,6 +311,7 @@ class AppState {
         this.loadReviewsFromStorage();
         this.renderHomepageReviews();
         this.renderAdminReviews();
+        this.initializeGitHubAuth();
         // Session management for all logged-in users
         if (this.isLoggedIn) {
             const lastActivity = localStorage.getItem('seucanto_last_activity');
@@ -335,6 +334,21 @@ class AppState {
         this.initializeZipperAnimation();
     }
 
+    initializeGitHubAuth() {
+        // Load the authentication script
+        if (!window.GitHubAuth) {
+            const script = document.createElement('script');
+            script.src = '/auth/github-auth.js';
+            script.onload = () => {
+            this.githubAuth = new GitHubAuth();
+            console.log('✅ GitHub Auth inicializado');
+            };
+            document.head.appendChild(script);
+        } else {
+            this.githubAuth = new GitHubAuth();
+        }
+    }
+    
     initUserProfile() {
         if (!this.userProfile) {
             this.userProfile = {
@@ -586,6 +600,17 @@ class AppState {
             loginForm.addEventListener('submit', this.handleLogin.bind(this));
         }
         
+        document.addEventListener('DOMContentLoaded', () => {
+            // Verify if app.user.email was defined by login
+            const emailInput = document.getElementById('reviewEmail');
+            if (app.user && app.user.email && emailInput) {
+                // Fix value on field as readonly
+                emailInput.value = app.user.email;
+                emailInput.readOnly = true;
+            }
+            app.setupEventListeners();
+        });
+
         const editInfoForm = document.getElementById('editInfoForm');
         if (editInfoForm) {
             editInfoForm.addEventListener('submit', this.handleEditInfoForm.bind(this));
@@ -2446,74 +2471,80 @@ class AppState {
         }
     };
     // Handle review form submission
-    submitReview() {
-        const form = document.getElementById('reviewForm');
-        if (!form) return;
-        
-        const formData = new FormData(form);
-        const rating = parseInt(formData.get('rating'));
-        const comment = formData.get('comment').trim();
-        const now = Date.now();
-        const email = this.user.email;
-
-        // Validation
-        if (!this.canPostReview(email, now)) {
-            this.showMessage('Você atingiu o limite de 2 depoimentos em 24 horas.', 'error');
-            return;
-        }
-        
-        if (!rating || rating < 1 || rating > 5) {
-            this.showMessage('Por favor, selecione uma avaliação de 1 a 5 estrelas.', 'error');
-            return;
-        }
-        
-        if (!comment || comment.length < 10) {
-            this.showMessage('Por favor, escreva um comentário com pelo menos 10 caracteres.', 'error');
-            return;
-        }
-        
-        if (comment.length > 720) {
-            this.showMessage('O comentário não pode exceder 720 caracteres.', 'error');
-            return;
-        }
-
-        // Save the review
-        this.recordReviewAttempt(email, now);
-        const review = {
-            id: Date.now(),
-            userId: this.user.email,
-            userName: this.user.email.split('@')[0],
-            rating: rating,
-            comment: comment,
-            date: new Date().toLocaleDateString('pt-BR'),
-            timestamp: Date.now()
-        };
-        
-        this.reviews.push(review);
-        this.saveReviewsToStorage();
-        this.loadReviewsFromStorage();
-        this.loadFeaturedReviewsFromStorage();
-        this.renderAdminReviews();
-        
-        // First, close the modal immediately
+    async handleReviewSubmission(event) {
+    event.preventDefault();
+    // Collect forms data
+    const reviewData = {
+        email: document.getElementById('reviewEmail')?.value.trim() || '',
+        rating: parseInt(document.getElementById('reviewRating')?.value || 0),
+        comment: document.getElementById('reviewComment')?.value.trim(),
+        productId: 'geral',
+        location: 'Brasil',
+        tags: ['review']
+    }
+    // Validação
+    const validation = this.validateReviewData(reviewData);
+    if (!validation.isValid) {
+        this.showMessage(validation.message, 'error');
+        return;
+    }
+    if (reviewData.rating < 1 || reviewData.rating > 5) {
+        this.showMessage('Avaliação deve ser entre 1 e 5 estrelas.', 'error');
+        return;
+    }
+    try {
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        submitBtn.textContent = 'Enviando...';
+        submitBtn.disabled = true;
+        // Usar GitHub App authentication diretamente (SEM PROXY)
+        await this.submitReviewViaGitHubApp(reviewData);
+        this.showMessage('Review enviado com sucesso! Aguarde alguns minutos para aparecer na página.', 'success');
+        this.resetReviewForm();
         this.closeModal('reviewModal');
-        
-        // Then reset the form (after modal is closed)
+        // Auto-refresh após envio bem-sucedido
         setTimeout(() => {
-            form.reset();
-            document.getElementById('reviewRating').value = '';
-            document.querySelectorAll('.star').forEach(star => {
-                star.classList.remove('active');
-                star.style.color = '#ddd';
-            });
-        }, 100);
-        // Mark review success on sessionStorage
-        sessionStorage.setItem('reviewSuccess', 'true');
-        // Navigate to home page
-        setTimeout(() => {
-            this.showPage('home');
-        }, 200);
-    };
+        this.loadReviewsFromStorage();
+        }, 5000);
+    } catch (error) {
+        console.error('Erro ao enviar review:', error);
+        this.showMessage(`Erro ao enviar review: ${error.message}`, 'error');
+    } finally {
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        if (submitBtn) {
+        submitBtn.textContent = 'Enviar Depoimento';
+        submitBtn.disabled = false;
+        }
+    }
+    }
+
+    //Github authentication
+    async submitReviewViaGitHubApp(reviewData) {
+        if (!this.githubAuth) {
+            throw new Error('Sistema de autenticação não inicializado');
+        }
+        try {
+            const result = await this.githubAuth.createReviewFile(reviewData);
+            console.log('Review criado no GitHub:', result);
+            return result;
+        } catch (error) {
+            if (error.message.includes('Token expirado')) {
+            this.githubAuth.clearToken();
+            throw error;
+            }
+            throw error;
+        }
+        }
+
+    // Resetar formulário após envio
+    resetReviewForm() {
+    const form = document.getElementById('reviewForm');
+    if (form) {
+        form.reset();
+        // Reset star rating if exists
+        const stars = document.querySelectorAll('.star-rating .star');
+        stars.forEach(star => star.classList.remove('active'));
+    }
+    }
     // Render reviews on homepage
     renderHomepageReviews() {
         const container = document.getElementById('reviewsContainer');
@@ -2666,7 +2697,7 @@ class ReviewManager {
         }
 
         try {
-        const data = await this.fetchWithRetry('/reviews.json');
+        const data = await this.fetchWithRetry('./reviews.json');
         this.reviews = Array.isArray(data) ? data : [];
         
         // Cache os dados

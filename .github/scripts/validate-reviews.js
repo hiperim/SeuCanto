@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 
 const reviewSchema = Joi.object({
-  author: Joi.string().min(2).max(50).required(),
   email: Joi.string().email().required(),
   rating: Joi.number().integer().min(1).max(5).required(),
   timestamp: Joi.number().integer().positive().required(),

@@ -1,5 +1,4 @@
 ---
-author: "João Silva"
 email: "joao_silva@email.com"
 rating: 5
 timestamp: 1710000000000

@@ -473,6 +473,18 @@
             <span class="close" onclick="app.closeModal('reviewModal')">&times;</span>
             <h2>Seu Depoimento</h2>
             <form id="reviewForm">
+                <!-- E-mail autofill and readonly -->
+                <div class="form-group">
+                    <label for="reviewEmail">E-mail *</label>
+                    <input 
+                    type="email" 
+                    id="reviewEmail" 
+                    class="form-control" 
+                    readonly 
+                    required
+                    >
+                </div>
+                <!-- Star rating -->
                 <div class="form-group">
                     <label class="form-label">Quantas estrelas você dá para sua última compra?</label>
                     <div class="star-rating">
@@ -493,6 +505,8 @@
             </form>
         </div>
     </div>
+
+
 
     <!-- OTP modal -->
     <div id="otpModal" class="modal">
@@ -601,6 +615,18 @@
     })();
     </script>
 
+    <!-- Load the client-side from Github App auth-->
+    <script src="auth/github-app-auth.js"></script>
+
     <script src="app.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.app && window.GitHubAppAuth) {
+                window.app.githubAuth = new GitHubAppAuth();
+                console.log('GitHub App authentication initialized');
+            }
+        });
+    </script>
 </body>
 </html>

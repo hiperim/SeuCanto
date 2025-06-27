@@ -16,7 +16,7 @@ class ReviewBuilder {
   }
 
   async build() {
-    console.log('🔨 Iniciando build de reviews...');
+    console.log('Iniciando build de reviews...');
     
     try {
       // Backup do arquivo atual
@@ -34,7 +34,7 @@ class ReviewBuilder {
       this.logStats(reviews);
       
     } catch (error) {
-      console.error('❌ Erro durante o build:', error);
+      console.error('Erro durante o build:', error);
       await this.restoreBackup();
       process.exit(1);
     }
@@ -43,13 +43,13 @@ class ReviewBuilder {
   async createBackup() {
     if (fs.existsSync(this.outputFile)) {
       fs.copyFileSync(this.outputFile, this.backupFile);
-      console.log('📦 Backup criado');
+      console.log('Backup criado');
     }
   }
 
   async processReviews() {
     if (!fs.existsSync(this.reviewsDir)) {
-      console.warn('⚠️ Pasta reviews/ não encontrada');
+      console.warn('Pasta reviews/ não encontrada');
       return [];
     }
 
@@ -67,7 +67,7 @@ class ReviewBuilder {
           this.stats.processed++;
         }
       } catch (error) {
-        console.error(`❌ Erro processando ${file}:`, error.message);
+        console.error(`Erro processando ${file}:`, error.message);
         this.stats.errors++;
       }
     }
@@ -78,28 +78,28 @@ class ReviewBuilder {
   async processFile(filename) {
     const filepath = path.join(this.reviewsDir, filename);
     const content = fs.readFileSync(filepath, 'utf8');
-    
     const parsed = matter(content);
-    const { data: frontmatter, content: body } = parsed;
+    const frontmatter = parsed.data;
+    const body = parsed.content.trim();
 
     // Validações básicas
-    if (!frontmatter.author || !frontmatter.rating || !frontmatter.timestamp) {
-      throw new Error('Campos obrigatórios ausentes: author, rating, timestamp');
+    if (!frontmatter.email || !frontmatter.rating || !frontmatter.timestamp) {
+      throw new Error('Campos obrigatórios ausentes: email, rating, timestamp');
     }
 
-    // Processar markdown para HTML
-    const htmlContent = marked(body.trim());
+    // HTML markdown process
+    const htmlContent = marked(body);
     
-    // Gerar ID único
-    const id = path.basename(filename, '.md');
+    // Author from email content
+    const userName = frontmatter.email.split('@')[0];
     
     return {
-      id,
-      author: String(frontmatter.author).trim(),
+      id: path.basename(filename, '.md'),
+      author: userName,
       email: frontmatter.email || null,
       rating: Number(frontmatter.rating),
       timestamp: Number(frontmatter.timestamp),
-      comment: body.trim(),
+      comment: body,
       commentHtml: htmlContent,
       product_id: frontmatter.product_id || null,
       verified: Boolean(frontmatter.verified),
@@ -114,7 +114,7 @@ class ReviewBuilder {
   }
 
   validateReviews(reviews) {
-    // Verificar duplicatas por timestamp
+    // Verify timestamp doubles
     const timestamps = reviews.map(r => r.timestamp);
     const duplicates = timestamps.filter((t, i) => timestamps.indexOf(t) !== i);
     
@@ -123,7 +123,7 @@ class ReviewBuilder {
       this.stats.warnings++;
     }
 
-    // Verificar ratings válidos
+    // Verify invalid ratings
     const invalidRatings = reviews.filter(r => r.rating < 1 || r.rating > 5);
     if (invalidRatings.length > 0) {
       throw new Error(`${invalidRatings.length} reviews com rating inválido`);
@@ -131,17 +131,33 @@ class ReviewBuilder {
   }
 
   async saveReviews(reviews) {
-    // Ordenar por timestamp (mais recente primeiro)
+    // Organize with timestamp - newest first
     reviews.sort((a, b) => b.timestamp - a.timestamp);
     
-    // Criar diretório se não existir
+    // Create folder is inexistent
     const outputDir = path.dirname(this.outputFile);
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    // Salvar JSON formatado
-    const jsonContent = JSON.stringify(reviews, null, 2);
+    // Generate metadata
+    const metadata = {
+      total_reviews: reviews.length,
+      average_rating: reviews.length > 0 
+        ? parseFloat((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1))
+        : 0,
+      generated_at: new Date().toISOString(),
+      last_update: Date.now()
+    };
+
+    // Final structure JSON
+    const finalData = {
+      metadata,
+      reviews
+    };
+
+    // Save formatted JSON
+    const jsonContent = JSON.stringify(finalData, null, 2);
     fs.writeFileSync(this.outputFile, jsonContent, 'utf8');
     
     console.log(`💾 ${reviews.length} reviews salvos em reviews.json`);
@@ -168,7 +184,7 @@ class ReviewBuilder {
   }
 }
 
-// Executar se chamado diretamente
+// Execute if direct called
 if (require.main === module) {
   new ReviewBuilder().build();
 }

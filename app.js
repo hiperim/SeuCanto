@@ -2697,7 +2697,7 @@ class ReviewManager {
         }
 
         try {
-        const data = await this.fetchWithRetry('./reviews.json');
+        const data = await this.fetchWithRetry('./public/reviews.json');
         this.reviews = Array.isArray(data) ? data : [];
         
         // Cache os dados

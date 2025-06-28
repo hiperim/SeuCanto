@@ -336,7 +336,7 @@ class AppState {
         // Load the authentication script
         if (!window.GitHubAuth) {
             const script = document.createElement('script');
-            script.src = '/auth/github-auth.js';
+            script.src = '/auth/github-app-auth.js';
             script.onload = () => {
             this.githubAuth = new GitHubAuth();
             console.log('GitHub Auth inicializado');

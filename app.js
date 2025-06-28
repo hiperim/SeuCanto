@@ -913,7 +913,7 @@ class AppState {
         const cartSummary = document.getElementById('cartSummary');
         if (!cartItems || !cartSummary) return;
         if (this.cart.length === 0) {
-            cartItems.innerHTML = '<p class="empty-cart">Seu carrinho está vazio.</p>';
+            cartItems.innerHTML = '<h5 class="empty-cart">Seu carrinho está vazio.</h5>';
             cartSummary.innerHTML = '';
             return;
         }
@@ -951,15 +951,15 @@ class AppState {
         cartSummary.innerHTML = `
             <div class="cart-summary-content">
                 <div class="summary-row">
-                    <p>Subtotal: R$${subtotal.toFixed(2).replace('.', ',')}</span></p>
+                    <h5>Subtotal: R$${subtotal.toFixed(2).replace('.', ',')}</span></h5>
                 </div>
                 ${shipping > 0 ? `
                     <div class="summary-row">
-                        <p>Frete: R$${shipping.toFixed(2).replace('.', ',')}</p>
+                        <h5>Frete: R$${shipping.toFixed(2).replace('.', ',')}</h5>
                     </div>
                 ` : ''}
                 <div class="summary-row total">
-                    <p>Total: R$${total.toFixed(2).replace('.', ',')}</p>
+                    <h5>Total: R$${total.toFixed(2).replace('.', ',')}</h5>
                 </div>
             </div>
         `;

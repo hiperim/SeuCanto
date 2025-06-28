@@ -5,7 +5,7 @@ class GitHubAppAuth {
             appId: '1466081',
             installationId: '73131502',
             scope: 'repo',
-            redirectUri: window.location.origin + '/auth/callback'
+            redirectUri: window.location.origin + '/callback'
         };
         
         this.state = this.generateState();
@@ -14,7 +14,7 @@ class GitHubAppAuth {
     }
 
     init() {
-        if (window.location.pathname === '/auth/callback') {
+        if (window.location.pathname === '/callback') {
             this.handleOAuthCallback();
         }
         this.loadStoredToken();

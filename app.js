@@ -277,8 +277,6 @@ class AppState {
         this.githubAuth = null;
         this.useProxy = false;
         this.proxyUrl = null;
-        this.cacheBuster = Date.now();      
-        this.baseUrl     = window.location.origin || '';
         this.authRetries = 0;
         this.maxAuthRetries = 3;
         this.config = {
@@ -338,14 +336,14 @@ class AppState {
         // Load the authentication script
         if (!window.GitHubAuth) {
             const script = document.createElement('script');
-            script.src = '/auth/github-app-auth.js';
+            script.src = '/github-app-auth.js';
             script.onload = () => {
             this.githubAuth = new GitHubAuth();
             console.log('GitHub Auth inicializado');
             };
             document.head.appendChild(script);
         } else {
-            this.githubAuth = new GitHubAuth();
+            this.githubAuth = new GitHubAuth(); 
         }
     }
     
@@ -2694,6 +2692,7 @@ class ReviewManager {
         this.baseUrl = (window.location.origin && window.location.origin !== "null")
             ? window.location.origin
             : "";
+        this.cacheBuster = Date.now();
     }
 
     async loadReviews() {

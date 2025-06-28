@@ -339,7 +339,7 @@ class AppState {
             script.src = '/auth/github-auth.js';
             script.onload = () => {
             this.githubAuth = new GitHubAuth();
-            console.log('✅ GitHub Auth inicializado');
+            console.log('GitHub Auth inicializado');
             };
             document.head.appendChild(script);
         } else {

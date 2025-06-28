@@ -170,7 +170,8 @@ h4 {
   font-size: var(--font-size-xl);
 }
 h5 {
-  font-size: var(--font-size-lg);
+  margin: 0 0 var(--space-8) 0;
+  color: var(--color-text);
 }
 h6 {
   font-size: var(--font-size-md);
@@ -178,7 +179,7 @@ h6 {
 
 p {
   margin: 0 0 var(--space-8) 0;
-  color: var(--color-text);
+  color: var(--color-purple);
 }
 
 a {

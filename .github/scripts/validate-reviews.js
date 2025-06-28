@@ -28,23 +28,23 @@ function validateReviews() {
       const { error } = reviewSchema.validate(parsed.data);
       
       if (error) {
-        console.error(`❌ ${file}: ${error.message}`);
+        console.error(`${file}: ${error.message}`);
         errors++;
       } else {
-        console.log(`✅ ${file}: válido`);
+        console.log(`${file}: válido`);
       }
       
     } catch (e) {
-      console.error(`❌ ${file}: erro de parsing - ${e.message}`);
+      console.error(`${file}: erro de parsing - ${e.message}`);
       errors++;
     }
   });
   
   if (errors > 0) {
-    console.error(`\n❌ ${errors} arquivo(s) com erro`);
+    console.error(`\n ${errors} arquivo(s) com erro`);
     process.exit(1);
   } else {
-    console.log(`\n✅ Todos os ${files.length} arquivos são válidos`);
+    console.log(`\n Todos os ${files.length} arquivos são válidos`);
   }
 }
 

@@ -330,8 +330,6 @@ class AppState {
             console.log('Starting activity tracking for existing session');
             this.startActivityTracking();
         }
-        
-        this.initializeZipperAnimation();
     }
 
     initializeGitHubAuth() {
@@ -968,19 +966,24 @@ class AppState {
 
     showPage(pageId) {
         window.scrollTo(0, 0);
-
         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-
         // Store current page before changing
         if (pageId !== 'login' && pageId !== 'otp') {
             this.previousPage = pageId;
         }
-        
         const targetPage = document.getElementById(pageId + 'Page');
         if (targetPage) {
             targetPage.classList.add('active');
             this.currentPage = pageId;
         }
+        // Hide all sections
+        document.querySelectorAll("section[data-page]").forEach(sec => {
+            sec.style.display = "none";
+        });
+
+        // Show current
+        const current = document.getElementById(pageId);
+        if (current) current.style.display = "block";
 
         if (pageId === 'cart') {
             this.renderCart();
@@ -2681,76 +2684,76 @@ class ReviewManager {
         this.reviews = [];
         this.cache = new Map();
         this.retryAttempts = 3;
-        this.baseUrl = window.location.origin;
+        this.baseUrl = (window.location.origin && window.location.origin !== "null")
+            ? window.location.origin
+            : "";
     }
 
     async loadReviews() {
         const cacheKey = 'reviews_data';
-        const cacheTimeout = 5 * 60 * 1000; // 5 minutos
+        const cacheTimeout = 5 * 60 * 1000; // 5min in-mem cache
         
-        // Verificar cache primeiro
+        // Verify cache 1st
         const cached = this.getCachedData(cacheKey, cacheTimeout);
         if (cached) {
-        this.reviews = cached;
-        this.renderReviews();
-        return;
+            this.reviews = cached;
+            this.renderReviews();
+            return;
         }
-
+        // Fetch file - 3 retries
         try {
-        const data = await this.fetchWithRetry('./public/reviews.json');
-        this.reviews = Array.isArray(data) ? data : [];
-        
-        // Cache os dados
-        this.setCachedData(cacheKey, this.reviews);
-        
-        this.renderReviews();
-        console.log(`Loaded ${this.reviews.length} reviews successfully`);
-        
-        } catch (error) {
-        console.error('Erro ao carregar reviews:', error);
-        this.handleLoadError(error);
+            const data = await this.fetchWithRetry("/reviews.json");
+
+            // Build script outputs {metadata, reviews}
+            if (Array.isArray(data)) {
+                this.reviews = data;
+            } else if (data && Array.isArray(data.reviews)) {
+                this.reviews = data.reviews;
+            } else {
+                console.warn("Formato inesperado de reviews.json", data);
+                this.reviews = [];
+            }
+            // Cache in memory for next call
+            this.setCachedData(cacheKey, this.reviews);
+            this.renderReviews();
+            console.log(`✅ ${this.reviews.length} depoimentos carregados.`);
+        } catch (err) {
+            console.error("Erro ao carregar reviews:", err);
+            this.handleLoadError(err);
         }
     }
-
+    // Tries the request up to N times with exponential back-off
     async fetchWithRetry(url, attempts = this.retryAttempts) {
         for (let i = 0; i < attempts; i++) {
-        try {
-            const response = await fetch(`${this.baseUrl}${url}?v=${Date.now()}`);
-            
-            if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            try {
+                const fullUrl = url.startsWith("http")
+                              ? url // Absolute
+                              : `${this.baseUrl}${url}`; // Relative
+
+                const response = await fetch(`${fullUrl}?v=${Date.now()}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (err) {
+                const isLast = i === attempts - 1;
+                console.warn(`Attempt ${i + 1} failed:`, err);
+                if (isLast) throw err;
+                // Exponential back-off (300 ms * n)
+                await new Promise(r => setTimeout(r, 300 * (i + 1)));
             }
-            
-            const data = await response.json();
-            return data;
-            
-        } catch (error) {
-            console.warn(`Attempt ${i + 1} failed:`, error.message);
-            
-            if (i === attempts - 1) throw error;
-            
-            // Exponential backoff
-            await this.delay(Math.pow(2, i) * 1000);
-        }
         }
     }
-
-    getCachedData(key, maxAge) {
-        try {
-        const cached = localStorage.getItem(key);
-        if (!cached) return null;
-        
-        const { data, timestamp } = JSON.parse(cached);
-        
-        if (Date.now() - timestamp > maxAge) {
-            localStorage.removeItem(key);
+    // In-memory cache
+    getCachedData(key, ttl) {
+        const entry = this.cache.get(key);
+        if (!entry) return null;
+        if (Date.now() - entry.timestamp > ttl) {
+            this.cache.delete(key);
             return null;
         }
-        
-        return data;
-        } catch (e) {
-        return null;
-        }
+        return entry.data;
+    }
+    setCachedData(key, data) {
+        this.cache.set(key, { data, timestamp: Date.now() });
     }
 
     setCachedData(key, data) {
@@ -2766,45 +2769,65 @@ class ReviewManager {
     }
 
     handleLoadError(error) {
-        // Fallback para localStorage antigo
-        const fallbackData = localStorage.getItem('seucanto_reviews');
-        if (fallbackData) {
-        try {
-            this.reviews = JSON.parse(fallbackData);
-            this.renderReviews();
-            this.showMessage('Usando dados offline - alguns depoimentos podem estar desatualizados', 'warning');
-            return;
-        } catch (e) {
-            console.error('Fallback data corrupted:', e);
+        console.error('Falha ao carregar depoimentos:', error);
+        const container = document.getElementById('reviewsContainer');
+        if (container) {
+            // Simple error msg
+            container.innerHTML = `
+                <div class="review-error">
+                    <p>Não foi possível carregar os depoimentos.</p>
+                    <button id="retryReviews" class="btn btn--primary">Tentar novamente</button>
+                </div>
+            `;
+            // Retry button
+            const btn = document.getElementById('retryReviews');
+            if (btn) btn.addEventListener('click', () => this.loadReviews());
         }
-        }
-        
-        // Estado vazio com mensagem
-        this.reviews = [];
-        this.renderEmptyState();
-        this.showMessage('Não foi possível carregar os depoimentos. Tente novamente mais tarde.', 'error');
+        // Error toast
+        this.showMessage('Erro ao carregar depoimentos. Clique em "Tentar novamente".', 'error');
     }
 
     renderReviews() {
         const container = document.getElementById('reviewsContainer');
-        if (!container) return console.error('Container de reviews não encontrado');
-        if (this.reviews.length === 0) {
-            this.renderEmptyState();
+        if (!container) {
+            console.error('Container de reviews não encontrado');
             return;
         }
-        // Exemplo de como injetar os cards de review:
-        container.innerHTML = this.reviews
-            .map(r => `
-            <div class="review-card">
-                <h3>${r.author}</h3>
-                <p>${r.comment}</p>
-                <small>${new Date(r.timestamp).toLocaleString()}</small>
-            </div>
-            `).join('');
+        // Clears old content
+        container.innerHTML = '';
+
+        if (this.reviews.length === 0) {
+            container.innerHTML = '<p class="no-reviews">Ainda não há depoimentos.</p>';
+            return;
+        }
+        // Dynamicly creates each review card
+        this.reviews.forEach(review => {
+            const card = document.createElement('div');
+            card.className = 'review-card';
+            const header = document.createElement('div');
+            header.className = 'review-header';
+            const author = document.createElement('h3');
+            author.textContent = review.userName || review.author;
+            const date = document.createElement('time');
+            date.textContent = new Date(review.timestamp).toLocaleString();
+            header.appendChild(author);
+            header.appendChild(date);
+            const stars = document.createElement('div');
+            stars.className = 'review-stars';
+            const fullStars = review.rating;
+            stars.textContent = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
+            const comment = document.createElement('p');
+            comment.className = 'review-comment';
+            comment.textContent = review.comment;
+            card.appendChild(header);
+            card.appendChild(stars);
+            card.appendChild(comment);
+            container.appendChild(card);
+        });
     }
 
     showMessage(text, type = 'info') {
-        // Exemplo simples de toast/message
+        // Simple toast/message
         const toast = document.createElement('div');
         toast.className = `toast toast--${type}`;
         toast.textContent = text;
@@ -2832,10 +2855,12 @@ class ReviewManager {
 }
 
 // Global app instance
-window.app = new AppState();
-const app = new ReviewManager();
+window.app = new AppState(); // Main e-commerce logic
+window.reviewManager = new ReviewManager(); // Review subsystem
+// Wait for DOM before touching the page
 document.addEventListener('DOMContentLoaded', () => {
-    app.loadReviews();
+    window.app.init();
+    window.reviewManager.loadReviews();
 });
 
 // Global Functions for HTML onclick events

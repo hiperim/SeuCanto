@@ -2692,34 +2692,32 @@ class ReviewManager {
     async loadReviews() {
         const cacheKey = 'reviews_data';
         const cacheTimeout = 5 * 60 * 1000; // 5min in-mem cache
-        
         // Verify cache 1st
         const cached = this.getCachedData(cacheKey, cacheTimeout);
         if (cached) {
             this.reviews = cached;
             this.renderReviews();
+            this.renderFeaturedReviews();
+            console.log(`✅ ${this.reviews.length} depoimentos carregados do cache.`);
             return;
         }
         // Fetch file - 3 retries
         try {
-            const data = await this.fetchWithRetry("/reviews.json");
-
-            // Build script outputs {metadata, reviews}
-            if (Array.isArray(data)) {
-                this.reviews = data;
-            } else if (data && Array.isArray(data.reviews)) {
-                this.reviews = data.reviews;
-            } else {
-                console.warn("Formato inesperado de reviews.json", data);
-                this.reviews = [];
-            }
-            // Cache in memory for next call
-            this.setCachedData(cacheKey, this.reviews);
-            this.renderReviews();
-            console.log(`✅ ${this.reviews.length} depoimentos carregados.`);
+            const data = await this.fetchWithRetry('/reviews.json?v=' + this.cacheBuster);
+            // Suporta array puro ou { metadata, reviews }
+            const reviews = Array.isArray(data)
+                ? data
+                : Array.isArray(data.reviews)
+                    ? data.reviews
+                    : [];
+            this.reviews = reviews;
+            this.setCachedData(cacheKey, reviews);
+            this.renderReviews(); // all reviews
+            this.renderFeaturedReviews(); // if any featyred
+            console.log(`✅ ${reviews.length} depoimentos carregados do servidor.`);
         } catch (err) {
-            console.error("Erro ao carregar reviews:", err);
-            this.handleLoadError(err);
+            console.error('Erro ao carregar reviews:', err);
+            this.renderEmptyState();
         }
     }
     // Tries the request up to N times with exponential back-off
@@ -2860,6 +2858,7 @@ window.reviewManager = new ReviewManager(); // Review subsystem
 // Wait for DOM before touching the page
 document.addEventListener('DOMContentLoaded', () => {
     window.app.init();
+    window.reviewManager = new ReviewManager();
     window.reviewManager.loadReviews();
 });
 

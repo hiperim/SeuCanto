@@ -308,9 +308,9 @@ class AppState {
         this.loadUserProfileFromStorage();
         this.setupEventListeners();
         this.updateCartCount();
-        this.loadReviewsFromStorage();
-        this.renderHomepageReviews();
-        this.renderAdminReviews();
+        if (window.reviewManager) {
+            window.reviewManager.loadReviews();
+        }
         this.initializeGitHubAuth();
         // Session management for all logged-in users
         if (this.isLoggedIn) {
@@ -2698,7 +2698,7 @@ class ReviewManager {
             this.reviews = cached;
             this.renderReviews();
             this.renderFeaturedReviews();
-            console.log(`✅ ${this.reviews.length} depoimentos carregados do cache.`);
+            console.log(`${this.reviews.length} depoimentos carregados do cache.`);
             return;
         }
         // Fetch file - 3 retries
@@ -2714,7 +2714,7 @@ class ReviewManager {
             this.setCachedData(cacheKey, reviews);
             this.renderReviews(); // all reviews
             this.renderFeaturedReviews(); // if any featyred
-            console.log(`✅ ${reviews.length} depoimentos carregados do servidor.`);
+            console.log(`${reviews.length} depoimentos carregados do servidor.`);
         } catch (err) {
             console.error('Erro ao carregar reviews:', err);
             this.renderEmptyState();

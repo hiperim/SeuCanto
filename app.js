@@ -2506,7 +2506,11 @@ class AppState {
         this.closeModal('reviewModal');
         // Auto-refresh após envio bem-sucedido
         setTimeout(() => {
-        this.loadReviewsFromStorage();
+        if (window.reviewManager && typeof window.reviewManager.loadReviews === 'function') {
+            window.reviewManager.loadReviews();
+        } else {
+            console.warn('ReviewManager não encontrado para recarregar reviews');
+        }
         }, 5000);
     } catch (error) {
         console.error('Erro ao enviar review:', error);

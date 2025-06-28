@@ -277,6 +277,8 @@ class AppState {
         this.githubAuth = null;
         this.useProxy = false;
         this.proxyUrl = null;
+        this.cacheBuster = Date.now();      
+        this.baseUrl     = window.location.origin || '';
         this.authRetries = 0;
         this.maxAuthRetries = 3;
         this.config = {
@@ -2687,6 +2689,7 @@ class ReviewManager {
     constructor() {
         this.reviews = [];
         this.cache = new Map();
+        this.reviewsUrl = './reviews.json';
         this.retryAttempts = 3;
         this.baseUrl = (window.location.origin && window.location.origin !== "null")
             ? window.location.origin
@@ -2707,8 +2710,9 @@ class ReviewManager {
         }
         // Fetch file - 3 retries
         try {
-            const cacheBuster = this.cacheBuster || Date.now();
-            const data = await this.fetchWithRetry(`/reviews.json?v=${cacheBuster}`);
+            const url = new URL('/reviews.json', this.baseUrl);
+            url.searchParams.set('v', this.cacheBuster);
+            const data = await this.fetchWithRetry(url.toString());
             // Suporta array puro ou { metadata, reviews }
             const reviews = Array.isArray(data)
                 ? data
@@ -2729,18 +2733,11 @@ class ReviewManager {
     async fetchWithRetry(url, attempts = this.retryAttempts) {
         for (let i = 0; i < attempts; i++) {
             try {
-                const fullUrl = url.startsWith("http")
-                              ? url // Absolute
-                              : `${this.baseUrl}${url}`; // Relative
-
-                const response = await fetch(`${fullUrl}?v=${Date.now()}`);
+                const response = await fetch(url, { cache: 'no-cache' });
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 return await response.json();
             } catch (err) {
-                const isLast = i === attempts - 1;
-                console.warn(`Attempt ${i + 1} failed:`, err);
-                if (isLast) throw err;
-                // Exponential back-off (300 ms * n)
+                if (i === attempts - 1) throw err;
                 await new Promise(r => setTimeout(r, 300 * (i + 1)));
             }
         }

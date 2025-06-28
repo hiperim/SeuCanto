@@ -2707,6 +2707,7 @@ class ReviewManager {
         }
         // Fetch file - 3 retries
         try {
+            const cacheBuster = this.cacheBuster || Date.now();
             const data = await this.fetchWithRetry('/reviews.json?v=' + this.cacheBuster);
             // Suporta array puro ou { metadata, reviews }
             const reviews = Array.isArray(data)

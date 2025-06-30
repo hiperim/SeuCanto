@@ -2176,7 +2176,7 @@ class AppState {
     handleAdminLogin(e) {
         e.preventDefault();
         const password = document.getElementById('adminPassword').value;
-        if (password === 'mozao') {
+        if (password === 'mozão') {
             this.isAdmin = true;
             this.closeModal('adminLoginModal');
             this.showPage('admin');

@@ -682,8 +682,16 @@ class AppState {
         if (window.location.pathname.includes('/admin') || window.location.hash === '#admin') {
             this.showAdminLogin();
         }
-    }
 
+        // Listener for sending new reviews
+        const reviewForm = document.getElementById('reviewForm');
+        if (reviewForm) {
+            reviewForm.addEventListener(
+                'submit',
+                this.handleReviewSubmission.bind(this)
+            );
+        }
+    }
     loadCartFromStorage() {
         try {
         const storage = this.isLoggedIn ? localStorage : sessionStorage;
@@ -2480,53 +2488,53 @@ class AppState {
     };
     // Handle review form submission
     async handleReviewSubmission(event) {
-    event.preventDefault();
-    // Collect forms data
-    const reviewData = {
-        email: document.getElementById('reviewEmail')?.value.trim() || '',
-        rating: parseInt(document.getElementById('reviewRating')?.value || 0),
-        comment: document.getElementById('reviewComment')?.value.trim(),
-        productId: 'geral',
-        location: 'Brasil',
-        tags: ['review']
-    }
-    // Validação
-    const validation = this.validateReviewData(reviewData);
-    if (!validation.isValid) {
-        this.showMessage(validation.message, 'error');
-        return;
-    }
-    if (reviewData.rating < 1 || reviewData.rating > 5) {
-        this.showMessage('Avaliação deve ser entre 1 e 5 estrelas.', 'error');
-        return;
-    }
-    try {
-        const submitBtn = event.target.querySelector('button[type="submit"]');
-        submitBtn.textContent = 'Enviando...';
-        submitBtn.disabled = true;
-        // Usar GitHub App authentication diretamente (SEM PROXY)
-        await this.submitReviewViaGitHubApp(reviewData);
-        this.showMessage('Review enviado com sucesso! Aguarde alguns minutos para aparecer na página.', 'success');
-        this.resetReviewForm();
-        this.closeModal('reviewModal');
-        // Auto-refresh após envio bem-sucedido
-        setTimeout(() => {
-        if (window.reviewManager && typeof window.reviewManager.loadReviews === 'function') {
-            window.reviewManager.loadReviews();
-        } else {
-            console.warn('ReviewManager não encontrado para recarregar reviews');
+        event.preventDefault();
+        // Collect forms data
+        const reviewData = {
+            email: document.getElementById('reviewEmail')?.value.trim() || '',
+            rating: parseInt(document.getElementById('reviewRating')?.value || 0),
+            comment: document.getElementById('reviewComment')?.value.trim(),
+            productId: 'geral',
+            location: 'Brasil',
+            tags: ['review']
         }
-        }, 5000);
-    } catch (error) {
-        console.error('Erro ao enviar review:', error);
-        this.showMessage(`Erro ao enviar review: ${error.message}`, 'error');
-    } finally {
-        const submitBtn = event.target.querySelector('button[type="submit"]');
-        if (submitBtn) {
-        submitBtn.textContent = 'Enviar Depoimento';
-        submitBtn.disabled = false;
+        // Validação
+        const validation = this.validateReviewData(reviewData);
+        if (!validation.isValid) {
+            this.showMessage(validation.message, 'error');
+            return;
         }
-    }
+        if (reviewData.rating < 1 || reviewData.rating > 5) {
+            this.showMessage('Avaliação deve ser entre 1 e 5 estrelas.', 'error');
+            return;
+        }
+        try {
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Enviando...';
+            submitBtn.disabled = true;
+            // Usar GitHub App authentication diretamente (SEM PROXY)
+            await this.submitReviewViaGitHubApp(reviewData);
+            this.showMessage('Review enviado com sucesso! Aguarde alguns minutos para aparecer na página.', 'success');
+            this.resetReviewForm();
+            this.closeModal('reviewModal');
+            // Auto-refresh após envio bem-sucedido
+            setTimeout(() => {
+            if (window.reviewManager && typeof window.reviewManager.loadReviews === 'function') {
+                window.reviewManager.loadReviews();
+            } else {
+                console.warn('ReviewManager não encontrado para recarregar reviews');
+            }
+            }, 5000);
+        } catch (error) {
+            console.error('Erro ao enviar review:', error);
+            this.showMessage(`Erro ao enviar review: ${error.message}`, 'error');
+        } finally {
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            if (submitBtn) {
+            submitBtn.textContent = 'Enviar Depoimento';
+            submitBtn.disabled = false;
+            }
+        }
     }
 
     //Github authentication

@@ -184,14 +184,8 @@
             
             <!-- ALL REVIEWS PAGE -->
             <div id="allReviews" class="page" data-page="allReviews">
-                <div class="page-header">
-                    <h1>Todos os Depoimentos</h1>
-                    <button class="btn btn-primary" onclick="app.openModal('reviewModal')">
-                        Deixar Depoimento
-                    </button>
-                </div>
                 <div id="allReviewsContainer">
-                    <!-- Reviews will be populated by JavaScript -->
+                    <!-- Content by JS method renderAllReviews() -->
                 </div>
             </div>
 
@@ -473,61 +467,44 @@
         </div>
     </div>
 
-    <!-- Review Modal -->
+    <!-- Review modal -->
     <div id="reviewModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>Seu Depoimento</h2>
-                <span class="close" onclick="app.closeModal('reviewModal')">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="reviewForm">
-                    <!-- Email field -->
-                    <div class="form-group">
-                        <label for="reviewEmail">E-mail *</label>
-                        <input 
-                            type="email" 
-                            id="reviewEmail" 
-                            class="form-control" 
-                            required
-                            placeholder="seu@email.com"
-                        >
+            <span class="close" onclick="app.closeModal('reviewModal')">&times;</span>
+            <h2>Seu Depoimento</h2>
+            <form id="reviewForm">
+                <!-- E-mail autofill and readonly -->
+                <div class="form-group">
+                    <label for="reviewEmail">E-mail *</label>
+                    <input 
+                    type="email" 
+                    id="reviewEmail" 
+                    class="form-control"  
+                    required
+                    >
+                </div>
+                <!-- Star rating -->
+                <div class="form-group">
+                    <label class="form-label">Quantas estrelas você dá para sua última compra?</label>
+                    <div class="star-rating">
+                        <span class="star" data-rating="1">★</span>
+                        <span class="star" data-rating="2">★</span>
+                        <span class="star" data-rating="3">★</span>
+                        <span class="star" data-rating="4">★</span>
+                        <span class="star" data-rating="5">★</span>
                     </div>
-                    
-                    <!-- Star rating -->
-                    <div class="form-group">
-                        <label class="form-label">Quantas estrelas você dá para sua última compra? *</label>
-                        <div class="star-rating">
-                            <span class="star" data-rating="1">★</span>
-                            <span class="star" data-rating="2">★</span>
-                            <span class="star" data-rating="3">★</span>
-                            <span class="star" data-rating="4">★</span>
-                            <span class="star" data-rating="5">★</span>
-                        </div>
-                        <input type="hidden" id="reviewRating" name="rating" required>
-                    </div>
-                    
-                    <!-- Comment field -->
-                    <div class="form-group">
-                        <label for="reviewComment">Seu comentário *</label>
-                        <textarea 
-                            id="reviewComment" 
-                            class="form-control" 
-                            rows="4" 
-                            required
-                            placeholder="Conte-nos sobre sua experiência..."
-                            minlength="10"
-                        ></textarea>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Enviar Depoimento</button>
-                        <button type="button" class="btn btn-secondary" onclick="app.closeModal('reviewModal')">Cancelar</button>
-                    </div>
-                </form>
-            </div>
+                    <input type="hidden" id="reviewRating" name="rating" required>
+                </div>
+                <div class="form-group">
+                    <label for="reviewComment" class="form-label">Escreva sua experiência de compra pra gente!</label>
+                    <textarea id="reviewComment" name="comment" class="form-control" rows="4" maxlength="720" placeholder="Compartilhe sua experiência..." required></textarea>
+                    <small class="character-count">0/720 caracteres</small>
+                </div>
+                <button type="submit" class="btn btn--primary" onclick="window.app.submitReview()">Enviar depoimento</button>
+            </form>
         </div>
     </div>
+
 
 
     <!-- OTP modal -->

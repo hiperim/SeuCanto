@@ -604,7 +604,6 @@ class AppState {
                 const emailInput = document.getElementById('reviewEmail');
                 if (emailInput) {
                     emailInput.value = app.user.email;
-                    emailInput.readOnly = true;
                 }
             }
             app.setupEventListeners();
@@ -2405,7 +2404,6 @@ class AppState {
     }
 
     //REVIEWS
-    // Show review modal
     showReviewModal() {
         if (!this.isLoggedIn) {
             this.showMessage('Você precisa estar logado para deixar um depoimento.', 'error');

@@ -599,12 +599,13 @@ class AppState {
         }
         
         document.addEventListener('DOMContentLoaded', () => {
-            // Verify if app.user.email was defined by login
-            const emailInput = document.getElementById('reviewEmail');
-            if (app.user && app.user.email && emailInput) {
-                // Fix value on field as readonly
-                emailInput.value = app.user.email;
-                emailInput.readOnly = true;
+            if (app.user && app.user.email) {
+                // Verify if app.user.email was defined by login
+                const emailInput = document.getElementById('reviewEmail');
+                if (emailInput) {
+                    emailInput.value = app.user.email;
+                    emailInput.readOnly = true;
+                }
             }
             app.setupEventListeners();
         });
@@ -708,7 +709,13 @@ class AppState {
             if (stored) {
                 this.user = JSON.parse(stored);
                 this.isLoggedIn = true;
-            }
+                // E-mail box on 'Seu Depoimento' review modal
+                const emailInput = document.getElementById('reviewEmail');
+                if (emailInput) {
+                    emailInput.value = this.user.email;
+                    emailInput.readOnly = true;
+                }
+            }      
         } catch (e) {
             console.error('Error loading user from storage:', e);
         }
@@ -1501,8 +1508,8 @@ class AppState {
         console.log(`Activity detected - timer reset. Next timeout in ${this.sessionDuration / 3600000} minutes`);
     }
 
-    handleOTPVerification(e) {
-        e.preventDefault();
+    handleOTPVerification(event) {
+        event.preventDefault();
         const otpInput = document.getElementById('otpInput');
         const enteredCode = otpInput.value.trim();
         const email = this.user.email;
@@ -1600,7 +1607,7 @@ class AppState {
         }
     }
 
-        // Check if user can generate OTP
+    // Check if user can generate OTP
     canGenerateOTP(email, currentTime) {
         const attempts = this.otpGenerationAttempts.get(email) || [];
         // Remove old attempts outside the window

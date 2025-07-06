@@ -990,7 +990,7 @@ class AppState {
             targetPage.classList.add('active');
             this.currentPage = pageId;
         }
-        
+
         // Hide all pages
         document.querySelectorAll('.page').forEach(page => {
             page.style.display = 'none';
@@ -2596,8 +2596,14 @@ class AppState {
     }
     // Render all reviews page
     renderAllReviews() {
+        console.log('renderAllReviews called');
+        console.log('Reviews array length:', this.reviews ? this.reviews.length : 0);
         const container = document.getElementById('allReviewsContainer');
-        if (!container) return;
+        if (!container) {
+            console.error('allReviewsContainer not found!');
+            return;
+        }
+        container.innerHTML = '';
         // All reviews page structure 
         let pageHTML = `
             <div class="review_container">

@@ -311,7 +311,23 @@ class AppState {
         if (window.reviewManager) {
             window.reviewManager.loadReviews();
         }
+        // Review e-mail
+        if (this.user && this.user.email) {
+            const emailInput = document.getElementById('reviewEmail');
+            if (emailInput) {
+                emailInput.value = this.user.email;
+            }
+        }
+        // Initialize ReviewManager
+        if (!window.reviewManager) {
+            window.reviewManager = new ReviewManager();
+        }
+        window.reviewManager.loadReviews();
         this.initializeGitHubAuth();
+        
+        
+        
+        
         // Session management for all logged-in users
         if (this.isLoggedIn) {
             const lastActivity = localStorage.getItem('seucanto_last_activity');
@@ -597,17 +613,6 @@ class AppState {
         if (loginForm) {
             loginForm.addEventListener('submit', this.handleLogin.bind(this));
         }
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            if (app.user && app.user.email) {
-                // Verify if app.user.email was defined by login
-                const emailInput = document.getElementById('reviewEmail');
-                if (emailInput) {
-                    emailInput.value = app.user.email;
-                }
-            }
-            app.setupEventListeners();
-        });
 
         const editInfoForm = document.getElementById('editInfoForm');
         if (editInfoForm) {
@@ -691,6 +696,24 @@ class AppState {
                 this.handleReviewSubmission.bind(this)
             );
         }
+        // Star rating functionality
+        const stars = document.querySelectorAll('.star-rating .star');
+        const hiddenRating = document.getElementById('reviewRating');
+        if (stars && hiddenRating) {
+            stars.forEach(star => {
+                star.addEventListener('click', () => {
+                    const value = star.getAttribute('data-rating');
+                    hiddenRating.value = value;
+                    // Visual feedback
+                    stars.forEach(s => {
+                        s.classList.toggle(
+                            'active', 
+                            parseInt(s.getAttribute('data-rating'), 10) <= parseInt(value, 10)
+                        );
+                    });
+                });
+            });
+        }
     }
     loadCartFromStorage() {
         try {
@@ -720,7 +743,6 @@ class AppState {
                 const emailInput = document.getElementById('reviewEmail');
                 if (emailInput) {
                     emailInput.value = this.user.email;
-                    emailInput.readOnly = true;
                 }
             }      
         } catch (e) {
@@ -2512,7 +2534,7 @@ class AppState {
             this.showMessage(validation.message, 'error');
             return;
         }
-        if (reviewData.rating < 1 || reviewData.rating > 5) {
+        if (reviewData.rating == 0 || reviewData.rating < 1 || reviewData.rating > 5) {
             this.showMessage('Avaliação deve ser entre 1 e 5 estrelas.', 'error');
             return;
         }
@@ -2883,12 +2905,6 @@ class ReviewManager {
 // Global app instance
 window.app = new AppState(); // Main e-commerce logic
 window.reviewManager = new ReviewManager(); // Review subsystem
-// Wait for DOM before touching the page
-document.addEventListener('DOMContentLoaded', () => {
-    window.app.init();
-    window.reviewManager = new ReviewManager();
-    window.reviewManager.loadReviews();
-});
 
 // Global Functions for HTML onclick events
 function goToHome() {
@@ -3022,11 +3038,6 @@ function processPayment() {
 function showAddProduct() {
     window.app.showAddProduct();
 }
-
-// Initialize Application when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    window.app.init();
-});
 
 // Handle browser navigation - setup de navegação
 function setupBrowserNavigation() {

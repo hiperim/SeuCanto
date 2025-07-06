@@ -311,37 +311,28 @@ class AppState {
         if (window.reviewManager) {
             window.reviewManager.loadReviews();
         }
-        // Review e-mail
-        if (this.user && this.user.email) {
-            const emailInput = document.getElementById('reviewEmail');
-            if (emailInput) {
-                emailInput.value = this.user.email;
-            }
-        }
-        // Initialize ReviewManager
-        if (!window.reviewManager) {
-            window.reviewManager = new ReviewManager();
-        }
-        window.reviewManager.loadReviews();
         this.initializeGitHubAuth();
-        
-        
-        
-        
+        // Initialize reviews array
+        if (!this.reviews) {
+            this.reviews = [];
+        }
+        // Load existing reviews from ReviewManager if available
+        if (window.reviewManager && window.reviewManager.reviews) {
+            this.reviews = [...window.reviewManager.reviews];
+            console.log('Initialized reviews array with', this.reviews.length, 'reviews');
+        }
         // Session management for all logged-in users
         if (this.isLoggedIn) {
             const lastActivity = localStorage.getItem('seucanto_last_activity');
             if (lastActivity) {
                 const timeSinceLastActivity = Date.now() - parseInt(lastActivity);
                 console.log(`Time since last activity: ${Math.round(timeSinceLastActivity / 3600000)} hours`);
-                
                 if (timeSinceLastActivity > this.sessionDuration) {
                     console.log('Session expired on initialization - logging out');
                     this.logout();
                     return;
                 }
-            }
-            
+            } 
             // Start activity tracking for logged-in users
             console.log('Starting activity tracking for existing session');
             this.startActivityTracking();
@@ -613,6 +604,17 @@ class AppState {
         if (loginForm) {
             loginForm.addEventListener('submit', this.handleLogin.bind(this));
         }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            if (app.user && app.user.email) {
+                // Verify if app.user.email was defined by login
+                const emailInput = document.getElementById('reviewEmail');
+                if (emailInput) {
+                    emailInput.value = app.user.email;
+                }
+            }
+            app.setupEventListeners();
+        });
 
         const editInfoForm = document.getElementById('editInfoForm');
         if (editInfoForm) {
@@ -696,25 +698,52 @@ class AppState {
                 this.handleReviewSubmission.bind(this)
             );
         }
-        // Star rating functionality
+
+        // Star rating functionality for review modal
         const stars = document.querySelectorAll('.star-rating .star');
         const hiddenRating = document.getElementById('reviewRating');
-        if (stars && hiddenRating) {
+
+        if (stars.length > 0 && hiddenRating) {
             stars.forEach(star => {
                 star.addEventListener('click', () => {
                     const value = star.getAttribute('data-rating');
                     hiddenRating.value = value;
-                    // Visual feedback
+                    
+                    // Visual feedback - highlight selected stars
                     stars.forEach(s => {
                         s.classList.toggle(
-                            'active', 
+                            'selected', 
+                            parseInt(s.getAttribute('data-rating'), 10) <= parseInt(value, 10)
+                        );
+                    });
+                    
+                    console.log('Star rating selected:', value);
+                });
+                
+                // Add hover effect
+                star.addEventListener('mouseenter', () => {
+                    const value = star.getAttribute('data-rating');
+                    stars.forEach(s => {
+                        s.classList.toggle(
+                            'hover', 
                             parseInt(s.getAttribute('data-rating'), 10) <= parseInt(value, 10)
                         );
                     });
                 });
             });
+            
+            // Remove hover effect when leaving star container
+            const starContainer = document.querySelector('.star-rating');
+            if (starContainer) {
+                starContainer.addEventListener('mouseleave', () => {
+                    stars.forEach(s => s.classList.remove('hover'));
+                });
+            }
+            
+            console.log('Star rating listeners added successfully');
         }
     }
+
     loadCartFromStorage() {
         try {
         const storage = this.isLoggedIn ? localStorage : sessionStorage;
@@ -743,6 +772,7 @@ class AppState {
                 const emailInput = document.getElementById('reviewEmail');
                 if (emailInput) {
                     emailInput.value = this.user.email;
+                    emailInput.readOnly = true;
                 }
             }      
         } catch (e) {
@@ -1012,22 +1042,14 @@ class AppState {
             targetPage.classList.add('active');
             this.currentPage = pageId;
         }
-
-        // Hide all pages
-        document.querySelectorAll('.page').forEach(page => {
-            page.style.display = 'none';
-            page.classList.remove('active');
+        // Hide all sections
+        document.querySelectorAll("section[data-page]").forEach(sec => {
+            sec.style.display = "none";
         });
 
-        // Show current page
+        // Show current
         const current = document.getElementById(pageId);
-        if (current) {
-            current.style.display = 'block';
-            current.classList.add('active');
-            console.log(`Showing page: ${pageId}`);
-        } else {
-            console.error(`Page element not found: ${pageId}`);
-        }
+        if (current) current.style.display = "block";
 
         if (pageId === 'cart') {
             this.renderCart();
@@ -2519,50 +2541,103 @@ class AppState {
     // Handle review form submission
     async handleReviewSubmission(event) {
         event.preventDefault();
-        // Collect forms data
+        
+        // Collect form data
         const reviewData = {
             email: document.getElementById('reviewEmail')?.value.trim() || '',
-            rating: parseInt(document.getElementById('reviewRating')?.value || 0),
+            rating: parseInt(document.getElementById('reviewRating')?.value || 0, 10),
             comment: document.getElementById('reviewComment')?.value.trim(),
             productId: 'geral',
             location: 'Brasil',
             tags: ['review']
-        }
-        // Validação
-        const validation = this.validateReviewData(reviewData);
-        if (!validation.isValid) {
-            this.showMessage(validation.message, 'error');
+        };
+        
+        console.log('Review submission data:', reviewData);
+        
+        // Enhanced validation
+        if (!reviewData.email) {
+            this.showMessage('Por favor, informe seu e-mail.', 'error');
             return;
         }
-        if (reviewData.rating == 0 || reviewData.rating < 1 || reviewData.rating > 5) {
-            this.showMessage('Avaliação deve ser entre 1 e 5 estrelas.', 'error');
+        
+        if (!reviewData.rating || reviewData.rating < 1 || reviewData.rating > 5) {
+            this.showMessage('Por favor, selecione uma avaliação de 1 a 5 estrelas.', 'error');
             return;
         }
+        
+        if (!reviewData.comment || reviewData.comment.length < 10) {
+            this.showMessage('Por favor, escreva um comentário com pelo menos 10 caracteres.', 'error');
+            return;
+        }
+        
         try {
             const submitBtn = event.target.querySelector('button[type="submit"]');
-            submitBtn.textContent = 'Enviando...';
-            submitBtn.disabled = true;
-            // Usar GitHub App authentication diretamente (SEM PROXY)
-            await this.submitReviewViaGitHubApp(reviewData);
-            this.showMessage('Review enviado com sucesso! Aguarde alguns minutos para aparecer na página.', 'success');
+            if (submitBtn) {
+                submitBtn.textContent = 'Enviando...';
+                submitBtn.disabled = true;
+            }
+            
+            // Create review object with proper structure
+            const newReview = {
+                id: `review-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                author: reviewData.email.split('@')[0], // Use email prefix as author name
+                email: reviewData.email,
+                rating: reviewData.rating,
+                comment: reviewData.comment,
+                timestamp: Date.now(),
+                product_id: reviewData.productId,
+                verified: false,
+                location: reviewData.location,
+                tags: reviewData.tags
+            };
+            
+            // Initialize reviews array if not exists
+            if (!this.reviews) {
+                this.reviews = [];
+            }
+            
+            // Add to local reviews array
+            this.reviews.push(newReview);
+            console.log('Review added to local array:', newReview);
+            
+            // Add to ReviewManager if available
+            if (window.reviewManager) {
+                if (!window.reviewManager.reviews) {
+                    window.reviewManager.reviews = [];
+                }
+                window.reviewManager.reviews.push(newReview);
+                console.log('Review added to ReviewManager');
+            }
+            
+            // Try to save to GitHub (optional - doesn't block local save)
+            try {
+                if (this.submitReviewViaGitHubApp) {
+                    await this.submitReviewViaGitHubApp(reviewData);
+                    console.log('Review saved to GitHub successfully');
+                }
+            } catch (githubError) {
+                console.warn('GitHub save failed, but review saved locally:', githubError);
+            }
+            
+            // Immediate UI updates
+            this.renderAllReviews();
+            if (this.isAdmin) {
+                this.renderAdminReviews();
+            }
+            
+            // Success feedback
+            this.showMessage('Depoimento enviado com sucesso! Obrigado pela sua avaliação.', 'success');
             this.resetReviewForm();
             this.closeModal('reviewModal');
-            // Auto-refresh após envio bem-sucedido
-            setTimeout(() => {
-            if (window.reviewManager && typeof window.reviewManager.loadReviews === 'function') {
-                window.reviewManager.loadReviews();
-            } else {
-                console.warn('ReviewManager não encontrado para recarregar reviews');
-            }
-            }, 5000);
+            
         } catch (error) {
-            console.error('Erro ao enviar review:', error);
-            this.showMessage(`Erro ao enviar review: ${error.message}`, 'error');
+            console.error('Error submitting review:', error);
+            this.showMessage(`Erro ao enviar depoimento: ${error.message}`, 'error');
         } finally {
             const submitBtn = event.target.querySelector('button[type="submit"]');
             if (submitBtn) {
-            submitBtn.textContent = 'Enviar Depoimento';
-            submitBtn.disabled = false;
+                submitBtn.textContent = 'Enviar Depoimento';
+                submitBtn.disabled = false;
             }
         }
     }
@@ -2585,16 +2660,31 @@ class AppState {
         }
         }
 
-    // Resetar formulário após envio
+    // Reset form "post-sent"
     resetReviewForm() {
-    const form = document.getElementById('reviewForm');
-    if (form) {
-        form.reset();
-        // Reset star rating if exists
-        const stars = document.querySelectorAll('.star-rating .star');
-        stars.forEach(star => star.classList.remove('active'));
+        const form = document.getElementById('reviewForm');
+        if (form) {
+            form.reset();
+            // Reset star rating visual state
+            const stars = document.querySelectorAll('.star-rating .star');
+            const hiddenRating = document.getElementById('reviewRating');
+            stars.forEach(star => {
+                star.classList.remove('selected', 'hover');
+            });
+            if (hiddenRating) {
+                hiddenRating.value = '';
+            }
+            // Reset email field for logged-in users
+            if (this.user && this.user.email) {
+                const emailInput = document.getElementById('reviewEmail');
+                if (emailInput) {
+                    emailInput.value = this.user.email;
+                }
+            }
+            console.log('Review form reset');
+        }
     }
-    }
+
     // Render reviews on homepage
     renderHomepageReviews() {
         const container = document.getElementById('reviewsContainer');
@@ -2619,41 +2709,57 @@ class AppState {
     // Render all reviews page
     renderAllReviews() {
         console.log('renderAllReviews called');
-        console.log('Reviews array length:', this.reviews ? this.reviews.length : 0);
         const container = document.getElementById('allReviewsContainer');
         if (!container) {
-            console.error('allReviewsContainer not found!');
+            console.error('allReviewsContainer not found');
             return;
         }
-        container.innerHTML = '';
-        // All reviews page structure 
-        let pageHTML = `
-            <div class="review_container">
-                <button class="btn btn--outline mb-16" onclick="window.app.showPage('home')">← Voltar</button>
-                <h1>Todos os Depoimentos</h1>
-                <div class="reviews-content">
-        `;
-        if (this.reviews.length === 0) {
-            pageHTML += '<p style="text-align: center; color: var(--color-text-secondary);">Ainda não há depoimentos.</p>';
-        } else {
-            // Sort reviews by newest first
-            const sortedReviews = [...this.reviews].sort((a, b) => b.timestamp - a.timestamp);
-            pageHTML += sortedReviews.map(review => `
+        
+        // Load reviews from ReviewManager if available
+        if (window.reviewManager && window.reviewManager.reviews) {
+            this.reviews = [...window.reviewManager.reviews];
+            console.log('Loaded reviews from ReviewManager:', this.reviews.length);
+        }
+        
+        // Check if we have reviews
+        if (!this.reviews || this.reviews.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>Ainda não há depoimentos</h3>
+                    <p>Seja o primeiro a avaliar nossos produtos!</p>
+                    <button class="btn btn-primary" onclick="app.openModal('reviewModal')">
+                        Deixar Depoimento
+                    </button>
+                </div>
+            `;
+            return;
+        }
+        
+        // Sort reviews by newest first
+        const sortedReviews = [...this.reviews].sort((a, b) => b.timestamp - a.timestamp);
+        
+        // Generate HTML for each review
+        container.innerHTML = sortedReviews.map(review => {
+            const date = new Date(review.timestamp).toLocaleDateString('pt-BR');
+            const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+            const authorName = review.author || review.userName || review.email?.split('@')[0] || 'Cliente';
+            
+            return `
                 <div class="review-card">
                     <div class="review-header">
-                        <span class="review-author">${review.userName}</span>
-                        <span class="review-date">${review.date}</span>
+                        <div class="review-author">
+                            <h3>${authorName}</h3>
+                            <span class="review-date">${date}</span>
+                        </div>
+                        <div class="review-stars">${stars}</div>
                     </div>
-                    <div class="review-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
-                    <div class="review-comment">${review.comment}</div>
+                    <p class="review-comment">${review.comment}</p>
+                    ${review.verified ? '<span class="verified-badge">✓ Compra Verificada</span>' : ''}
                 </div>
-            `).join('');
-        }
-        pageHTML += `
-                </div>
-            </div>
-        `;
-        container.innerHTML = pageHTML;
+            `;
+        }).join('');
+        
+        console.log('All Reviews rendered successfully with', sortedReviews.length, 'reviews');
     }
     // Render admin reviews
     renderAdminReviews() {
@@ -2905,6 +3011,12 @@ class ReviewManager {
 // Global app instance
 window.app = new AppState(); // Main e-commerce logic
 window.reviewManager = new ReviewManager(); // Review subsystem
+// Wait for DOM before touching the page
+document.addEventListener('DOMContentLoaded', () => {
+    window.app.init();
+    window.reviewManager = new ReviewManager();
+    window.reviewManager.loadReviews();
+});
 
 // Global Functions for HTML onclick events
 function goToHome() {
@@ -3038,6 +3150,11 @@ function processPayment() {
 function showAddProduct() {
     window.app.showAddProduct();
 }
+
+// Initialize Application when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    window.app.init();
+});
 
 // Handle browser navigation - setup de navegação
 function setupBrowserNavigation() {

@@ -990,14 +990,22 @@ class AppState {
             targetPage.classList.add('active');
             this.currentPage = pageId;
         }
-        // Hide all sections
-        document.querySelectorAll("section[data-page]").forEach(sec => {
-            sec.style.display = "none";
+        
+        // Hide all pages
+        document.querySelectorAll('.page').forEach(page => {
+            page.style.display = 'none';
+            page.classList.remove('active');
         });
 
-        // Show current
+        // Show current page
         const current = document.getElementById(pageId);
-        if (current) current.style.display = "block";
+        if (current) {
+            current.style.display = 'block';
+            current.classList.add('active');
+            console.log(`Showing page: ${pageId}`);
+        } else {
+            console.error(`Page element not found: ${pageId}`);
+        }
 
         if (pageId === 'cart') {
             this.renderCart();

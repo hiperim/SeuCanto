@@ -2714,36 +2714,31 @@ class AppState {
             console.error('allReviewsContainer not found');
             return;
         }
-        
         // Load reviews from ReviewManager if available
         if (window.reviewManager && window.reviewManager.reviews) {
             this.reviews = [...window.reviewManager.reviews];
             console.log('Loaded reviews from ReviewManager:', this.reviews.length);
         }
-        
-        // Check if we have reviews
+        // Check if reviews available
         if (!this.reviews || this.reviews.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <h3>Ainda não há depoimentos</h3>
-                    <p>Seja o primeiro a avaliar nossos produtos!</p>
-                    <button class="btn btn-primary" onclick="app.openModal('reviewModal')">
-                        Deixar Depoimento
+                    <p>Seja o primeiro a avaliar!</p>
+                    <button class="btn btn-primary" onclick="app.showReviewModal()">
+                        Deixar depoimento
                     </button>
                 </div>
             `;
             return;
         }
-        
         // Sort reviews by newest first
         const sortedReviews = [...this.reviews].sort((a, b) => b.timestamp - a.timestamp);
-        
         // Generate HTML for each review
         container.innerHTML = sortedReviews.map(review => {
             const date = new Date(review.timestamp).toLocaleDateString('pt-BR');
             const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
-            const authorName = review.author || review.userName || review.email?.split('@')[0] || 'Cliente';
-            
+            const authorName = review.author || review.email?.split('@')[0] || 'Cliente';
             return `
                 <div class="review-card">
                     <div class="review-header">
@@ -2759,7 +2754,7 @@ class AppState {
             `;
         }).join('');
         
-        console.log('All Reviews rendered successfully with', sortedReviews.length, 'reviews');
+        console.log('All Reviews rendered successfully');
     }
     // Render admin reviews
     renderAdminReviews() {

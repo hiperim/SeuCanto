@@ -282,8 +282,8 @@ class AppState {
         this.config = {
             maxReviews: 100,
             reviewsPerPage: 10,
-            autoRefreshInterval: 30000, // 30 sec
-        };
+            autoRefreshInterval: 30000}; // 30 sec
+        this.eventsInitialized = false;
     }
 
     init() {
@@ -600,21 +600,13 @@ class AppState {
     }
 
     setupEventListeners() {
+        if (this.eventsInitialized) return;
+        this.eventsInitialized = true;
+
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
             loginForm.addEventListener('submit', this.handleLogin.bind(this));
         }
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            if (app.user && app.user.email) {
-                // Verify if app.user.email was defined by login
-                const emailInput = document.getElementById('reviewEmail');
-                if (emailInput) {
-                    emailInput.value = app.user.email;
-                }
-            }
-            app.setupEventListeners();
-        });
 
         const editInfoForm = document.getElementById('editInfoForm');
         if (editInfoForm) {
@@ -697,51 +689,7 @@ class AppState {
                 'submit',
                 this.handleReviewSubmission.bind(this)
             );
-        }
-
-        // Star rating functionality for review modal
-        const stars = document.querySelectorAll('.star-rating .star');
-        const hiddenRating = document.getElementById('reviewRating');
-
-        if (stars.length > 0 && hiddenRating) {
-            stars.forEach(star => {
-                star.addEventListener('click', () => {
-                    const value = star.getAttribute('data-rating');
-                    hiddenRating.value = value;
-                    
-                    // Visual feedback - highlight selected stars
-                    stars.forEach(s => {
-                        s.classList.toggle(
-                            'selected', 
-                            parseInt(s.getAttribute('data-rating'), 10) <= parseInt(value, 10)
-                        );
-                    });
-                    
-                    console.log('Star rating selected:', value);
-                });
-                
-                // Add hover effect
-                star.addEventListener('mouseenter', () => {
-                    const value = star.getAttribute('data-rating');
-                    stars.forEach(s => {
-                        s.classList.toggle(
-                            'hover', 
-                            parseInt(s.getAttribute('data-rating'), 10) <= parseInt(value, 10)
-                        );
-                    });
-                });
-            });
-            
-            // Remove hover effect when leaving star container
-            const starContainer = document.querySelector('.star-rating');
-            if (starContainer) {
-                starContainer.addEventListener('mouseleave', () => {
-                    stars.forEach(s => s.classList.remove('hover'));
-                });
-            }
-            
-            console.log('Star rating listeners added successfully');
-        }
+        }  
     }
 
     loadCartFromStorage() {
@@ -1454,6 +1402,14 @@ class AppState {
         this.user = { email };
         
         try {
+            const cached = JSON.parse(sessionStorage.getItem('seucanto_otp') || '{}');
+            if (cached.code && cached.expires > Date.now()) {
+                // If valid OTP, reopen modal
+                this.otpCode = cached.code;
+                this.openOtpModal();
+                this.resumeOTPTimer(cached.expires);
+                return;
+            }
             await this.generateOTP();
             this.closeModal('loginModal');
             
@@ -1570,7 +1526,7 @@ class AppState {
     handleOTPVerification(event) {
         event.preventDefault();
         const otpInput = document.getElementById('otpInput');
-        const enteredCode = otpInput.value.trim();
+        const enteredCode = otpInput.value.trim().toUpperCase();
         const email = this.user.email;
         const now = Date.now();
         // Verifiy if user is blocked
@@ -1650,6 +1606,10 @@ class AppState {
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
                 await this.sendOTPEmail(this.user.email, this.otpCode);
+                sessionStorage.setItem('seucanto_otp', JSON.stringify({
+                    code: this.otpCode,
+                    expires: Date.now() + 15 * 60 * 1000
+                }));
                 console.log('OTP sent successfully on attempt:', attempts + 1);
                 break; // Success, exit retry loop
             } catch (error) {
@@ -2480,47 +2440,78 @@ class AppState {
     }
     // Setup star rating functionality
     setupStarRating() {
-        const stars = document.querySelectorAll('.star');
+        const starContainer = document.querySelector('.star-rating');
         const ratingInput = document.getElementById('reviewRating');
-        stars.forEach((star, index) => {
-            star.addEventListener('click', () => {
-                const rating = index + 1;
-                ratingInput.value = rating;
-                // Update visual state
-                stars.forEach((s, i) => {
-                    if (i < rating) {
-                        s.classList.add('active');
-                    } else {
-                        s.classList.remove('active');
-                    }
-                });
+    
+        if (!starContainer || !ratingInput) {
+            console.warn('Star rating elements not found - skipping setup');
+            return;
+        }
+        const stars = starContainer.querySelectorAll('.star');
+        
+        if (stars.length === 0) {
+            console.warn('No star elements found in container');
+            return;
+        }
+        
+        // Function update visual state
+        const updateStarVisuals = (rating, isHover = false) => {
+            stars.forEach((star, index) => {
+                const starValue = parseInt(star.getAttribute('data-rating'), 10) || (index + 1);
+                const isActive = starValue <= rating;
+                star.classList.toggle('selected', isActive && !isHover);
+                star.classList.toggle('hover', isActive && isHover);
             });
-            star.addEventListener('mouseover', () => {
-                const rating = index + 1;
-                stars.forEach((s, i) => {
-                    if (i < rating) {
-                        s.style.color = 'var(--color-orange)';
-                    } else {
-                        s.style.color = '#ddd';
-                    }
+        };
+        
+        // Function reset hover state
+        const resetHoverState = () => {
+            const currentRating = parseInt(ratingInput.value, 10) || 0;
+            stars.forEach(star => star.classList.remove('hover'));
+            updateStarVisuals(currentRating);
+        };
+        
+        // Click event
+        stars.forEach((star, index) => {
+            star.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                const rating = parseInt(star.getAttribute('data-rating'), 10) || (index + 1);
+                ratingInput.value = rating;
+                updateStarVisuals(rating);
+                console.log('Star rating selected:', rating);
+                const event = new CustomEvent('starRatingChanged', {
+                    detail: { rating }
                 });
+                starContainer.dispatchEvent(event);
+            });
+            // Hover event
+            star.addEventListener('mouseenter', () => {
+                const rating = parseInt(star.getAttribute('data-rating'), 10) || (index + 1);
+                updateStarVisuals(rating, true);
+            });
+            // Accessibility
+            star.setAttribute('tabindex', '0');
+            star.setAttribute('role', 'button');
+            star.setAttribute('aria-label', `Rate ${parseInt(star.getAttribute('data-rating'), 10) || (index + 1)} stars`);
+            // Keyboard support
+            star.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    star.click();
+                }
             });
         });
-        // Reset on mouse leave
-        const starContainer = document.querySelector('.star-rating');
-        if (starContainer) {
-            starContainer.addEventListener('mouseleave', () => {
-                const currentRating = parseInt(ratingInput.value) || 0;
-                stars.forEach((s, i) => {
-                    if (i < currentRating) {
-                        s.style.color = 'var(--color-orange)';
-                    } else {
-                        s.style.color = '#ddd';
-                    }
-                });
-            });
+        // Mouse leave event
+        starContainer.addEventListener('mouseleave', resetHoverState);
+        // Initialize visual state based on current value
+        const initialRating = parseInt(ratingInput.value, 10) || 0;
+        if (initialRating > 0) {
+            updateStarVisuals(initialRating);
         }
-    };
+        console.log('Star rating functionality initialized successfully');
+    }
+
     // Setup character counter
     setupCharacterCounter() {
         const textarea = document.getElementById('reviewComment');

@@ -10,6 +10,7 @@ class ZipperAnimation {
         this.lastSliderY = 0;
         this.reviews = [];
         this.featuredReviews = [];
+        
         this.init();
     }
     
@@ -271,18 +272,20 @@ class AppState {
         this.attemptWindowMs = 3600000; // 1 hr in ms
         this.lockoutDurationMs = 1800000; // 30 min lockout
         this.reviewAttempts = new Map(); // Track attempts per user
+        // Restore persisted review attempts
+        const stored = localStorage.getItem('seucanto_review_attempts');
+        if (stored) {
+            try {
+                const obj = JSON.parse(stored);
+                Object.entries(obj).forEach(([email, times]) => {
+                    this.reviewAttempts.set(email, times);
+                });
+            } catch (e) {
+                console.warn('Invalid stored review attempts:', e);
+            }
+        }
         this.maxReviewsPerDay = 2; // Allow only 2 reviews
         this.reviewWindowMs = 86400000; // 24 hrs in ms
-        this.githubAuth = null;
-        this.useProxy = false;
-        this.proxyUrl = null;
-        this.authRetries = 0;
-        this.maxAuthRetries = 3;
-        this.config = {
-            maxReviews: 100,
-            reviewsPerPage: 10,
-            autoRefreshInterval: 30000}; // 30 sec
-        this.eventsInitialized = false;
     }
 
     init() {
@@ -307,52 +310,32 @@ class AppState {
         this.loadUserProfileFromStorage();
         this.setupEventListeners();
         this.updateCartCount();
-        if (window.reviewManager) {
-            window.reviewManager.loadReviews();
-        }
-        this.initializeGitHubAuth();
-        // Initialize reviews array
-        if (!this.reviews) {
-            this.reviews = [];
-        }
-        // Load existing reviews from ReviewManager if available
-        if (window.reviewManager && window.reviewManager.reviews) {
-            this.reviews = [...window.reviewManager.reviews];
-            console.log('Initialized reviews array with', this.reviews.length, 'reviews');
-        }
+        this.loadReviewsFromStorage();
+        this.renderHomepageReviews();
+        this.renderHomepageReviews();
+        this.renderAdminReviews();
         // Session management for all logged-in users
         if (this.isLoggedIn) {
             const lastActivity = localStorage.getItem('seucanto_last_activity');
             if (lastActivity) {
                 const timeSinceLastActivity = Date.now() - parseInt(lastActivity);
                 console.log(`Time since last activity: ${Math.round(timeSinceLastActivity / 3600000)} hours`);
+                
                 if (timeSinceLastActivity > this.sessionDuration) {
                     console.log('Session expired on initialization - logging out');
                     this.logout();
                     return;
                 }
-            } 
+            }
+            
             // Start activity tracking for logged-in users
             console.log('Starting activity tracking for existing session');
             this.startActivityTracking();
         }
+        
+        this.initializeZipperAnimation();
     }
 
-    initializeGitHubAuth() {
-        // Load the authentication script
-        if (!window.GitHubAuth) {
-            const script = document.createElement('script');
-            script.src = '/github-app-auth.js';
-            script.onload = () => {
-            this.githubAuth = new GitHubAuth();
-            console.log('GitHub Auth inicializado');
-            };
-            document.head.appendChild(script);
-        } else {
-            this.githubAuth = new GitHubAuth(); 
-        }
-    }
-    
     initUserProfile() {
         if (!this.userProfile) {
             this.userProfile = {
@@ -599,14 +582,11 @@ class AppState {
     }
 
     setupEventListeners() {
-        if (this.eventsInitialized) return;
-        this.eventsInitialized = true;
-
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
             loginForm.addEventListener('submit', this.handleLogin.bind(this));
         }
-
+        
         const editInfoForm = document.getElementById('editInfoForm');
         if (editInfoForm) {
             editInfoForm.addEventListener('submit', this.handleEditInfoForm.bind(this));
@@ -680,15 +660,6 @@ class AppState {
         if (window.location.pathname.includes('/admin') || window.location.hash === '#admin') {
             this.showAdminLogin();
         }
-
-        // Listener for sending new reviews
-        const reviewForm = document.getElementById('reviewForm');
-        if (reviewForm) {
-            reviewForm.addEventListener(
-                'submit',
-                this.handleReviewSubmission.bind(this)
-            );
-        }  
     }
 
     loadCartFromStorage() {
@@ -715,13 +686,7 @@ class AppState {
             if (stored) {
                 this.user = JSON.parse(stored);
                 this.isLoggedIn = true;
-                // E-mail box on 'Seu Depoimento' review modal
-                const emailInput = document.getElementById('reviewEmail');
-                if (emailInput) {
-                    emailInput.value = this.user.email;
-                    emailInput.readOnly = true;
-                }
-            }      
+            }
         } catch (e) {
             console.error('Error loading user from storage:', e);
         }
@@ -924,7 +889,7 @@ class AppState {
         const cartSummary = document.getElementById('cartSummary');
         if (!cartItems || !cartSummary) return;
         if (this.cart.length === 0) {
-            cartItems.innerHTML = '<h5 class="empty-cart">Seu carrinho está vazio.</h5>';
+            cartItems.innerHTML = '<p class="empty-cart">Seu carrinho está vazio.</p>';
             cartSummary.innerHTML = '';
             return;
         }
@@ -962,15 +927,15 @@ class AppState {
         cartSummary.innerHTML = `
             <div class="cart-summary-content">
                 <div class="summary-row">
-                    <h5>Subtotal: R$${subtotal.toFixed(2).replace('.', ',')}</span></h5>
+                    <p>Subtotal: R$${subtotal.toFixed(2).replace('.', ',')}</span></p>
                 </div>
                 ${shipping > 0 ? `
                     <div class="summary-row">
-                        <h5>Frete: R$${shipping.toFixed(2).replace('.', ',')}</h5>
+                        <p>Frete: R$${shipping.toFixed(2).replace('.', ',')}</p>
                     </div>
                 ` : ''}
                 <div class="summary-row total">
-                    <h5>Total: R$${total.toFixed(2).replace('.', ',')}</h5>
+                    <p>Total: R$${total.toFixed(2).replace('.', ',')}</p>
                 </div>
             </div>
         `;
@@ -979,24 +944,19 @@ class AppState {
 
     showPage(pageId) {
         window.scrollTo(0, 0);
+
         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+
         // Store current page before changing
         if (pageId !== 'login' && pageId !== 'otp') {
             this.previousPage = pageId;
         }
+        
         const targetPage = document.getElementById(pageId + 'Page');
         if (targetPage) {
             targetPage.classList.add('active');
             this.currentPage = pageId;
         }
-        // Hide all sections
-        document.querySelectorAll("section[data-page]").forEach(sec => {
-            sec.style.display = "none";
-        });
-
-        // Show current
-        const current = document.getElementById(pageId);
-        if (current) current.style.display = "block";
 
         if (pageId === 'cart') {
             this.renderCart();
@@ -1401,14 +1361,6 @@ class AppState {
         this.user = { email };
         
         try {
-            const cached = JSON.parse(sessionStorage.getItem('seucanto_otp') || '{}');
-            if (cached.code && cached.expires > Date.now()) {
-                // If valid OTP, reopen modal
-                this.otpCode = cached.code;
-                this.openOtpModal();
-                this.resumeOTPTimer(cached.expires);
-                return;
-            }
             await this.generateOTP();
             this.closeModal('loginModal');
             
@@ -1522,10 +1474,10 @@ class AppState {
         console.log(`Activity detected - timer reset. Next timeout in ${this.sessionDuration / 3600000} minutes`);
     }
 
-    handleOTPVerification(event) {
-        event.preventDefault();
+    handleOTPVerification(e) {
+        e.preventDefault();
         const otpInput = document.getElementById('otpInput');
-        const enteredCode = otpInput.value.trim().toUpperCase();
+        const enteredCode = otpInput.value.trim();
         const email = this.user.email;
         const now = Date.now();
         // Verifiy if user is blocked
@@ -1605,10 +1557,6 @@ class AppState {
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
                 await this.sendOTPEmail(this.user.email, this.otpCode);
-                sessionStorage.setItem('seucanto_otp', JSON.stringify({
-                    code: this.otpCode,
-                    expires: Date.now() + 15 * 60 * 1000
-                }));
                 console.log('OTP sent successfully on attempt:', attempts + 1);
                 break; // Success, exit retry loop
             } catch (error) {
@@ -1625,7 +1573,7 @@ class AppState {
         }
     }
 
-    // Check if user can generate OTP
+        // Check if user can generate OTP
     canGenerateOTP(email, currentTime) {
         const attempts = this.otpGenerationAttempts.get(email) || [];
         // Remove old attempts outside the window
@@ -2422,7 +2370,30 @@ class AppState {
         }
     }
 
-    //REVIEWS
+    // REVIEWS
+    // Load reviews from storage
+    loadReviewsFromStorage() {
+        try {
+            const stored = localStorage.getItem('seucanto_reviews');
+            this.reviews = stored ? JSON.parse(stored) : [];
+            const featuredStored = localStorage.getItem('seucanto_featured_reviews');
+            this.featuredReviews = featuredStored ? JSON.parse(featuredStored) : [];
+        } catch (e) {
+            console.error('Error loading reviews:', e);
+            this.reviews = [];
+            this.featuredReviews = [];
+        }
+    }
+    // Save reviews to storage
+    saveReviewsToStorage() {
+        try {
+            localStorage.setItem('seucanto_reviews', JSON.stringify(this.reviews));
+            localStorage.setItem('seucanto_featured_reviews', JSON.stringify(this.featuredReviews));
+        } catch (e) {
+            console.error('Error saving reviews:', e);
+        }
+    }
+    // Show review modal
     showReviewModal() {
         if (!this.isLoggedIn) {
             this.showMessage('Você precisa estar logado para deixar um depoimento.', 'error');
@@ -2479,18 +2450,7 @@ class AppState {
                 });
             });
         }
-        
-        // Function update visual state
-        const updateStarVisuals = (rating, isHover = false) => {
-            stars.forEach((star, index) => {
-                const starValue = parseInt(star.getAttribute('data-rating'), 10) || (index + 1);
-                const isActive = starValue <= rating;
-                star.classList.toggle('selected', isActive && !isHover);
-                star.classList.toggle('hover', isActive && isHover);
-            });
-        };
     }
-
     // Setup character counter
     setupCharacterCounter() {
         const textarea = document.getElementById('reviewComment');
@@ -2507,154 +2467,76 @@ class AppState {
                 }
             });
         }
-    };
+    }
     // Handle review form submission
-    async handleReviewSubmission(event) {
-        event.preventDefault();
+    submitReview() {
+        const form = document.getElementById('reviewForm');
+        if (!form) return;
         
-        // Collect form data
-        const reviewData = {
-            email: document.getElementById('reviewEmail')?.value.trim() || '',
-            rating: parseInt(document.getElementById('reviewRating')?.value || 0, 10),
-            comment: document.getElementById('reviewComment')?.value.trim(),
-            productId: 'geral',
-            location: 'Brasil',
-            tags: ['review']
-        };
-        
-        console.log('Review submission data:', reviewData);
-        
-        // Enhanced validation
-        if (!reviewData.email) {
-            this.showMessage('Por favor, informe seu e-mail.', 'error');
+        const formData = new FormData(form);
+        const rating = parseInt(formData.get('rating'));
+        const comment = formData.get('comment').trim();
+        const now = Date.now();
+        const email = this.user.email;
+
+        // Validation
+        if (!this.canPostReview(email, now)) {
+            this.showMessage('Você atingiu o limite de 2 depoimentos em 24 horas.', 'error');
             return;
         }
         
-        if (!reviewData.rating || reviewData.rating < 1 || reviewData.rating > 5) {
+        if (!rating || rating < 1 || rating > 5) {
             this.showMessage('Por favor, selecione uma avaliação de 1 a 5 estrelas.', 'error');
             return;
         }
         
-        if (!reviewData.comment || reviewData.comment.length < 10) {
+        if (!comment || comment.length < 10) {
             this.showMessage('Por favor, escreva um comentário com pelo menos 10 caracteres.', 'error');
             return;
         }
         
-        try {
-            const submitBtn = event.target.querySelector('button[type="submit"]');
-            if (submitBtn) {
-                submitBtn.textContent = 'Enviando...';
-                submitBtn.disabled = true;
-            }
-            
-            // Create review object with proper structure
-            const newReview = {
-                id: `review-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                author: reviewData.email.split('@')[0], // Use email prefix as author name
-                email: reviewData.email,
-                rating: reviewData.rating,
-                comment: reviewData.comment,
-                timestamp: Date.now(),
-                product_id: reviewData.productId,
-                verified: false,
-                location: reviewData.location,
-                tags: reviewData.tags
-            };
-            
-            // Initialize reviews array if not exists
-            if (!this.reviews) {
-                this.reviews = [];
-            }
-            
-            // Add to local reviews array
-            this.reviews.push(newReview);
-            console.log('Review added to local array:', newReview);
-            
-            // Add to ReviewManager if available
-            if (window.reviewManager) {
-                if (!window.reviewManager.reviews) {
-                    window.reviewManager.reviews = [];
-                }
-                window.reviewManager.reviews.push(newReview);
-                console.log('Review added to ReviewManager');
-            }
-            
-            // Try to save to GitHub (optional - doesn't block local save)
-            try {
-                if (this.submitReviewViaGitHubApp) {
-                    await this.submitReviewViaGitHubApp(reviewData);
-                    console.log('Review saved to GitHub successfully');
-                }
-            } catch (githubError) {
-                console.warn('GitHub save failed, but review saved locally:', githubError);
-            }
-            
-            // Immediate UI updates
-            this.renderAllReviews();
-            if (this.isAdmin) {
-                this.renderAdminReviews();
-            }
-            
-            // Success feedback
-            this.showMessage('Depoimento enviado com sucesso! Obrigado pela sua avaliação.', 'success');
-            this.resetReviewForm();
-            this.closeModal('reviewModal');
-            
-        } catch (error) {
-            console.error('Error submitting review:', error);
-            this.showMessage(`Erro ao enviar depoimento: ${error.message}`, 'error');
-        } finally {
-            const submitBtn = event.target.querySelector('button[type="submit"]');
-            if (submitBtn) {
-                submitBtn.textContent = 'Enviar Depoimento';
-                submitBtn.disabled = false;
-            }
-        }
-    }
-
-    //Github authentication
-    async submitReviewViaGitHubApp(reviewData) {
-        if (!this.githubAuth) {
-            throw new Error('Sistema de autenticação não inicializado');
-        }
-        try {
-            const result = await this.githubAuth.createReviewFile(reviewData);
-            console.log('Review criado no GitHub:', result);
-            return result;
-        } catch (error) {
-            if (error.message.includes('Token expirado')) {
-            this.githubAuth.clearToken();
-            throw error;
-            }
-            throw error;
-        }
+        if (comment.length > 720) {
+            this.showMessage('O comentário não pode exceder 720 caracteres.', 'error');
+            return;
         }
 
-    // Reset form "post-sent"
-    resetReviewForm() {
-        const form = document.getElementById('reviewForm');
-        if (form) {
+        // Save the review
+        this.recordReviewAttempt(email, now);
+        const review = {
+            id: Date.now(),
+            userId: this.user.email,
+            userName: this.user.email.split('@')[0],
+            rating: rating,
+            comment: comment,
+            date: new Date().toLocaleDateString('pt-BR'),
+            timestamp: Date.now()
+        };
+        
+        this.reviews.push(review);
+        this.saveReviewsToStorage();
+        this.loadReviewsFromStorage();
+        this.loadFeaturedReviewsFromStorage();
+        this.renderAdminReviews();
+        
+        // First, close the modal immediately
+        this.closeModal('reviewModal');
+        
+        // Then reset the form (after modal is closed)
+        setTimeout(() => {
             form.reset();
-            // Reset star rating visual state
-            const stars = document.querySelectorAll('.star-rating .star');
-            const hiddenRating = document.getElementById('reviewRating');
-            stars.forEach(star => {
-                star.classList.remove('selected', 'hover');
+            document.getElementById('reviewRating').value = '';
+            document.querySelectorAll('.star').forEach(star => {
+                star.classList.remove('active');
+                star.style.color = '#ddd';
             });
-            if (hiddenRating) {
-                hiddenRating.value = '';
-            }
-            // Reset email field for logged-in users
-            if (this.user && this.user.email) {
-                const emailInput = document.getElementById('reviewEmail');
-                if (emailInput) {
-                    emailInput.value = this.user.email;
-                }
-            }
-            console.log('Review form reset');
-        }
+        }, 100);
+        // Mark review success on sessionStorage
+        sessionStorage.setItem('reviewSuccess', 'true');
+        // Navigate to home page
+        setTimeout(() => {
+            this.showPage('home');
+        }, 200);
     }
-
     // Render reviews on homepage
     renderHomepageReviews() {
         const container = document.getElementById('reviewsContainer');
@@ -2678,53 +2560,36 @@ class AppState {
     }
     // Render all reviews page
     renderAllReviews() {
-        console.log('renderAllReviews called');
         const container = document.getElementById('allReviewsContainer');
-        if (!container) {
-            console.error('allReviewsContainer not found');
-            return;
-        }
-        // Load reviews from ReviewManager if available
-        if (window.reviewManager && window.reviewManager.reviews) {
-            this.reviews = [...window.reviewManager.reviews];
-            console.log('Loaded reviews from ReviewManager:', this.reviews.length);
-        }
-        // Check if reviews available
-        if (!this.reviews || this.reviews.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <h3>Ainda não há depoimentos</h3>
-                    <p>Seja o primeiro a avaliar!</p>
-                    <button class="btn btn-primary" onclick="app.showReviewModal()">
-                        Deixar depoimento
-                    </button>
-                </div>
-            `;
-            return;
-        }
-        // Sort reviews by newest first
-        const sortedReviews = [...this.reviews].sort((a, b) => b.timestamp - a.timestamp);
-        // Generate HTML for each review
-        container.innerHTML = sortedReviews.map(review => {
-            const date = new Date(review.timestamp).toLocaleDateString('pt-BR');
-            const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
-            const authorName = review.author || review.email?.split('@')[0] || 'Cliente';
-            return `
+        if (!container) return;
+        // All reviews page structure 
+        let pageHTML = `
+            <div class="review_container">
+                <button class="btn btn--outline mb-16" onclick="window.app.showPage('home')">← Voltar</button>
+                <h1>Todos os Depoimentos</h1>
+                <div class="reviews-content">
+        `;
+        if (this.reviews.length === 0) {
+            pageHTML += '<p style="text-align: center; color: var(--color-text-secondary);">Ainda não há depoimentos.</p>';
+        } else {
+            // Sort reviews by newest first
+            const sortedReviews = [...this.reviews].sort((a, b) => b.timestamp - a.timestamp);
+            pageHTML += sortedReviews.map(review => `
                 <div class="review-card">
                     <div class="review-header">
-                        <div class="review-author">
-                            <h3>${authorName}</h3>
-                            <span class="review-date">${date}</span>
-                        </div>
-                        <div class="review-stars">${stars}</div>
+                        <span class="review-author">${review.userName}</span>
+                        <span class="review-date">${review.date}</span>
                     </div>
-                    <p class="review-comment">${review.comment}</p>
-                    ${review.verified ? '<span class="verified-badge">✓ Compra Verificada</span>' : ''}
+                    <div class="review-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
+                    <div class="review-comment">${review.comment}</div>
                 </div>
-            `;
-        }).join('');
-        
-        console.log('All Reviews rendered successfully');
+            `).join('');
+        }
+        pageHTML += `
+                </div>
+            </div>
+        `;
+        container.innerHTML = pageHTML;
     }
     // Render admin reviews
     renderAdminReviews() {
@@ -2800,188 +2665,11 @@ class AppState {
         this.renderHomepageReviews();
         this.showMessage('Depoimento deletado com sucesso.', 'success');
     }
-}
 
-// REVIEWS
-class ReviewManager {
-    constructor() {
-        this.reviews = [];
-        this.cache = new Map();
-        this.reviewsUrl = './reviews.json';
-        this.retryAttempts = 3;
-        this.baseUrl = (window.location.origin && window.location.origin !== "null")
-            ? window.location.origin
-            : "";
-        this.cacheBuster = Date.now();
-    }
-
-    async loadReviews() {
-        const cacheKey = 'reviews_data';
-        const cacheTimeout = 5 * 60 * 1000; // 5min in-mem cache
-        // Verify cache 1st
-        const cached = this.getCachedData(cacheKey, cacheTimeout);
-        if (cached) {
-            this.reviews = cached;
-            this.renderReviews();
-            this.renderFeaturedReviews();
-            console.log(`${this.reviews.length} depoimentos carregados do cache.`);
-            return;
-        }
-        // Fetch file - 3 retries
-        try {
-            const url = new URL('/reviews.json', this.baseUrl);
-            url.searchParams.set('v', this.cacheBuster);
-            const data = await this.fetchWithRetry(url.toString());
-            // Suporta array puro ou { metadata, reviews }
-            const reviews = Array.isArray(data)
-                ? data
-                : Array.isArray(data.reviews)
-                    ? data.reviews
-                    : [];
-            this.reviews = reviews;
-            this.setCachedData(cacheKey, reviews);
-            this.renderReviews(); // all reviews
-            this.renderFeaturedReviews(); // if any featyred
-            console.log(`${reviews.length} depoimentos carregados do servidor.`);
-        } catch (err) {
-            console.error('Erro ao carregar reviews:', err);
-            this.renderEmptyState();
-        }
-    }
-    // Tries the request up to N times with exponential back-off
-    async fetchWithRetry(url, attempts = this.retryAttempts) {
-        for (let i = 0; i < attempts; i++) {
-            try {
-                const response = await fetch(url, { cache: 'no-cache' });
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return await response.json();
-            } catch (err) {
-                if (i === attempts - 1) throw err;
-                await new Promise(r => setTimeout(r, 300 * (i + 1)));
-            }
-        }
-    }
-    // In-memory cache
-    getCachedData(key, ttl) {
-        const entry = this.cache.get(key);
-        if (!entry) return null;
-        if (Date.now() - entry.timestamp > ttl) {
-            this.cache.delete(key);
-            return null;
-        }
-        return entry.data;
-    }
-    setCachedData(key, data) {
-        this.cache.set(key, { data, timestamp: Date.now() });
-    }
-
-    setCachedData(key, data) {
-        try {
-        const cacheEntry = {
-            data,
-            timestamp: Date.now()
-        };
-        localStorage.setItem(key, JSON.stringify(cacheEntry));
-        } catch (e) {
-        console.warn('Cache storage failed:', e);
-        }
-    }
-
-    handleLoadError(error) {
-        console.error('Falha ao carregar depoimentos:', error);
-        const container = document.getElementById('reviewsContainer');
-        if (container) {
-            // Simple error msg
-            container.innerHTML = `
-                <div class="review-error">
-                    <p>Não foi possível carregar os depoimentos.</p>
-                    <button id="retryReviews" class="btn btn--primary">Tentar novamente</button>
-                </div>
-            `;
-            // Retry button
-            const btn = document.getElementById('retryReviews');
-            if (btn) btn.addEventListener('click', () => this.loadReviews());
-        }
-        // Error toast
-        this.showMessage('Erro ao carregar depoimentos. Clique em "Tentar novamente".', 'error');
-    }
-
-    renderReviews() {
-        const container = document.getElementById('reviewsContainer');
-        if (!container) {
-            console.error('Container de reviews não encontrado');
-            return;
-        }
-        // Clears old content
-        container.innerHTML = '';
-
-        if (this.reviews.length === 0) {
-            container.innerHTML = '<p class="no-reviews">Ainda não há depoimentos.</p>';
-            return;
-        }
-        // Dynamicly creates each review card
-        this.reviews.forEach(review => {
-            const card = document.createElement('div');
-            card.className = 'review-card';
-            const header = document.createElement('div');
-            header.className = 'review-header';
-            const author = document.createElement('h3');
-            author.textContent = review.userName || review.author;
-            const date = document.createElement('time');
-            date.textContent = new Date(review.timestamp).toLocaleString();
-            header.appendChild(author);
-            header.appendChild(date);
-            const stars = document.createElement('div');
-            stars.className = 'review-stars';
-            const fullStars = review.rating;
-            stars.textContent = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
-            const comment = document.createElement('p');
-            comment.className = 'review-comment';
-            comment.textContent = review.comment;
-            card.appendChild(header);
-            card.appendChild(stars);
-            card.appendChild(comment);
-            container.appendChild(card);
-        });
-    }
-
-    showMessage(text, type = 'info') {
-        // Simple toast/message
-        const toast = document.createElement('div');
-        toast.className = `toast toast--${type}`;
-        toast.textContent = text;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-
-    renderEmptyState() {
-        const container = document.getElementById('reviewsContainer');
-        if (container) {
-        container.innerHTML = `
-            <div class="empty-state">
-            <p>Não há depoimentos disponíveis no momento.</p>
-            <button onclick="app.loadReviews()" class="btn btn--primary">
-                Tentar novamente
-            </button>
-            </div>
-        `;
-        }
-    }
-
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
 }
 
 // Global app instance
-window.app = new AppState(); // Main e-commerce logic
-window.reviewManager = new ReviewManager(); // Review subsystem
-// Wait for DOM before touching the page
-document.addEventListener('DOMContentLoaded', () => {
-    window.app.init();
-    window.reviewManager = new ReviewManager();
-    window.reviewManager.loadReviews();
-});
+window.app = new AppState();
 
 // Global Functions for HTML onclick events
 function goToHome() {

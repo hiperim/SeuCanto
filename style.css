@@ -1405,16 +1405,25 @@ body {
     margin-top: var(--space-4);
 }
 /* All reviews page */
-#allReviewsContainer {
+.all-reviews-container {
     display: flex;
     flex-direction: column;
     gap: var(--space-16);
+}
+
+.review_container {
     max-width: 100%;
     margin-right: 20px;
     margin-left: 20px;
     margin-top: 0;
+    overflow: hidden;
+    color: var(--color-text-secondary);
+    box-sizing: border-box;
 }
 
+.all-reviews-container .review-card {
+    max-width: 100%;
+}
 /* Admin reviews */
 .admin-reviews-container {
     display: flex;

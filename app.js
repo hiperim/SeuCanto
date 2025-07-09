@@ -10,7 +10,6 @@ class ZipperAnimation {
         this.lastSliderY = 0;
         this.reviews = [];
         this.featuredReviews = [];
-        
         this.init();
     }
     
@@ -2202,7 +2201,7 @@ class AppState {
     handleAdminLogin(e) {
         e.preventDefault();
         const password = document.getElementById('adminPassword').value;
-        if (password === 'mozão') {
+        if (password === 'access') {
             this.isAdmin = true;
             this.closeModal('adminLoginModal');
             this.showPage('admin');
@@ -2440,18 +2439,45 @@ class AppState {
     }
     // Setup star rating functionality
     setupStarRating() {
-        const starContainer = document.querySelector('.star-rating');
+        const stars = document.querySelectorAll('.star');
         const ratingInput = document.getElementById('reviewRating');
-    
-        if (!starContainer || !ratingInput) {
-            console.warn('Star rating elements not found - skipping setup');
-            return;
-        }
-        const stars = starContainer.querySelectorAll('.star');
-        
-        if (stars.length === 0) {
-            console.warn('No star elements found in container');
-            return;
+        stars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+                const rating = index + 1;
+                ratingInput.value = rating;
+                // Update visual state
+                stars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+            star.addEventListener('mouseover', () => {
+                const rating = index + 1;
+                stars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.style.color = 'var(--color-orange)';
+                    } else {
+                        s.style.color = '#ddd';
+                    }
+                });
+            });
+        });
+        // Reset on mouse leave
+        const starContainer = document.querySelector('.star-rating');
+        if (starContainer) {
+            starContainer.addEventListener('mouseleave', () => {
+                const currentRating = parseInt(ratingInput.value) || 0;
+                stars.forEach((s, i) => {
+                    if (i < currentRating) {
+                        s.style.color = 'var(--color-orange)';
+                    } else {
+                        s.style.color = '#ddd';
+                    }
+                });
+            });
         }
         
         // Function update visual state
@@ -2463,53 +2489,6 @@ class AppState {
                 star.classList.toggle('hover', isActive && isHover);
             });
         };
-        
-        // Function reset hover state
-        const resetHoverState = () => {
-            const currentRating = parseInt(ratingInput.value, 10) || 0;
-            stars.forEach(star => star.classList.remove('hover'));
-            updateStarVisuals(currentRating);
-        };
-        
-        // Click event
-        stars.forEach((star, index) => {
-            star.addEventListener('click', (e) => {
-                e.preventDefault();
-                
-                const rating = parseInt(star.getAttribute('data-rating'), 10) || (index + 1);
-                ratingInput.value = rating;
-                updateStarVisuals(rating);
-                console.log('Star rating selected:', rating);
-                const event = new CustomEvent('starRatingChanged', {
-                    detail: { rating }
-                });
-                starContainer.dispatchEvent(event);
-            });
-            // Hover event
-            star.addEventListener('mouseenter', () => {
-                const rating = parseInt(star.getAttribute('data-rating'), 10) || (index + 1);
-                updateStarVisuals(rating, true);
-            });
-            // Accessibility
-            star.setAttribute('tabindex', '0');
-            star.setAttribute('role', 'button');
-            star.setAttribute('aria-label', `Rate ${parseInt(star.getAttribute('data-rating'), 10) || (index + 1)} stars`);
-            // Keyboard support
-            star.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    star.click();
-                }
-            });
-        });
-        // Mouse leave event
-        starContainer.addEventListener('mouseleave', resetHoverState);
-        // Initialize visual state based on current value
-        const initialRating = parseInt(ratingInput.value, 10) || 0;
-        if (initialRating > 0) {
-            updateStarVisuals(initialRating);
-        }
-        console.log('Star rating functionality initialized successfully');
     }
 
     // Setup character counter

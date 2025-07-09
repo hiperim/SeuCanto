@@ -16,7 +16,7 @@
 - Implementações responsivas e otimizadas para dispositivos móveis;
 - <i>(*)Para acessar a página de administrador, adicione #admin ao final do endereço HTML.<br> (ex.: hiperim.github.io/fullWebDev/#admin)<br>
     user: admin<br>
-    password: mozao</i>
+    password: access</i>
 
 <strong>Full e-commerce website with implemented features:</strong>
 - Zipper opening animation on URL visit;
@@ -36,4 +36,4 @@
 - Mobile-friendly implementations;
 - <i>(*)To access the admin page, add "#admin" at the end of the HTML address.<br> (ex.: hiperim.github.io/fullWebDev/#admin)<br>
     user: admin<br>
-    password: mozao </i>
+    password: access </i>
